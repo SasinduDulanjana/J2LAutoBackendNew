@@ -1,18 +1,11 @@
-package com.example.smartPos.repositories.model;
+package com.example.smartPos.controllers.requests;
 
-import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.Date;
-import java.util.List;
 
-@Entity
 @Data
-@Table(name = "PRODUCTS")
-public class Product {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+public class ProductRequest {
     private Integer productId;
 
     private Integer catId;
@@ -21,7 +14,7 @@ public class Product {
 
     private Boolean isBarCodeAvailable;
 
-    private String barcode;
+    private String barCode;
 
     private String sku;
 
@@ -53,10 +46,6 @@ public class Product {
 
     private String batchNo;
 
-    private Double cost;
-
-    private Double remainingQty;
-
     private Integer status;
 
     //    @NotNull
@@ -77,18 +66,6 @@ public class Product {
 //    @ApiField(fieldName = "modifiedDate")
 //    @Temporal(TemporalType.TIMESTAMP)
     private Date modifiedDate;
-
-    public void fillNew(String userId){
-        this.addBy = userId;
-        this.addedDate = new Date();
-        this.modifiedBy = userId;
-        this.modifiedDate = new Date();
-    }
-
-    public void fillUpdated(String userId){
-        this.modifiedBy = userId;
-        this.modifiedDate = new Date();
-    }
 
     public Integer getProductId() {
         return productId;
@@ -122,12 +99,12 @@ public class Product {
         isBarCodeAvailable = barCodeAvailable;
     }
 
-    public String getBarcode() {
-        return barcode;
+    public String getBarCode() {
+        return barCode;
     }
 
-    public void setBarcode(String barcode) {
-        this.barcode = barcode;
+    public void setBarCode(String barCode) {
+        this.barCode = barCode;
     }
 
     public String getSku() {
@@ -256,21 +233,5 @@ public class Product {
 
     public void setStatus(Integer status) {
         this.status = status;
-    }
-
-    public Double getCost() {
-        return cost;
-    }
-
-    public void setCost(Double cost) {
-        this.cost = cost;
-    }
-
-    public Double getRemainingQty() {
-        return remainingQty;
-    }
-
-    public void setRemainingQty(Double remainingQty) {
-        this.remainingQty = remainingQty;
     }
 }
