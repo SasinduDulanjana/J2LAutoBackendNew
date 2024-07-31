@@ -1,9 +1,11 @@
 package com.example.smartPos.services.impl;
 
 import com.example.smartPos.controllers.requests.ProductRequest;
+import com.example.smartPos.controllers.responses.BatchDetailsResponse;
 import com.example.smartPos.controllers.responses.ProductResponse;
 import com.example.smartPos.exception.AlreadyExistsException;
 import com.example.smartPos.exception.ResourceNotFoundException;
+import com.example.smartPos.repositories.BatchRepository;
 import com.example.smartPos.repositories.ProductRepository;
 import com.example.smartPos.repositories.model.Product;
 import com.example.smartPos.services.IProductService;
@@ -19,8 +21,11 @@ public class ProductServiceImpl implements IProductService {
 
     private final ProductRepository productRepository;
 
-    public ProductServiceImpl(ProductRepository productRepository) {
+    private final BatchRepository batchRepository;
+
+    public ProductServiceImpl(ProductRepository productRepository, BatchRepository batchRepository) {
         this.productRepository = productRepository;
+        this.batchRepository = batchRepository;
     }
 
     @Override
@@ -113,6 +118,36 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
+    public ProductResponse getProductById(Integer id) {
+        Product product = productRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND)
+        );
+        ProductResponse prodResp = new ProductResponse();
+        prodResp.setProductId(product.getProductId());
+        prodResp.setCatId(product.getCatId());
+        prodResp.setProductName(product.getProductName());
+        prodResp.setBarCodeAvailable(product.getBarCodeAvailable());
+        prodResp.setBarCode(product.getBarcode());
+        prodResp.setSku(product.getSku());
+        prodResp.setBarCodeType(product.getBarCodeType());
+        prodResp.setProductType(product.getProductType());
+        prodResp.setProductStatus(product.getProductStatus());
+        prodResp.setDescription(product.getDescription());
+        prodResp.setStockManagementEnable(product.getStockManagementEnable());
+        prodResp.setSalePrice(product.getSalePrice());
+        prodResp.setWholeSalePrice(product.getWholeSalePrice());
+        prodResp.setLowQty(product.getLowQty());
+        prodResp.setExpDateAvailable(product.getExpDateAvailable());
+        prodResp.setExpDate(product.getExpDate());
+        prodResp.setTaxGroup(product.getTaxGroup());
+        prodResp.setTaxType(product.getTaxType());
+        prodResp.setImgUrl(product.getImgUrl());
+        prodResp.setBatchNo(product.getBatchNo());
+        prodResp.setStatus(product.getStatus());
+        return prodResp;
+    }
+
+    @Override
     public ProductResponse getProductById(String barcode) {
         Product product = productRepository.findByBarcode(barcode).orElseThrow(
                 () -> new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND)
@@ -144,6 +179,36 @@ public class ProductServiceImpl implements IProductService {
 
     public ProductResponse getProductBySku(String sku) {
         Product product = productRepository.findBySku(sku).orElseThrow(
+                () -> new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND)
+        );
+        ProductResponse prodResp = new ProductResponse();
+        prodResp.setProductId(product.getProductId());
+        prodResp.setCatId(product.getCatId());
+        prodResp.setProductName(product.getProductName());
+        prodResp.setBarCodeAvailable(product.getBarCodeAvailable());
+        prodResp.setBarCode(product.getBarcode());
+        prodResp.setSku(product.getSku());
+        prodResp.setBarCodeType(product.getBarCodeType());
+        prodResp.setProductType(product.getProductType());
+        prodResp.setProductStatus(product.getProductStatus());
+        prodResp.setDescription(product.getDescription());
+        prodResp.setStockManagementEnable(product.getStockManagementEnable());
+        prodResp.setSalePrice(product.getSalePrice());
+        prodResp.setWholeSalePrice(product.getWholeSalePrice());
+        prodResp.setLowQty(product.getLowQty());
+        prodResp.setExpDateAvailable(product.getExpDateAvailable());
+        prodResp.setExpDate(product.getExpDate());
+        prodResp.setTaxGroup(product.getTaxGroup());
+        prodResp.setTaxType(product.getTaxType());
+        prodResp.setImgUrl(product.getImgUrl());
+        prodResp.setBatchNo(product.getBatchNo());
+        prodResp.setStatus(product.getStatus());
+        return prodResp;
+    }
+
+    @Override
+    public ProductResponse getProductByBarcodeOrSku(String barCodeOrSku) {
+        Product product = productRepository.findByBarcodeOrSku(barCodeOrSku, barCodeOrSku).orElseThrow(
                 () -> new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND)
         );
         ProductResponse prodResp = new ProductResponse();
@@ -276,5 +341,20 @@ public class ProductServiceImpl implements IProductService {
 
         }
         return updatedProductResponse;
+    }
+
+    public List<BatchDetailsResponse> getBatchDetailsByProductSku(String productSku) {
+        return batchRepository.findAllBySku(productSku).stream().map(batch -> {
+            BatchDetailsResponse batchDetails = new BatchDetailsResponse();
+            batchDetails.setBatchId(batch.getBatchId());
+            batchDetails.setBatchNumber(batch.getBatchNumber());
+            batchDetails.setSku(batch.getSku());
+            batchDetails.setPrice(batch.getPrice());
+            batchDetails.setSupplier(batch.getSupplier());
+            batchDetails.setInvoiceNumber(batch.getInvoiceNumber());
+            batchDetails.setPurchaseDate(batch.getPurchaseDate());
+
+            return batchDetails;
+        }).toList();
     }
 }

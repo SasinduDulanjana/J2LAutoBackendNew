@@ -1,6 +1,7 @@
 package com.example.smartPos.controllers;
 
 import com.example.smartPos.controllers.requests.ProductRequest;
+import com.example.smartPos.controllers.responses.BatchDetailsResponse;
 import com.example.smartPos.controllers.responses.CommonResponse;
 import com.example.smartPos.controllers.responses.ProductResponse;
 import com.example.smartPos.services.IProductService;
@@ -30,6 +31,12 @@ public class ProductController {
         return productService.getProductsByName(name);
     }
 
+    @GetMapping(path = "/api/getProductById/{id}")
+    public ResponseEntity<CommonResponse> getProductsByBarcode(@PathVariable Integer id) {
+        ProductResponse productResponse = productService.getProductById(id);
+        return ResponseCreator.success(productResponse);
+    }
+
     @GetMapping(path = "/api/getProductByBarcode/{barcode}")
     public ResponseEntity<CommonResponse> getProductsByBarcode(@PathVariable String barcode) {
         ProductResponse productResponse = productService.getProductByBarcode(barcode);
@@ -39,6 +46,12 @@ public class ProductController {
     @GetMapping(path = "/api/getProductBySku/{sku}")
     public ResponseEntity<CommonResponse> getProductBySku(@PathVariable String sku) {
         ProductResponse productResponse = productService.getProductBySku(sku);
+        return ResponseCreator.success(productResponse);
+    }
+
+    @GetMapping(path = "/api/getProductByBarcodeOrSku/{term}")
+    public ResponseEntity<CommonResponse> getProductByBarCodeOrSku(@PathVariable String term) {
+        ProductResponse productResponse = productService.getProductByBarcodeOrSku(term);
         return ResponseCreator.success(productResponse);
     }
 
@@ -52,6 +65,11 @@ public class ProductController {
     public ResponseEntity<ProductResponse> updateProduct(@RequestBody ProductRequest productRequest) {
         ProductResponse updatedProduct = productService.updateProduct(productRequest);
         return ResponseCreator.success(updatedProduct);
+    }
+
+    @GetMapping(path = "/api/batchNumbers/{productSku}")
+    public List<BatchDetailsResponse> getBatchDetailsByProductId(@PathVariable String productSku) {
+        return productService.getBatchDetailsByProductSku(productSku);
     }
 
 }

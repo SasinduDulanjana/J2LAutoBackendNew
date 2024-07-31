@@ -4,12 +4,8 @@ import com.example.smartPos.controllers.requests.PurchaseRequest;
 import com.example.smartPos.controllers.responses.PurchaseResponse;
 import com.example.smartPos.exception.AlreadyExistsException;
 import com.example.smartPos.exception.ResourceNotFoundException;
-import com.example.smartPos.repositories.ProductRepository;
-import com.example.smartPos.repositories.PurchaseRepository;
-import com.example.smartPos.repositories.SupplierRepository;
-import com.example.smartPos.repositories.model.Product;
-import com.example.smartPos.repositories.model.Purchase;
-import com.example.smartPos.repositories.model.Supplier;
+import com.example.smartPos.repositories.*;
+import com.example.smartPos.repositories.model.*;
 import com.example.smartPos.services.IPurchaseService;
 import com.example.smartPos.util.ErrorCodes;
 import com.example.smartPos.util.ProductConstants;
@@ -27,10 +23,16 @@ public class PurchaseServiceImpl implements IPurchaseService {
 
     private final SupplierRepository supplierRepository;
 
-    public PurchaseServiceImpl(PurchaseRepository purchaseRepository, ProductRepository productRepository, SupplierRepository supplierRepository) {
+    private final BatchRepository batchRepository;
+
+    private final InventoryRepository inventoryRepository;
+
+    public PurchaseServiceImpl(PurchaseRepository purchaseRepository, ProductRepository productRepository, SupplierRepository supplierRepository, BatchRepository batchRepository, InventoryRepository inventoryRepository) {
         this.purchaseRepository = purchaseRepository;
         this.productRepository = productRepository;
         this.supplierRepository = supplierRepository;
+        this.batchRepository = batchRepository;
+        this.inventoryRepository = inventoryRepository;
     }
 
     @Override
@@ -158,8 +160,8 @@ public class PurchaseServiceImpl implements IPurchaseService {
             throw new AlreadyExistsException(ErrorCodes.ALREADY_EXISTS_INVOICE_NUMBER);
         }
 
-        Optional<Supplier> supplierById = supplierRepository.findById(purchaseRequest.getSupplierId());
-        if (supplierById.isPresent()) {
+        Optional<Supplier> supplierById = supplierRepository.findById(purchaseRequest.getSupId());
+        if (supplierById.isEmpty()) {
             throw new ResourceNotFoundException(ErrorCodes.SUPPLIER_NOT_FOUND);
         }
 
@@ -177,8 +179,10 @@ public class PurchaseServiceImpl implements IPurchaseService {
 
 
     private Purchase getSavedPurchase(PurchaseRequest purchaseRequest) {
+
+
         Purchase savePurchase = new Purchase();
-        savePurchase.setSupplierId(purchaseRequest.getSupplierId());
+        savePurchase.setSupplierId(purchaseRequest.getSupId());
         savePurchase.setPurchaseName(purchaseRequest.getPurchaseName());
         savePurchase.setInvoiceNumber(purchaseRequest.getInvoiceNumber());
         savePurchase.setDeliveryTime(purchaseRequest.getDeliveryTime());
@@ -192,16 +196,46 @@ public class PurchaseServiceImpl implements IPurchaseService {
             if (product.getProductId() != null) {
                 Product byProductIdAndSku = productRepository.findByProductIdAndSku(product.getProductId(), product.getSku());
 
-                //Stock management logic
+                //Check Batch Number is already exist
+                Optional<Batch> batchByBatchNumberAndSku = batchRepository.findByBatchNumberAndSku(product.getBatchNo(), byProductIdAndSku.getSku());
+                if (batchByBatchNumberAndSku.isEmpty()) {
+                    //Save Batch Details
+                    Batch batch = new Batch();
+                    batch.setSku(byProductIdAndSku.getSku());
+                    batch.setBatchNumber(product.getBatchNo());
+                    batch.setPrice(product.getCost());
+                    batch.setSupplier(purchaseRequest.getSupId());
+                    batch.setPurchaseDate(purchaseRequest.getInvoiceDate());
+                    batch.setInvoiceNumber(purchaseRequest.getInvoiceNumber());
+                    batch.fillNew("ADMIN USER");
+                    batchRepository.save(batch);
+                }
 
-                Double currentTotalQty = byProductIdAndSku.getRemainingQty() + product.getRemainingQty();
-                Double remainingTotalCost = byProductIdAndSku.getCost() * byProductIdAndSku.getRemainingQty();
-                Double currentTotalCost = product.getCost() * product.getRemainingQty();
-                Double totalCost = remainingTotalCost + currentTotalCost;
-                Double CurrentUnitPrice = totalCost / currentTotalQty;
-                byProductIdAndSku.setCost(CurrentUnitPrice);
-                byProductIdAndSku.setRemainingQty(currentTotalQty);
-                productRepository.save(byProductIdAndSku);
+
+                // Update inventory
+                Optional<Inventory> inventoryBySkuAndBatchId = inventoryRepository.findBySkuAndBatchNumber(byProductIdAndSku.getSku(), product.getBatchNo());
+                //if inventory already exist update the qty
+                if (inventoryBySkuAndBatchId.isPresent()) {
+                    inventoryBySkuAndBatchId.get().setQty(inventoryBySkuAndBatchId.get().getQty() + product.getRemainingQty());
+                } else {
+                    //if inventory not exist create new inventory
+                    Inventory inventory = new Inventory();
+                    inventory.setSku(byProductIdAndSku.getSku());
+                    inventory.setBatchNumber(product.getBatchNo());
+                    inventory.setQty(product.getRemainingQty());
+                    inventoryRepository.save(inventory);
+                }
+
+//                //Stock management logic
+//
+//                Double currentTotalQty = byProductIdAndSku.getRemainingQty() + product.getRemainingQty();
+//                Double remainingTotalCost = byProductIdAndSku.getCost() * byProductIdAndSku.getRemainingQty();
+//                Double currentTotalCost = product.getCost() * product.getRemainingQty();
+//                Double totalCost = remainingTotalCost + currentTotalCost;
+//                Double CurrentUnitPrice = totalCost / currentTotalQty;
+//                byProductIdAndSku.setCost(CurrentUnitPrice);
+//                byProductIdAndSku.setRemainingQty(currentTotalQty);
+//                productRepository.save(byProductIdAndSku);
 
                 return byProductIdAndSku;
             } else {

@@ -16,7 +16,7 @@ public class SaleController {
         this.customerService = customerService;
     }
 
-    @GetMapping(path = "/api/getAllCustomers")
+    @GetMapping(path = "/api/getAllSale")
     public List<CustomerResponse> getAllCustomers() {
         List<CustomerResponse> customerResponse = customerService.getAllCustomers();
         return customerResponse;
@@ -28,7 +28,7 @@ public class SaleController {
 //        return customerResponse;
 //    }
 
-    @PostMapping(path = "/api/createCustomer")
+    @PostMapping(path = "/api/createSale")
     public void createCustomer(@RequestBody CustomerRequest customerRequest) {
         customerService.createCustomer(customerRequest);
     }

@@ -10,7 +10,7 @@ import java.util.List;
 public class PurchaseRequest {
     private Integer purchaseId;
 
-    private Integer supplierId;
+    private Integer supId;
 
     private String purchaseName;
 
@@ -57,12 +57,12 @@ public class PurchaseRequest {
         this.purchaseId = purchaseId;
     }
 
-    public Integer getSupplierId() {
-        return supplierId;
+    public Integer getSupId() {
+        return supId;
     }
 
-    public void setSupplierId(Integer supplierId) {
-        this.supplierId = supplierId;
+    public void setSupId(Integer supplierId) {
+        this.supId = supplierId;
     }
 
     public String getPurchaseName() {

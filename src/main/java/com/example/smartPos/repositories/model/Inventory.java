@@ -16,9 +16,9 @@ public class Inventory {
 
     private String sku;
 
-    private Integer batchId;
+    private String batchNumber;
 
-    private Integer qty;
+    private Double qty;
 
     //    @NotNull
 //    @Size(min = 1, max = 50)
@@ -67,19 +67,19 @@ public class Inventory {
         this.sku = sku;
     }
 
-    public Integer getBatchId() {
-        return batchId;
+    public String getBatchNumber() {
+        return batchNumber;
     }
 
-    public void setBatchId(Integer batchId) {
-        this.batchId = batchId;
+    public void setBatchNumber(String batchNumber) {
+        this.batchNumber = batchNumber;
     }
 
-    public Integer getQty() {
+    public Double getQty() {
         return qty;
     }
 
-    public void setQty(Integer qty) {
+    public void setQty(Double qty) {
         this.qty = qty;
     }
 

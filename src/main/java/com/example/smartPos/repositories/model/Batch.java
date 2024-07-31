@@ -18,11 +18,13 @@ public class Batch {
 
     private String batchNumber;
 
-    private String price;
+    private Double price;
 
-    private String supplier;
+    private Integer supplier;
 
     private String purchaseDate;
+
+    private String invoiceNumber;
 
     //    @NotNull
 //    @Size(min = 1, max = 50)
@@ -79,19 +81,19 @@ public class Batch {
         this.batchNumber = batchNumber;
     }
 
-    public String getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(String price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 
-    public String getSupplier() {
+    public Integer getSupplier() {
         return supplier;
     }
 
-    public void setSupplier(String supplier) {
+    public void setSupplier(Integer supplier) {
         this.supplier = supplier;
     }
 
@@ -133,5 +135,13 @@ public class Batch {
 
     public void setModifiedDate(Date modifiedDate) {
         this.modifiedDate = modifiedDate;
+    }
+
+    public String getInvoiceNumber() {
+        return invoiceNumber;
+    }
+
+    public void setInvoiceNumber(String invoiceNumber) {
+        this.invoiceNumber = invoiceNumber;
     }
 }
