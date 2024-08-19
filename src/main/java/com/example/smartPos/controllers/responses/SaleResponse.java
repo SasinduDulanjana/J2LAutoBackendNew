@@ -1,5 +1,6 @@
 package com.example.smartPos.controllers.responses;
 
+import com.example.smartPos.controllers.requests.SoldProductRequest;
 import com.example.smartPos.repositories.model.Product;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.JoinColumn;
@@ -23,13 +24,7 @@ public class SaleResponse extends CommonResponse{
 
     private String invoiceNumber;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-            name = "ORDER_PRODUCT",
-            joinColumns = @JoinColumn(name = "ORDER_ID"),
-            inverseJoinColumns = @JoinColumn(name = "PRODUCT_ID")
-    )
-    private List<Product> products;
+    private List<Product> soldProducts;
 
     public Integer getSaleId() {
         return saleId;
@@ -80,10 +75,10 @@ public class SaleResponse extends CommonResponse{
     }
 
     public List<Product> getProducts() {
-        return products;
+        return soldProducts;
     }
 
     public void setProducts(List<Product> products) {
-        this.products = products;
+        this.soldProducts = soldProducts;
     }
 }

@@ -1,6 +1,7 @@
 package com.example.smartPos.services.impl;
 
 import com.example.smartPos.controllers.requests.PurchaseRequest;
+import com.example.smartPos.controllers.responses.ProductResponse;
 import com.example.smartPos.controllers.responses.PurchaseResponse;
 import com.example.smartPos.exception.AlreadyExistsException;
 import com.example.smartPos.exception.ResourceNotFoundException;
@@ -27,12 +28,15 @@ public class PurchaseServiceImpl implements IPurchaseService {
 
     private final InventoryRepository inventoryRepository;
 
-    public PurchaseServiceImpl(PurchaseRepository purchaseRepository, ProductRepository productRepository, SupplierRepository supplierRepository, BatchRepository batchRepository, InventoryRepository inventoryRepository) {
+    private final ProductBatchRepository productBatchRepository;
+
+    public PurchaseServiceImpl(PurchaseRepository purchaseRepository, ProductRepository productRepository, SupplierRepository supplierRepository, BatchRepository batchRepository, InventoryRepository inventoryRepository, ProductBatchRepository productBatchRepository) {
         this.purchaseRepository = purchaseRepository;
         this.productRepository = productRepository;
         this.supplierRepository = supplierRepository;
         this.batchRepository = batchRepository;
         this.inventoryRepository = inventoryRepository;
+        this.productBatchRepository = productBatchRepository;
     }
 
     @Override
@@ -50,7 +54,6 @@ public class PurchaseServiceImpl implements IPurchaseService {
             purchResp.setPaymentStatus(purchase.getPaymentStatus());
             purchResp.setProductType(purchase.getProductType());
             purchResp.setStatus(purchase.getStatus());
-            purchResp.setProducts(purchase.getProducts());
             return purchResp;
         }).toList();
     }
@@ -69,7 +72,6 @@ public class PurchaseServiceImpl implements IPurchaseService {
             purchResp.setPaymentStatus(purchase.getPaymentStatus());
             purchResp.setProductType(purchase.getProductType());
             purchResp.setStatus(purchase.getStatus());
-            purchResp.setProducts(purchase.getProducts());
             return purchResp;
         }).toList();
     }
@@ -88,7 +90,6 @@ public class PurchaseServiceImpl implements IPurchaseService {
             purchResp.setPaymentStatus(purchase.getPaymentStatus());
             purchResp.setProductType(purchase.getProductType());
             purchResp.setStatus(purchase.getStatus());
-            purchResp.setProducts(purchase.getProducts());
             return purchResp;
         }).toList();
     }
@@ -107,7 +108,6 @@ public class PurchaseServiceImpl implements IPurchaseService {
             purchResp.setPaymentStatus(purchase.getPaymentStatus());
             purchResp.setProductType(purchase.getProductType());
             purchResp.setStatus(purchase.getStatus());
-            purchResp.setProducts(purchase.getProducts());
             return purchResp;
         }).toList();
     }
@@ -126,7 +126,6 @@ public class PurchaseServiceImpl implements IPurchaseService {
             purchResp.setPaymentStatus(purchase.getPaymentStatus());
             purchResp.setProductType(purchase.getProductType());
             purchResp.setStatus(purchase.getStatus());
-            purchResp.setProducts(purchase.getProducts());
             return purchResp;
         }).toList();
     }
@@ -147,7 +146,6 @@ public class PurchaseServiceImpl implements IPurchaseService {
         purchResp.setPaymentStatus(purchase.getPaymentStatus());
         purchResp.setProductType(purchase.getProductType());
         purchResp.setStatus(purchase.getStatus());
-        purchResp.setProducts(purchase.getProducts());
         return purchResp;
 
     }
@@ -171,7 +169,11 @@ public class PurchaseServiceImpl implements IPurchaseService {
         purchaseResponse.setPurchaseId(savedPurchase.getPurchaseId());
         purchaseResponse.setSupplierId(savedPurchase.getSupplierId());
         purchaseResponse.setInvoiceNumber(savedPurchase.getInvoiceNumber());
-        purchaseResponse.setProducts(savedPurchase.getProducts());
+        purchaseResponse.setProducts(savedPurchase.getProducts().stream().map(product -> {
+            ProductResponse productResponse = new ProductResponse();
+            productResponse.setProductId(product.getProductId());
+            return productResponse;
+        }).toList());
         purchaseResponse.setStatusCode(ProductConstants.STATUS_201);
         purchaseResponse.setDesc(ProductConstants.MESSAGE_201);
         return purchaseResponse;
@@ -179,8 +181,6 @@ public class PurchaseServiceImpl implements IPurchaseService {
 
 
     private Purchase getSavedPurchase(PurchaseRequest purchaseRequest) {
-
-
         Purchase savePurchase = new Purchase();
         savePurchase.setSupplierId(purchaseRequest.getSupId());
         savePurchase.setPurchaseName(purchaseRequest.getPurchaseName());
@@ -196,6 +196,12 @@ public class PurchaseServiceImpl implements IPurchaseService {
             if (product.getProductId() != null) {
                 Product byProductIdAndSku = productRepository.findByProductIdAndSku(product.getProductId(), product.getSku());
 
+                // Update Purchased products details with batches
+                ProductBatch productBatch = new ProductBatch();
+                productBatch.setProduct(byProductIdAndSku);
+                productBatch.setQty(product.getRemainingQty());
+                productBatch.setUnitCost(product.getCost());
+
                 //Check Batch Number is already exist
                 Optional<Batch> batchByBatchNumberAndSku = batchRepository.findByBatchNumberAndSku(product.getBatchNo(), byProductIdAndSku.getSku());
                 if (batchByBatchNumberAndSku.isEmpty()) {
@@ -203,14 +209,21 @@ public class PurchaseServiceImpl implements IPurchaseService {
                     Batch batch = new Batch();
                     batch.setSku(byProductIdAndSku.getSku());
                     batch.setBatchNumber(product.getBatchNo());
-                    batch.setPrice(product.getCost());
+                    batch.setUnitCost(product.getCost());
+                    batch.setRetailPrice(product.getRetailPrice());
+                    batch.setWholesalePrice(product.getWholeSalePrice());
                     batch.setSupplier(purchaseRequest.getSupId());
                     batch.setPurchaseDate(purchaseRequest.getInvoiceDate());
                     batch.setInvoiceNumber(purchaseRequest.getInvoiceNumber());
                     batch.fillNew("ADMIN USER");
-                    batchRepository.save(batch);
+                    Batch savedBatch = batchRepository.save(batch);
+                    // Update batch into purchase details
+                    productBatch.setBatch(savedBatch);
+                }else{
+                    // Update batch into purchase details
+                    productBatch.setBatch(batchByBatchNumberAndSku.get());
                 }
-
+                productBatchRepository.save(productBatch);
 
                 // Update inventory
                 Optional<Inventory> inventoryBySkuAndBatchId = inventoryRepository.findBySkuAndBatchNumber(byProductIdAndSku.getSku(), product.getBatchNo());
@@ -225,18 +238,6 @@ public class PurchaseServiceImpl implements IPurchaseService {
                     inventory.setQty(product.getRemainingQty());
                     inventoryRepository.save(inventory);
                 }
-
-//                //Stock management logic
-//
-//                Double currentTotalQty = byProductIdAndSku.getRemainingQty() + product.getRemainingQty();
-//                Double remainingTotalCost = byProductIdAndSku.getCost() * byProductIdAndSku.getRemainingQty();
-//                Double currentTotalCost = product.getCost() * product.getRemainingQty();
-//                Double totalCost = remainingTotalCost + currentTotalCost;
-//                Double CurrentUnitPrice = totalCost / currentTotalQty;
-//                byProductIdAndSku.setCost(CurrentUnitPrice);
-//                byProductIdAndSku.setRemainingQty(currentTotalQty);
-//                productRepository.save(byProductIdAndSku);
-
                 return byProductIdAndSku;
             } else {
                 throw new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND);

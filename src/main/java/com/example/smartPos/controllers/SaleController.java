@@ -1,26 +1,29 @@
 package com.example.smartPos.controllers;
 
-import com.example.smartPos.controllers.requests.CustomerRequest;
-import com.example.smartPos.controllers.responses.CustomerResponse;
-import com.example.smartPos.services.ICustomerService;
+import com.example.smartPos.controllers.requests.SaleRequest;
+import com.example.smartPos.controllers.responses.ProductResponse;
+import com.example.smartPos.controllers.responses.SaleResponse;
+import com.example.smartPos.services.ISaleService;
+import com.example.smartPos.util.ResponseCreator;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/sale")
 public class SaleController {
 
-    ICustomerService customerService;
-    public SaleController(ICustomerService customerService) {
-        this.customerService = customerService;
+    private final ISaleService saleService;
+
+    public SaleController(ISaleService saleService) {
+        this.saleService = saleService;
     }
 
-    @GetMapping(path = "/api/getAllSale")
-    public List<CustomerResponse> getAllCustomers() {
-        List<CustomerResponse> customerResponse = customerService.getAllCustomers();
-        return customerResponse;
-    }
+
+//    @GetMapping(path = "/api/getAllSale")
+//    public List<CustomerResponse> getAllCustomers() {
+//        List<CustomerResponse> customerResponse = customerService.getAllCustomers();
+//        return customerResponse;
+//    }
 
 //    @GetMapping(path = "/api/getCustomerById")
 //    public CustomerResponse getCustomerById(Integer customerId) {
@@ -29,13 +32,14 @@ public class SaleController {
 //    }
 
     @PostMapping(path = "/api/createSale")
-    public void createCustomer(@RequestBody CustomerRequest customerRequest) {
-        customerService.createCustomer(customerRequest);
+    public ResponseEntity<SaleResponse> createSale(@RequestBody SaleRequest saleRequest) {
+        SaleResponse saleResponse = saleService.createSale(saleRequest);
+        return ResponseCreator.success(saleResponse);
     }
 
-    @PostMapping(path = "/api/updateCustomer")
-    public void updateCustomer(@RequestBody CustomerRequest customerRequest) {
-        customerService.updateCustomer(customerRequest);
-    }
+//    @PostMapping(path = "/api/updateCustomer")
+//    public void updateCustomer(@RequestBody CustomerRequest customerRequest) {
+//        customerService.updateCustomer(customerRequest);
+//    }
 
 }

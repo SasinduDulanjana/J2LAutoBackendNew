@@ -26,7 +26,7 @@ public class PurchaseResponse extends CommonResponse {
 
     private String productType;
 
-    private List<Product> products;
+    private List<ProductResponse> products;
 
     private Integer status;
 
@@ -121,11 +121,11 @@ public class PurchaseResponse extends CommonResponse {
         this.productType = productType;
     }
 
-    public List<Product> getProducts() {
+    public List<ProductResponse> getProducts() {
         return products;
     }
 
-    public void setProducts(List<Product> products) {
+    public void setProducts(List<ProductResponse> products) {
         this.products = products;
     }
 

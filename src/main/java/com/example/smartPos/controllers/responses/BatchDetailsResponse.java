@@ -7,7 +7,11 @@ public class BatchDetailsResponse extends CommonResponse {
 
     private String batchNumber;
 
-    private Double price;
+    private Double unitCost;
+
+    private Double retailPrice;
+
+    private Double wholesalePrice;
 
     private Integer supplier;
 
@@ -39,14 +43,6 @@ public class BatchDetailsResponse extends CommonResponse {
         this.batchNumber = batchNumber;
     }
 
-    public Double getPrice() {
-        return price;
-    }
-
-    public void setPrice(Double price) {
-        this.price = price;
-    }
-
     public Integer getSupplier() {
         return supplier;
     }
@@ -69,5 +65,29 @@ public class BatchDetailsResponse extends CommonResponse {
 
     public void setInvoiceNumber(String invoiceNumber) {
         this.invoiceNumber = invoiceNumber;
+    }
+
+    public Double getUnitCost() {
+        return unitCost;
+    }
+
+    public void setUnitCost(Double unitCost) {
+        this.unitCost = unitCost;
+    }
+
+    public Double getRetailPrice() {
+        return retailPrice;
+    }
+
+    public void setRetailPrice(Double retailPrice) {
+        this.retailPrice = retailPrice;
+    }
+
+    public Double getWholesalePrice() {
+        return wholesalePrice;
+    }
+
+    public void setWholesalePrice(Double wholesalePrice) {
+        this.wholesalePrice = wholesalePrice;
     }
 }

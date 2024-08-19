@@ -20,5 +20,4 @@ public interface ISaleService {
 
     SaleResponse createSale(SaleRequest saleRequest);
 
-//    void updateCustomer(CustomerRequest customerRequest);
 }

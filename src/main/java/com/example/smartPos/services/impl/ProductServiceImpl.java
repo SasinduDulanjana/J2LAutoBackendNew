@@ -271,8 +271,8 @@ public class ProductServiceImpl implements IProductService {
         saveProduct.setProductStatus(productRequest.getProductStatus());
         saveProduct.setDescription(productRequest.getDescription());
         saveProduct.setStockManagementEnable(productRequest.getStockManagementEnable());
-        saveProduct.setSalePrice(productRequest.getSalePrice());
-        saveProduct.setWholeSalePrice(productRequest.getWholeSalePrice());
+//        saveProduct.setSalePrice(productRequest.getSalePrice());
+//        saveProduct.setWholeSalePrice(productRequest.getWholeSalePrice());
         saveProduct.setLowQty(productRequest.getLowQty());
         saveProduct.setExpDateAvailable(productRequest.getExpDateAvailable());
         saveProduct.setExpDate(productRequest.getExpDate());
@@ -303,8 +303,8 @@ public class ProductServiceImpl implements IProductService {
             product.setProductStatus(productRequest.getProductStatus());
             product.setDescription(productRequest.getDescription());
             product.setStockManagementEnable(productRequest.getStockManagementEnable());
-            product.setSalePrice(productRequest.getSalePrice());
-            product.setWholeSalePrice(productRequest.getWholeSalePrice());
+//            product.setSalePrice(productRequest.getSalePrice());
+//            product.setWholeSalePrice(productRequest.getWholeSalePrice());
             product.setLowQty(productRequest.getLowQty());
             product.setExpDateAvailable(productRequest.getExpDateAvailable());
             product.setExpDate(productRequest.getExpDate());
@@ -349,7 +349,7 @@ public class ProductServiceImpl implements IProductService {
             batchDetails.setBatchId(batch.getBatchId());
             batchDetails.setBatchNumber(batch.getBatchNumber());
             batchDetails.setSku(batch.getSku());
-            batchDetails.setPrice(batch.getPrice());
+            batchDetails.setUnitCost(batch.getUnitCost());
             batchDetails.setSupplier(batch.getSupplier());
             batchDetails.setInvoiceNumber(batch.getInvoiceNumber());
             batchDetails.setPurchaseDate(batch.getPurchaseDate());

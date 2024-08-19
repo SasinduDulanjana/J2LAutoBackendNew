@@ -26,9 +26,10 @@ public class PurchaseRequest {
 
     private String productType;
 
-    private List<Product> products;
+    private List<ProductRequest> products;
 
     private Integer status;
+
 
     //    @NotNull
 //    @Size(min = 1, max = 50)
@@ -121,11 +122,11 @@ public class PurchaseRequest {
         this.productType = productType;
     }
 
-    public List<Product> getProducts() {
+    public List<ProductRequest> getProducts() {
         return products;
     }
 
-    public void setProducts(List<Product> products) {
+    public void setProducts(List<ProductRequest> products) {
         this.products = products;
     }
 

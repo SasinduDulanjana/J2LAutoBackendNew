@@ -3,17 +3,20 @@ package com.example.smartPos.services.impl;
 import com.example.smartPos.controllers.requests.SaleRequest;
 import com.example.smartPos.controllers.responses.SaleResponse;
 import com.example.smartPos.exception.ResourceNotFoundException;
+import com.example.smartPos.repositories.InventoryRepository;
 import com.example.smartPos.repositories.ProductRepository;
 import com.example.smartPos.repositories.SaleRepository;
+import com.example.smartPos.repositories.model.Inventory;
 import com.example.smartPos.repositories.model.Product;
 import com.example.smartPos.repositories.model.Sale;
 import com.example.smartPos.services.ISaleService;
 import com.example.smartPos.util.ErrorCodes;
-import com.example.smartPos.util.ProductConstants;
+import com.example.smartPos.util.SaleConstants;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class SaleServiceImpl implements ISaleService {
@@ -22,9 +25,12 @@ public class SaleServiceImpl implements ISaleService {
 
     private final ProductRepository productRepository;
 
-    public SaleServiceImpl(SaleRepository saleRepository, ProductRepository productRepository) {
+    private final InventoryRepository inventoryRepository;
+
+    public SaleServiceImpl(SaleRepository saleRepository, ProductRepository productRepository, InventoryRepository inventoryRepository) {
         this.saleRepository = saleRepository;
         this.productRepository = productRepository;
+        this.inventoryRepository = inventoryRepository;
     }
 
     @Override
@@ -134,35 +140,38 @@ public class SaleServiceImpl implements ISaleService {
         saleResponse.setTotalAmount(savedOrder.getTotalAmount());
         saleResponse.setInvoiceNumber(savedOrder.getInvoiceNumber());
         saleResponse.setProducts(savedOrder.getProducts());
-        saleResponse.setStatusCode(ProductConstants.STATUS_201);
-        saleResponse.setDesc(ProductConstants.MESSAGE_201);
+        saleResponse.setStatusCode(SaleConstants.STATUS_201);
+        saleResponse.setDesc(SaleConstants.MESSAGE_201);
         return saleResponse;
     }
 
     private Sale getSavedOrder(SaleRequest saleRequest) {
-        Sale saveOrder = new Sale();
-        saveOrder.setCustId(saleRequest.getCustId());
-        saveOrder.setUserId(saleRequest.getUserId());
-        saveOrder.setSaleDate(saleRequest.getOrderDate());
-        saveOrder.setTotalAmount(saleRequest.getTotalAmount());
-        saveOrder.setInvoiceNumber(saleRequest.getInvoiceNumber());
-        saveOrder.fillNew("ADMIN USER");
-        List<Product> products = saleRequest.getProducts().stream().map(product -> {
+        Sale saveSale = new Sale();
+        saveSale.setCustId(saleRequest.getCustId());
+        saveSale.setUserId(saleRequest.getUserId());
+        saveSale.setInvoiceNumber(saleRequest.getInvoiceNumber());
+        saveSale.setSaleDate(saleRequest.getOrderDate());
+        saveSale.setTotalAmount(saleRequest.getTotalAmount());
+        saveSale.fillNew("ADMIN USER");
+        List<Product> products = saleRequest.getSoldProducts().stream().map(product -> {
             if (product.getProductId() != null) {
                 Product byProductIdAndSku = productRepository.findByProductIdAndSku(product.getProductId(), product.getSku());
 
-                //Stock management logic
-                Double currentTotalQty = byProductIdAndSku.getRemainingQty() - product.getRemainingQty();
-                byProductIdAndSku.setRemainingQty(currentTotalQty);
-                productRepository.save(byProductIdAndSku);
-
+                // Update inventory
+                Optional<Inventory> inventoryBySkuAndBatchNumber = inventoryRepository.findBySkuAndBatchNumber(byProductIdAndSku.getSku(), product.getBatchNo());
+                //if inventory already exist update the qty
+                if (inventoryBySkuAndBatchNumber.isPresent()) {
+                    inventoryBySkuAndBatchNumber.get().setQty(inventoryBySkuAndBatchNumber.get().getQty() - product.getRemainingQty());
+                } else {
+                    throw new ResourceNotFoundException(ErrorCodes.INVENTORY_NOT_FOUND);
+                }
                 return byProductIdAndSku;
             } else {
                 throw new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND);
             }
         }).toList();
-        saveOrder.setProducts(products);
-        return saveOrder;
+        saveSale.setProducts(products);
+        return saveSale;
     }
 
 }

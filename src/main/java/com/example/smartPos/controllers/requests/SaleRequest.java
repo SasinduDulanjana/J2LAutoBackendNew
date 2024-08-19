@@ -15,7 +15,7 @@ public class SaleRequest {
 
     private String invoiceNumber;
 
-    private List<Product> products;
+    private List<ProductRequest> soldProducts;
 
     public Integer getOrderId() {
         return orderId;
@@ -65,11 +65,11 @@ public class SaleRequest {
         this.invoiceNumber = invoiceNumber;
     }
 
-    public List<Product> getProducts() {
-        return products;
+    public List<ProductRequest> getSoldProducts() {
+        return soldProducts;
     }
 
-    public void setProducts(List<Product> products) {
-        this.products = products;
+    public void setSoldProducts(List<ProductRequest> soldProducts) {
+        this.soldProducts = soldProducts;
     }
 }

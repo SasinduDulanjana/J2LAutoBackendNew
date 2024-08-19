@@ -28,9 +28,9 @@ public class ProductRequest {
 
     private Boolean isStockManagementEnable;
 
-    private String salePrice;
+    private Double retailPrice;
 
-    private String wholeSalePrice;
+    private Double wholeSalePrice;
 
     private String lowQty;
 
@@ -46,7 +46,11 @@ public class ProductRequest {
 
     private String batchNo;
 
+    private Double cost;
+
     private Integer status;
+
+    private Double remainingQty;
 
     //    @NotNull
 //    @Size(min = 1, max = 50)
@@ -155,19 +159,19 @@ public class ProductRequest {
         isStockManagementEnable = stockManagementEnable;
     }
 
-    public String getSalePrice() {
-        return salePrice;
+    public Double getRetailPrice() {
+        return retailPrice;
     }
 
-    public void setSalePrice(String salePrice) {
-        this.salePrice = salePrice;
+    public void setRetailPrice(Double retailPrice) {
+        this.retailPrice = retailPrice;
     }
 
-    public String getWholeSalePrice() {
+    public Double getWholeSalePrice() {
         return wholeSalePrice;
     }
 
-    public void setWholeSalePrice(String wholeSalePrice) {
+    public void setWholeSalePrice(Double wholeSalePrice) {
         this.wholeSalePrice = wholeSalePrice;
     }
 
@@ -233,5 +237,21 @@ public class ProductRequest {
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public Double getRemainingQty() {
+        return remainingQty;
+    }
+
+    public void setRemainingQty(Double remainingQty) {
+        this.remainingQty = remainingQty;
+    }
+
+    public Double getCost() {
+        return cost;
+    }
+
+    public void setCost(Double cost) {
+        this.cost = cost;
     }
 }

@@ -34,7 +34,9 @@ public enum ErrorCodes {
     INVOICE_NUMBER_NOT_FOUND_FOR_ORDER("68", "Invoice Number doesn't exist"),
     ORDER_NOT_FOUND("69", "Order doesn't exist"),
 
-    USER_NAME_NOT_FOUND("79", "Username Not Found");
+    USER_NAME_NOT_FOUND("79", "Username Not Found"),
+
+    INVENTORY_NOT_FOUND("89", "Inventory Not Found");;
 
     public final String code;
     public final String description;
