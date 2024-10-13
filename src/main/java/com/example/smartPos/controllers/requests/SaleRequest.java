@@ -1,6 +1,6 @@
 package com.example.smartPos.controllers.requests;
 
-import com.example.smartPos.repositories.model.Product;
+import com.example.smartPos.repositories.model.SaleProduct;
 import lombok.Data;
 
 import java.util.List;
@@ -11,11 +11,18 @@ public class SaleRequest {
     private Integer custId;
     private Integer userId;
     private String orderDate;
-    private String totalAmount;
+    private Double totalAmount;
 
+    private Double subTotal;
+
+    private Double billWiseDiscountPercentage;
+
+    private Double billWiseDiscountTotalAmount;
+
+    private Double lineWiseDiscountTotalAmount;
     private String invoiceNumber;
 
-    private List<ProductRequest> soldProducts;
+    private List<SaleProduct> soldProducts;
 
     public Integer getOrderId() {
         return orderId;
@@ -49,11 +56,11 @@ public class SaleRequest {
         this.orderDate = orderDate;
     }
 
-    public String getTotalAmount() {
+    public Double getTotalAmount() {
         return totalAmount;
     }
 
-    public void setTotalAmount(String totalAmount) {
+    public void setTotalAmount(Double totalAmount) {
         this.totalAmount = totalAmount;
     }
 
@@ -65,11 +72,43 @@ public class SaleRequest {
         this.invoiceNumber = invoiceNumber;
     }
 
-    public List<ProductRequest> getSoldProducts() {
+    public List<SaleProduct> getSoldProducts() {
         return soldProducts;
     }
 
-    public void setSoldProducts(List<ProductRequest> soldProducts) {
+    public void setSoldProducts(List<SaleProduct> soldProducts) {
         this.soldProducts = soldProducts;
+    }
+
+    public Double getSubTotal() {
+        return subTotal;
+    }
+
+    public void setSubTotal(Double subTotal) {
+        this.subTotal = subTotal;
+    }
+
+    public Double getBillWiseDiscountPercentage() {
+        return billWiseDiscountPercentage;
+    }
+
+    public void setBillWiseDiscountPercentage(Double billWiseDiscountPercentage) {
+        this.billWiseDiscountPercentage = billWiseDiscountPercentage;
+    }
+
+    public Double getBillWiseDiscountTotalAmount() {
+        return billWiseDiscountTotalAmount;
+    }
+
+    public void setBillWiseDiscountTotalAmount(Double billWiseDiscountTotalAmount) {
+        this.billWiseDiscountTotalAmount = billWiseDiscountTotalAmount;
+    }
+
+    public Double getLineWiseDiscountTotalAmount() {
+        return lineWiseDiscountTotalAmount;
+    }
+
+    public void setLineWiseDiscountTotalAmount(Double lineWiseDiscountTotalAmount) {
+        this.lineWiseDiscountTotalAmount = lineWiseDiscountTotalAmount;
     }
 }

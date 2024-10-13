@@ -20,17 +20,19 @@ public class Sale {
 
     private String saleDate;
 
-    private String totalAmount;
+    private Double totalAmount;
 
+    private Double subTotal;
+
+    private Double billWiseDiscountPercentage;
+
+    private Double billWiseDiscountTotalAmount;
+
+    private Double lineWiseDiscountTotalAmount;
     private String invoiceNumber;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-            name = "SALE_PRODUCT",
-            joinColumns = @JoinColumn(name = "SALE_ID"),
-            inverseJoinColumns = @JoinColumn(name = "PRODUCT_ID")
-    )
-    private List<Product> products;
+    @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL)
+    private List<SaleProduct> saleProducts;
 
     //    @NotNull
 //    @Size(min = 1, max = 50)
@@ -95,20 +97,12 @@ public class Sale {
         this.saleDate = saleDate;
     }
 
-    public String getTotalAmount() {
+    public Double getTotalAmount() {
         return totalAmount;
     }
 
-    public void setTotalAmount(String totalAmount) {
+    public void setTotalAmount(Double totalAmount) {
         this.totalAmount = totalAmount;
-    }
-
-    public List<Product> getProducts() {
-        return products;
-    }
-
-    public void setProducts(List<Product> products) {
-        this.products = products;
     }
 
     public String getInvoiceNumber() {
@@ -117,5 +111,45 @@ public class Sale {
 
     public void setInvoiceNumber(String invoiceNumber) {
         this.invoiceNumber = invoiceNumber;
+    }
+
+    public Double getSubTotal() {
+        return subTotal;
+    }
+
+    public void setSubTotal(Double subTotal) {
+        this.subTotal = subTotal;
+    }
+
+    public Double getBillWiseDiscountPercentage() {
+        return billWiseDiscountPercentage;
+    }
+
+    public void setBillWiseDiscountPercentage(Double billWiseDiscountPercentage) {
+        this.billWiseDiscountPercentage = billWiseDiscountPercentage;
+    }
+
+    public Double getBillWiseDiscountTotalAmount() {
+        return billWiseDiscountTotalAmount;
+    }
+
+    public void setBillWiseDiscountTotalAmount(Double billWiseDiscountTotalAmount) {
+        this.billWiseDiscountTotalAmount = billWiseDiscountTotalAmount;
+    }
+
+    public Double getLineWiseDiscountTotalAmount() {
+        return lineWiseDiscountTotalAmount;
+    }
+
+    public void setLineWiseDiscountTotalAmount(Double lineWiseDiscountTotalAmount) {
+        this.lineWiseDiscountTotalAmount = lineWiseDiscountTotalAmount;
+    }
+
+    public List<SaleProduct> getSaleProducts() {
+        return saleProducts;
+    }
+
+    public void setSaleProducts(List<SaleProduct> saleProducts) {
+        this.saleProducts = saleProducts;
     }
 }

@@ -5,10 +5,12 @@ import com.example.smartPos.controllers.responses.SaleResponse;
 import com.example.smartPos.exception.ResourceNotFoundException;
 import com.example.smartPos.repositories.InventoryRepository;
 import com.example.smartPos.repositories.ProductRepository;
+import com.example.smartPos.repositories.SaleProductRepository;
 import com.example.smartPos.repositories.SaleRepository;
 import com.example.smartPos.repositories.model.Inventory;
 import com.example.smartPos.repositories.model.Product;
 import com.example.smartPos.repositories.model.Sale;
+import com.example.smartPos.repositories.model.SaleProduct;
 import com.example.smartPos.services.ISaleService;
 import com.example.smartPos.util.ErrorCodes;
 import com.example.smartPos.util.SaleConstants;
@@ -23,12 +25,15 @@ public class SaleServiceImpl implements ISaleService {
 
     private final SaleRepository saleRepository;
 
+    private final SaleProductRepository saleProductRepository;
+
     private final ProductRepository productRepository;
 
     private final InventoryRepository inventoryRepository;
 
-    public SaleServiceImpl(SaleRepository saleRepository, ProductRepository productRepository, InventoryRepository inventoryRepository) {
+    public SaleServiceImpl(SaleRepository saleRepository, SaleProductRepository saleProductRepository, ProductRepository productRepository, InventoryRepository inventoryRepository) {
         this.saleRepository = saleRepository;
+        this.saleProductRepository = saleProductRepository;
         this.productRepository = productRepository;
         this.inventoryRepository = inventoryRepository;
     }
@@ -43,7 +48,7 @@ public class SaleServiceImpl implements ISaleService {
             saleResponse.setSaleDate(sale.getSaleDate());
             saleResponse.setTotalAmount(sale.getTotalAmount());
             saleResponse.setInvoiceNumber(sale.getInvoiceNumber());
-            saleResponse.setProducts(sale.getProducts());
+            saleResponse.setProducts(sale.getSaleProducts());
             return saleResponse;
         }).toList();
     }
@@ -58,7 +63,7 @@ public class SaleServiceImpl implements ISaleService {
             saleResponse.setSaleDate(sale.getSaleDate());
             saleResponse.setTotalAmount(sale.getTotalAmount());
             saleResponse.setInvoiceNumber(sale.getInvoiceNumber());
-            saleResponse.setProducts(sale.getProducts());
+            saleResponse.setProducts(sale.getSaleProducts());
             return saleResponse;
         }).toList();
     }
@@ -73,7 +78,7 @@ public class SaleServiceImpl implements ISaleService {
             saleResponse.setSaleDate(sale.getSaleDate());
             saleResponse.setTotalAmount(sale.getTotalAmount());
             saleResponse.setInvoiceNumber(sale.getInvoiceNumber());
-            saleResponse.setProducts(sale.getProducts());
+            saleResponse.setProducts(sale.getSaleProducts());
             return saleResponse;
         }).toList();
     }
@@ -88,7 +93,7 @@ public class SaleServiceImpl implements ISaleService {
             saleResponse.setSaleDate(sale.getSaleDate());
             saleResponse.setTotalAmount(sale.getTotalAmount());
             saleResponse.setInvoiceNumber(sale.getInvoiceNumber());
-            saleResponse.setProducts(sale.getProducts());
+            saleResponse.setProducts(sale.getSaleProducts());
             return saleResponse;
         }).toList();
     }
@@ -105,7 +110,7 @@ public class SaleServiceImpl implements ISaleService {
         saleResponse.setSaleDate(order.getSaleDate());
         saleResponse.setTotalAmount(order.getTotalAmount());
         saleResponse.setInvoiceNumber(order.getInvoiceNumber());
-        saleResponse.setProducts(order.getProducts());
+        saleResponse.setProducts(order.getSaleProducts());
         return saleResponse;
     }
 
@@ -121,7 +126,7 @@ public class SaleServiceImpl implements ISaleService {
         saleResponse.setSaleDate(order.getSaleDate());
         saleResponse.setTotalAmount(order.getTotalAmount());
         saleResponse.setInvoiceNumber(order.getInvoiceNumber());
-        saleResponse.setProducts(order.getProducts());
+        saleResponse.setProducts(order.getSaleProducts());
         return saleResponse;
     }
 
@@ -130,7 +135,50 @@ public class SaleServiceImpl implements ISaleService {
     @Transactional
     public SaleResponse createSale(SaleRequest saleRequest) {
 
-        Sale savedOrder = saleRepository.save(getSavedOrder(saleRequest));
+        Sale saveSale = new Sale();
+        saveSale.setCustId(saleRequest.getCustId());
+        saveSale.setUserId(saleRequest.getUserId());
+        saveSale.setInvoiceNumber(saleRequest.getInvoiceNumber());
+        saveSale.setSaleDate(saleRequest.getOrderDate());
+        saveSale.setSubTotal(saleRequest.getSubTotal());
+        saveSale.setTotalAmount(saleRequest.getTotalAmount());
+        saveSale.setLineWiseDiscountTotalAmount(saleRequest.getLineWiseDiscountTotalAmount());
+        saveSale.setBillWiseDiscountPercentage(saleRequest.getBillWiseDiscountPercentage());
+        saveSale.setBillWiseDiscountTotalAmount(saleRequest.getBillWiseDiscountTotalAmount());
+        saveSale.fillNew("ADMIN USER");
+
+        List<SaleProduct> saleProductList = saleRequest.getSoldProducts().stream().map(soldProduct -> {
+            if (soldProduct.getProduct().getProductId() != null) {
+                Product byProductIdAndSku = productRepository.findByProductIdAndSku(soldProduct.getProduct().getProductId(), soldProduct.getProduct().getSku());
+
+                if (byProductIdAndSku == null) {
+                    throw new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND);
+                }
+                // Find and update inventory by SKU and batch number
+                Inventory inventory = inventoryRepository.findBySkuAndBatchNumber(byProductIdAndSku.getSku(), soldProduct.getProduct().getBatchNo())
+                        .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.INVENTORY_NOT_FOUND));
+
+                inventory.setQty(inventory.getQty() - soldProduct.getProduct().getRemainingQty());
+                inventoryRepository.save(inventory);
+
+                SaleProduct saleProduct = new SaleProduct();
+                saleProduct.setSale(saveSale);
+                saleProduct.setProduct(byProductIdAndSku);
+                saleProduct.setQuantity(soldProduct.getQuantity());
+                saleProduct.setDiscountAmount(soldProduct.getDiscountAmount());
+                saleProduct.setDiscountPercentage(soldProduct.getDiscountPercentage());
+                saleProduct.setDiscountedTotal(soldProduct.getDiscountedTotal());
+                return saleProduct;
+            } else {
+                throw new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND);
+            }
+        }).toList();
+
+        // Set SaleProducts in the Sale object
+        saveSale.setSaleProducts(saleProductList);
+        // Save the Sale along with SaleProducts in one go
+        Sale savedOrder = saleRepository.save(saveSale);
+
 
         SaleResponse saleResponse = new SaleResponse();
         saleResponse.setSaleId(savedOrder.getSaleId());
@@ -139,39 +187,10 @@ public class SaleServiceImpl implements ISaleService {
         saleResponse.setSaleDate(savedOrder.getSaleDate());
         saleResponse.setTotalAmount(savedOrder.getTotalAmount());
         saleResponse.setInvoiceNumber(savedOrder.getInvoiceNumber());
-        saleResponse.setProducts(savedOrder.getProducts());
+        saleResponse.setProducts(savedOrder.getSaleProducts());
         saleResponse.setStatusCode(SaleConstants.STATUS_201);
         saleResponse.setDesc(SaleConstants.MESSAGE_201);
         return saleResponse;
-    }
-
-    private Sale getSavedOrder(SaleRequest saleRequest) {
-        Sale saveSale = new Sale();
-        saveSale.setCustId(saleRequest.getCustId());
-        saveSale.setUserId(saleRequest.getUserId());
-        saveSale.setInvoiceNumber(saleRequest.getInvoiceNumber());
-        saveSale.setSaleDate(saleRequest.getOrderDate());
-        saveSale.setTotalAmount(saleRequest.getTotalAmount());
-        saveSale.fillNew("ADMIN USER");
-        List<Product> products = saleRequest.getSoldProducts().stream().map(product -> {
-            if (product.getProductId() != null) {
-                Product byProductIdAndSku = productRepository.findByProductIdAndSku(product.getProductId(), product.getSku());
-
-                // Update inventory
-                Optional<Inventory> inventoryBySkuAndBatchNumber = inventoryRepository.findBySkuAndBatchNumber(byProductIdAndSku.getSku(), product.getBatchNo());
-                //if inventory already exist update the qty
-                if (inventoryBySkuAndBatchNumber.isPresent()) {
-                    inventoryBySkuAndBatchNumber.get().setQty(inventoryBySkuAndBatchNumber.get().getQty() - product.getRemainingQty());
-                } else {
-                    throw new ResourceNotFoundException(ErrorCodes.INVENTORY_NOT_FOUND);
-                }
-                return byProductIdAndSku;
-            } else {
-                throw new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND);
-            }
-        }).toList();
-        saveSale.setProducts(products);
-        return saveSale;
     }
 
 }

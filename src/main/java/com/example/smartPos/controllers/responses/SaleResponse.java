@@ -1,17 +1,12 @@
 package com.example.smartPos.controllers.responses;
 
-import com.example.smartPos.controllers.requests.SoldProductRequest;
-import com.example.smartPos.repositories.model.Product;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
+import com.example.smartPos.repositories.model.SaleProduct;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-public class SaleResponse extends CommonResponse{
+public class SaleResponse extends CommonResponse {
     private Integer saleId;
 
     private Integer custId;
@@ -20,11 +15,19 @@ public class SaleResponse extends CommonResponse{
 
     private String saleDate;
 
-    private String totalAmount;
+    private Double totalAmount;
+
+    private Double subTotal;
+
+    private Double billWiseDiscountPercentage;
+
+    private Double billWiseDiscountTotalAmount;
+
+    private Double lineWiseDiscountTotalAmount;
 
     private String invoiceNumber;
 
-    private List<Product> soldProducts;
+    private List<SaleProduct> soldProducts;
 
     public Integer getSaleId() {
         return saleId;
@@ -58,11 +61,11 @@ public class SaleResponse extends CommonResponse{
         this.saleDate = saleDate;
     }
 
-    public String getTotalAmount() {
+    public Double getTotalAmount() {
         return totalAmount;
     }
 
-    public void setTotalAmount(String totalAmount) {
+    public void setTotalAmount(Double totalAmount) {
         this.totalAmount = totalAmount;
     }
 
@@ -74,11 +77,51 @@ public class SaleResponse extends CommonResponse{
         this.invoiceNumber = invoiceNumber;
     }
 
-    public List<Product> getProducts() {
+    public List<SaleProduct> getProducts() {
         return soldProducts;
     }
 
-    public void setProducts(List<Product> products) {
+    public void setProducts(List<SaleProduct> products) {
+        this.soldProducts = soldProducts;
+    }
+
+    public Double getSubTotal() {
+        return subTotal;
+    }
+
+    public void setSubTotal(Double subTotal) {
+        this.subTotal = subTotal;
+    }
+
+    public Double getBillWiseDiscountPercentage() {
+        return billWiseDiscountPercentage;
+    }
+
+    public void setBillWiseDiscountPercentage(Double billWiseDiscountPercentage) {
+        this.billWiseDiscountPercentage = billWiseDiscountPercentage;
+    }
+
+    public Double getBillWiseDiscountTotalAmount() {
+        return billWiseDiscountTotalAmount;
+    }
+
+    public void setBillWiseDiscountTotalAmount(Double billWiseDiscountTotalAmount) {
+        this.billWiseDiscountTotalAmount = billWiseDiscountTotalAmount;
+    }
+
+    public Double getLineWiseDiscountTotalAmount() {
+        return lineWiseDiscountTotalAmount;
+    }
+
+    public void setLineWiseDiscountTotalAmount(Double lineWiseDiscountTotalAmount) {
+        this.lineWiseDiscountTotalAmount = lineWiseDiscountTotalAmount;
+    }
+
+    public List<SaleProduct> getSoldProducts() {
+        return soldProducts;
+    }
+
+    public void setSoldProducts(List<SaleProduct> soldProducts) {
         this.soldProducts = soldProducts;
     }
 }

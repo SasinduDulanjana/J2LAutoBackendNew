@@ -208,6 +208,7 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     public ProductResponse getProductByBarcodeOrSku(String barCodeOrSku) {
+
         Product product = productRepository.findByBarcodeOrSku(barCodeOrSku, barCodeOrSku).orElseThrow(
                 () -> new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND)
         );
