@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CustomerServiceImpl implements ICustomerService {
@@ -111,5 +112,19 @@ public class CustomerServiceImpl implements ICustomerService {
             updatedCustomerResponse.setEmail(updatedCustomer.getEmail());
         }
         return updatedCustomerResponse;
+    }
+
+    public List<CustomerResponse> getCustomersByPhoneNumber(String phoneNumber) {
+        List<Customer> customers = customerRepository.findByPhoneContaining(phoneNumber);
+        List<CustomerResponse> customerDtos = customers.stream()
+                .map(customer -> {
+                    CustomerResponse customerResponse = new CustomerResponse();
+                    customerResponse.setCustId(customer.getCustId());
+                    customerResponse.setPhone(customer.getPhone());
+                    customerResponse.setName(customer.getName());
+                    return customerResponse;
+                }).toList();
+
+        return customerDtos;
     }
 }

@@ -20,4 +20,6 @@ public interface ISaleService {
 
     SaleResponse createSale(SaleRequest saleRequest);
 
+    String generateInvoiceNumber();
+
 }

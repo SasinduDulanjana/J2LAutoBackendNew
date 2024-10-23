@@ -37,6 +37,11 @@ public class SaleController {
         return ResponseCreator.success(saleResponse);
     }
 
+    @GetMapping(path = "/api/getInvoiceNumber")
+    public String getInvoiceNumber() {
+        return saleService.generateInvoiceNumber();
+    }
+
 //    @PostMapping(path = "/api/updateCustomer")
 //    public void updateCustomer(@RequestBody CustomerRequest customerRequest) {
 //        customerService.updateCustomer(customerRequest);

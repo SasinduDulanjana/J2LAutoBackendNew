@@ -18,4 +18,6 @@ public interface SaleRepository extends JpaRepository<Sale, Integer> {
 
     Optional<Sale> findByInvoiceNumber(String invoiceNumber);
 
+    Sale findTopByOrderBySaleIdDesc();
+
 }
