@@ -1,5 +1,6 @@
 package com.example.smartPos.repositories.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -14,6 +15,7 @@ public class SaleProduct {
 
     @ManyToOne
     @JoinColumn(name = "SALE_ID")
+    @JsonBackReference
     private Sale sale;
 
     @ManyToOne

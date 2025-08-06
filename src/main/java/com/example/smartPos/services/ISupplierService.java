@@ -15,4 +15,6 @@ public interface ISupplierService {
     SupplierResponse createSupplier(SupplierRequest supplierRequest);
 
     SupplierResponse updateSupplier(SupplierRequest supplierRequest);
+
+    void deletSupplier(Integer supId);
 }

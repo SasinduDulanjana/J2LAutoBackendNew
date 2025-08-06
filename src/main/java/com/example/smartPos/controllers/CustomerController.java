@@ -1,6 +1,7 @@
 package com.example.smartPos.controllers;
 
 import com.example.smartPos.controllers.requests.CustomerRequest;
+import com.example.smartPos.controllers.requests.SaleRequest;
 import com.example.smartPos.controllers.responses.CommonResponse;
 import com.example.smartPos.controllers.responses.CustomerResponse;
 import com.example.smartPos.repositories.model.Customer;
@@ -53,5 +54,11 @@ public class CustomerController {
     @GetMapping("/api/getCustomersByPhone/{mobileNo}")
     public List<CustomerResponse> getCustomersByPhone(@PathVariable String mobileNo) {
         return customerService.getCustomersByPhoneNumber(mobileNo);
+    }
+
+    @PostMapping(path = "/api/deleteCustomer")
+    public void deletedCustomer(@RequestBody CustomerRequest request) {
+        customerService.deletCustomer(request.getCustId());
+        System.out.println("OK");
     }
 }

@@ -36,7 +36,8 @@ public enum ErrorCodes {
 
     USER_NAME_NOT_FOUND("79", "Username Not Found"),
 
-    INVENTORY_NOT_FOUND("89", "Inventory Not Found");;
+    INVENTORY_NOT_FOUND("89", "Inventory Not Found"),
+    SALE_NOT_FOUND("88", "Sale Not Found");
 
     public final String code;
     public final String description;

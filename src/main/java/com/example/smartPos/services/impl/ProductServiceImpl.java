@@ -6,8 +6,11 @@ import com.example.smartPos.controllers.responses.ProductResponse;
 import com.example.smartPos.exception.AlreadyExistsException;
 import com.example.smartPos.exception.ResourceNotFoundException;
 import com.example.smartPos.repositories.BatchRepository;
+import com.example.smartPos.repositories.InventoryRepository;
 import com.example.smartPos.repositories.ProductRepository;
+import com.example.smartPos.repositories.model.Inventory;
 import com.example.smartPos.repositories.model.Product;
+import com.example.smartPos.repositories.model.Supplier;
 import com.example.smartPos.services.IProductService;
 import com.example.smartPos.util.ErrorCodes;
 import com.example.smartPos.util.ProductConstants;
@@ -23,15 +26,19 @@ public class ProductServiceImpl implements IProductService {
 
     private final BatchRepository batchRepository;
 
-    public ProductServiceImpl(ProductRepository productRepository, BatchRepository batchRepository) {
+    private final InventoryRepository inventoryRepository;
+
+    public ProductServiceImpl(ProductRepository productRepository, BatchRepository batchRepository, InventoryRepository inventoryRepository) {
         this.productRepository = productRepository;
         this.batchRepository = batchRepository;
+        this.inventoryRepository = inventoryRepository;
     }
 
     @Override
     public List<ProductResponse> getAllProducts() {
 
-        return productRepository.findAll().stream().map(product -> {
+        List<Product> productlist = productRepository.findAllByStatus(1);
+        return productlist.stream().map(product -> {
             ProductResponse prodResp = new ProductResponse();
             prodResp.setProductId(product.getProductId());
             prodResp.setCatId(product.getCatId());
@@ -357,5 +364,55 @@ public class ProductServiceImpl implements IProductService {
 
             return batchDetails;
         }).toList();
+    }
+
+    @Override
+    public List<ProductResponse> getProductsByCategory(String categoryId) {
+        List<ProductResponse> productList = productRepository.findAllByCatId(Integer.parseInt(categoryId)).stream().map(product -> {
+            ProductResponse prodResp = new ProductResponse();
+            prodResp.setProductId(product.getProductId());
+            prodResp.setCatId(product.getCatId());
+            prodResp.setProductName(product.getProductName());
+            prodResp.setBarCodeAvailable(product.getBarCodeAvailable());
+            prodResp.setBarCode(product.getBarcode());
+            prodResp.setSku(product.getSku());
+            prodResp.setBarCodeType(product.getBarCodeType());
+            prodResp.setProductType(product.getProductType());
+            prodResp.setProductStatus(product.getProductStatus());
+            prodResp.setDescription(product.getDescription());
+            prodResp.setStockManagementEnable(product.getStockManagementEnable());
+            prodResp.setSalePrice(product.getSalePrice());
+            prodResp.setWholeSalePrice(product.getWholeSalePrice());
+            prodResp.setLowQty(product.getLowQty());
+            prodResp.setExpDateAvailable(product.getExpDateAvailable());
+            prodResp.setExpDate(product.getExpDate());
+            prodResp.setTaxGroup(product.getTaxGroup());
+            prodResp.setTaxType(product.getTaxType());
+            prodResp.setImgUrl(product.getImgUrl());
+            prodResp.setBatchNo(product.getBatchNo());
+            prodResp.setStatus(product.getStatus());
+            return prodResp;
+        }).toList();
+
+        return productList;
+    }
+
+    @Override
+    public Double getAvailableQuantity(String skuId, String batchNumber) {
+        Optional<Inventory> bySkuAndBatchNumber = inventoryRepository.findBySkuAndBatchNumber(skuId, batchNumber);
+        if (bySkuAndBatchNumber.isEmpty()){
+            throw new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND);
+        }
+        return bySkuAndBatchNumber.get().getQty();
+    }
+
+    @Override
+    public void deleteProduct(Integer prodId) {
+        Optional<Product> productOptional = productRepository.findById(prodId);
+        if (productOptional.isPresent()){
+            Product product = productOptional.get();
+            product.setStatus(0);
+            productRepository.save(product);
+        }
     }
 }

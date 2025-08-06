@@ -5,6 +5,7 @@ import com.example.smartPos.controllers.responses.SupplierResponse;
 import com.example.smartPos.exception.AlreadyExistsException;
 import com.example.smartPos.exception.ResourceNotFoundException;
 import com.example.smartPos.repositories.SupplierRepository;
+import com.example.smartPos.repositories.model.Customer;
 import com.example.smartPos.repositories.model.Supplier;
 import com.example.smartPos.services.ISupplierService;
 import com.example.smartPos.util.CustomerConstants;
@@ -28,7 +29,8 @@ public class SupplierServiceImpl implements ISupplierService {
     @Override
     public List<SupplierResponse> getAllSuppliers() {
 
-        return supplierRepository.findAll().stream().map(supplier -> {
+        List<Supplier> supplierList = supplierRepository.findAllByStatus(1);
+        return supplierList.stream().map(supplier -> {
             SupplierResponse supResp = new SupplierResponse();
             supResp.setSupId(supplier.getSupId());
             supResp.setPhone(supplier.getPhone());
@@ -112,5 +114,15 @@ public class SupplierServiceImpl implements ISupplierService {
             updatedSupplierResponse.setEmail(updatedSupplier.getEmail());
         }
         return updatedSupplierResponse;
+    }
+
+    @Override
+    public void deletSupplier(Integer supId) {
+        Optional<Supplier> supplierOptional = supplierRepository.findById(supId);
+        if (supplierOptional.isPresent()){
+            Supplier supplier = supplierOptional.get();
+            supplier.setStatus(0);
+            supplierRepository.save(supplier);
+        }
     }
 }

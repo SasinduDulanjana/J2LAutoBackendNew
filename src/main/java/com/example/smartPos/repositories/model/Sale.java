@@ -1,5 +1,6 @@
 package com.example.smartPos.repositories.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 import java.util.Date;
@@ -18,7 +19,7 @@ public class Sale {
 
     private Integer userId;
 
-    private String saleDate;
+    private Date saleDate;
 
     private Double totalAmount;
 
@@ -31,6 +32,14 @@ public class Sale {
     private Double lineWiseDiscountTotalAmount;
     private String invoiceNumber;
 
+    private Integer status;
+
+    private Boolean isFullyPaid;
+
+    private Boolean isHold;
+
+    private Double paidAmount;
+
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL)
     private List<SaleProduct> saleProducts;
 
@@ -42,6 +51,7 @@ public class Sale {
     //    @Size(max = 50)
 //    @Column(name = "MDFY_BY")
 //    @ApiField(fieldName = "modifiedBy")
+    @Column(name = "MODIFIED_BY")
     private String modifiedBy;
     //    @NotNull
 //    @Column(name = "ADD_DATE")
@@ -51,6 +61,7 @@ public class Sale {
     //    @Column(name = "MDFY_DATE")
 //    @ApiField(fieldName = "modifiedDate")
 //    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "MODIFIED_DATE")
     private Date modifiedDate;
 
     public void fillNew(String userId){
@@ -89,11 +100,11 @@ public class Sale {
         this.userId = userId;
     }
 
-    public String getSaleDate() {
+    public Date getSaleDate() {
         return saleDate;
     }
 
-    public void setSaleDate(String saleDate) {
+    public void setSaleDate(Date saleDate) {
         this.saleDate = saleDate;
     }
 
@@ -151,5 +162,69 @@ public class Sale {
 
     public void setSaleProducts(List<SaleProduct> saleProducts) {
         this.saleProducts = saleProducts;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    public Double getPaidAmount() {
+        return paidAmount;
+    }
+
+    public void setPaidAmount(Double paidAmount) {
+        this.paidAmount = paidAmount;
+    }
+
+    public Boolean getFullyPaid() {
+        return isFullyPaid;
+    }
+
+    public void setFullyPaid(Boolean fullyPaid) {
+        isFullyPaid = fullyPaid;
+    }
+
+    public Boolean getHold() {
+        return isHold;
+    }
+
+    public void setHold(Boolean hold) {
+        isHold = hold;
+    }
+
+    public String getAddBy() {
+        return addBy;
+    }
+
+    public void setAddBy(String addBy) {
+        this.addBy = addBy;
+    }
+
+    public String getModifiedBy() {
+        return modifiedBy;
+    }
+
+    public void setModifiedBy(String modifiedBy) {
+        this.modifiedBy = modifiedBy;
+    }
+
+    public Date getAddedDate() {
+        return addedDate;
+    }
+
+    public void setAddedDate(Date addedDate) {
+        this.addedDate = addedDate;
+    }
+
+    public Date getModifiedDate() {
+        return modifiedDate;
+    }
+
+    public void setModifiedDate(Date modifiedDate) {
+        this.modifiedDate = modifiedDate;
     }
 }

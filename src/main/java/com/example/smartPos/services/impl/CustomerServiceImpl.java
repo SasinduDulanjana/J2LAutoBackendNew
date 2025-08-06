@@ -28,7 +28,8 @@ public class CustomerServiceImpl implements ICustomerService {
     @Override
     public List<CustomerResponse> getAllCustomers() {
 
-        return customerRepository.findAll().stream().map(customer -> {
+        List<Customer> customerList = customerRepository.findAllByStatus(1);
+        return customerList.stream().map(customer -> {
             CustomerResponse custResp = new CustomerResponse();
             custResp.setCustId(customer.getCustId());
             custResp.setPhone(customer.getPhone());
@@ -126,5 +127,15 @@ public class CustomerServiceImpl implements ICustomerService {
                 }).toList();
 
         return customerDtos;
+    }
+
+    @Override
+    public void deletCustomer(Integer custId) {
+        Optional<Customer> customerOptional = customerRepository.findById(custId);
+        if (customerOptional.isPresent()){
+            Customer customer = customerOptional.get();
+            customer.setStatus(0);
+            customerRepository.save(customer);
+        }
     }
 }

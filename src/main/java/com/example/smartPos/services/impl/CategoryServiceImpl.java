@@ -6,6 +6,7 @@ import com.example.smartPos.exception.AlreadyExistsException;
 import com.example.smartPos.exception.ResourceNotFoundException;
 import com.example.smartPos.repositories.CategoryRepository;
 import com.example.smartPos.repositories.model.Category;
+import com.example.smartPos.repositories.model.Product;
 import com.example.smartPos.services.ICategoryService;
 import com.example.smartPos.util.CategoryConstants;
 import com.example.smartPos.util.CustomerConstants;
@@ -27,8 +28,8 @@ public class CategoryServiceImpl implements ICategoryService {
 
     @Override
     public List<CategoryResponse> getAllCategories() {
-
-        return categoryRepository.findAll().stream().map(category -> {
+        List<Category> categoryList = categoryRepository.findAllByStatus(1);
+        return categoryList.stream().map(category -> {
             CategoryResponse catResp = new CategoryResponse();
             catResp.setCatId(category.getCatId());
             catResp.setName(category.getName());
@@ -104,5 +105,15 @@ public class CategoryServiceImpl implements ICategoryService {
             updatedCategoryResponse.setParent(updatedCategory.getParent());
         }
         return updatedCategoryResponse;
+    }
+
+    @Override
+    public void deleteCategory(Integer catId) {
+        Optional<Category> categoryOptional = categoryRepository.findById(catId);
+        if (categoryOptional.isPresent()){
+            Category category = categoryOptional.get();
+            category.setStatus(0);
+            categoryRepository.save(category);
+        }
     }
 }

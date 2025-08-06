@@ -8,6 +8,18 @@ import java.util.List;
 public interface ISaleService {
     List<SaleResponse> getAllSales();
 
+    List<SaleResponse> getAllDeletedSales();
+
+    List<SaleResponse> getAllHoldSales();
+
+    List<SaleResponse> getAllPartiallyPaidSales();
+
+    void deleteSale(Integer saleId);
+
+    void updatePaidAMount(SaleRequest request);
+
+    void deleteSalesByIds(List<Long> saleIds);
+
     List<SaleResponse> getAllSalesBySaleDate(String orderDate);
 
     List<SaleResponse> getAllSalesByCustId(Integer custId);

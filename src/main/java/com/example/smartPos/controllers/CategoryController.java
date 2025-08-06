@@ -1,6 +1,7 @@
 package com.example.smartPos.controllers;
 
 import com.example.smartPos.controllers.requests.CategoryRequest;
+import com.example.smartPos.controllers.requests.ProductRequest;
 import com.example.smartPos.controllers.responses.CategoryResponse;
 import com.example.smartPos.controllers.responses.CommonResponse;
 import com.example.smartPos.services.ICategoryService;
@@ -48,6 +49,12 @@ public class CategoryController {
     public ResponseEntity<CategoryResponse> updateCategory(@RequestBody CategoryRequest categoryRequest) {
         CategoryResponse updatedCategory = categoryService.updateCategory(categoryRequest);
         return ResponseCreator.success(updatedCategory);
+    }
+
+    @PostMapping(path = "/api/deleteCategory")
+    public void deleteCategory(@RequestBody CategoryRequest request) {
+        categoryService.deleteCategory(request.getCatId());
+        System.out.println("OK");
     }
 
 }

@@ -18,4 +18,6 @@ public interface ICustomerService {
     CustomerResponse updateCustomer(CustomerRequest customerRequest);
 
     List<CustomerResponse> getCustomersByPhoneNumber(String phone);
+
+    void deletCustomer(Integer custId);
 }

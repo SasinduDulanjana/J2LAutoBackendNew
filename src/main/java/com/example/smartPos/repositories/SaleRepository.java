@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface SaleRepository extends JpaRepository<Sale, Integer> {
 
-    List<Sale> findAllBySaleDate(String saleDate);
+//    List<Sale> findAllBySaleDate(String saleDate);
 
     List<Sale> findAllByCustId(Integer custId);
 
@@ -19,5 +19,11 @@ public interface SaleRepository extends JpaRepository<Sale, Integer> {
     Optional<Sale> findByInvoiceNumber(String invoiceNumber);
 
     Sale findTopByOrderBySaleIdDesc();
+
+    List<Sale> findAllByStatus(Integer status);
+
+    List<Sale> findAllByIsHold(Boolean isHold);
+
+    List<Sale> findAllByIsFullyPaid(Boolean isFullyPaid);
 
 }

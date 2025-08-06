@@ -17,4 +17,6 @@ public interface ICategoryService {
     CategoryResponse createCategory(CategoryRequest categoryRequest);
 
     CategoryResponse updateCategory(CategoryRequest categoryRequest);
+
+    void deleteCategory(Integer catId);
 }

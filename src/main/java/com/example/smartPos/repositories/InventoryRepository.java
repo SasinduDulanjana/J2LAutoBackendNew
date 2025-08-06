@@ -10,5 +10,4 @@ import java.util.Optional;
 @Repository
 public interface InventoryRepository extends JpaRepository<Inventory, Integer> {
     Optional<Inventory> findBySkuAndBatchNumber(String sku, String batchNumber);
-
 }

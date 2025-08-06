@@ -1,8 +1,10 @@
 package com.example.smartPos.controllers.responses;
 
 import com.example.smartPos.repositories.model.SaleProduct;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -28,6 +30,81 @@ public class SaleResponse extends CommonResponse {
     private String invoiceNumber;
 
     private List<SaleProduct> soldProducts;
+
+    private Integer status;
+
+    private Boolean isFullyPaid;
+
+    private Double paidAmount;
+
+    private Boolean isHold;
+
+    //    @NotNull
+//    @Size(min = 1, max = 50)
+//    @Column(name = "ADD_BY")
+//    @ApiField(fieldName = "addBy")
+    private String addBy;
+    //    @Size(max = 50)
+//    @Column(name = "MDFY_BY")
+//    @ApiField(fieldName = "modifiedBy")
+    private String modifiedBy;
+    //    @NotNull
+//    @Column(name = "ADD_DATE")
+//    @ApiField(fieldName = "addDate")
+//    @Temporal(TemporalType.TIMESTAMP)
+    private Date addedDate;
+    //    @Column(name = "MDFY_DATE")
+//    @ApiField(fieldName = "modifiedDate")
+//    @Temporal(TemporalType.TIMESTAMP)
+    private String modifiedDate;
+
+    public Boolean getFullyPaid() {
+        return isFullyPaid;
+    }
+
+    public void setFullyPaid(Boolean fullyPaid) {
+        isFullyPaid = fullyPaid;
+    }
+
+    public Boolean getHold() {
+        return isHold;
+    }
+
+    public void setHold(Boolean hold) {
+        isHold = hold;
+    }
+
+    public String getAddBy() {
+        return addBy;
+    }
+
+    public void setAddBy(String addBy) {
+        this.addBy = addBy;
+    }
+
+    public String getModifiedBy() {
+        return modifiedBy;
+    }
+
+    public void setModifiedBy(String modifiedBy) {
+        this.modifiedBy = modifiedBy;
+    }
+
+    public Date getAddedDate() {
+        return addedDate;
+    }
+
+    public void setAddedDate(Date addedDate) {
+        this.addedDate = addedDate;
+    }
+
+    public String getModifiedDate() {
+        return modifiedDate;
+    }
+
+    public void setModifiedDate(String modifiedDate) {
+        this.modifiedDate = modifiedDate;
+    }
 
     public Integer getSaleId() {
         return saleId;
@@ -77,14 +154,6 @@ public class SaleResponse extends CommonResponse {
         this.invoiceNumber = invoiceNumber;
     }
 
-    public List<SaleProduct> getProducts() {
-        return soldProducts;
-    }
-
-    public void setProducts(List<SaleProduct> products) {
-        this.soldProducts = soldProducts;
-    }
-
     public Double getSubTotal() {
         return subTotal;
     }
@@ -124,4 +193,21 @@ public class SaleResponse extends CommonResponse {
     public void setSoldProducts(List<SaleProduct> soldProducts) {
         this.soldProducts = soldProducts;
     }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    public Double getPaidAmount() {
+        return paidAmount;
+    }
+
+    public void setPaidAmount(Double paidAmount) {
+        this.paidAmount = paidAmount;
+    }
+
 }

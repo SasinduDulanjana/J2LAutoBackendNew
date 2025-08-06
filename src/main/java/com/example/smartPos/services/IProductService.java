@@ -7,23 +7,29 @@ import com.example.smartPos.controllers.responses.ProductResponse;
 import java.util.List;
 
 public interface IProductService {
-    public List<ProductResponse> getAllProducts();
+    List<ProductResponse> getAllProducts();
 
-    public List<ProductResponse> getProductsByName(String name);
+    List<ProductResponse> getProductsByName(String name);
 
-    public ProductResponse getProductByBarcode(String barcode);
+    ProductResponse getProductByBarcode(String barcode);
 
-    public ProductResponse getProductById(String barcode);
+    ProductResponse getProductById(String barcode);
 
-    public ProductResponse getProductById(Integer id);
+    ProductResponse getProductById(Integer id);
 
-    public ProductResponse getProductBySku(String sku);
+    ProductResponse getProductBySku(String sku);
 
-    public ProductResponse getProductByBarcodeOrSku(String barCodeOrSku);
+    ProductResponse getProductByBarcodeOrSku(String barCodeOrSku);
 
-    public ProductResponse createProduct(ProductRequest productRequest);
+    ProductResponse createProduct(ProductRequest productRequest);
 
-    public ProductResponse updateProduct(ProductRequest productRequest);
+    ProductResponse updateProduct(ProductRequest productRequest);
 
-    public List<BatchDetailsResponse> getBatchDetailsByProductSku(String id);
+    List<BatchDetailsResponse> getBatchDetailsByProductSku(String id);
+
+    List<ProductResponse> getProductsByCategory(String categoryId);
+
+    Double getAvailableQuantity(String skuId, String batchNumber);
+
+    void deleteProduct(Integer prodId);
 }

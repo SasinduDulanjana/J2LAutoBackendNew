@@ -1,5 +1,6 @@
 package com.example.smartPos.controllers;
 
+import com.example.smartPos.controllers.requests.CustomerRequest;
 import com.example.smartPos.controllers.requests.SupplierRequest;
 import com.example.smartPos.controllers.responses.CommonResponse;
 import com.example.smartPos.controllers.responses.SupplierResponse;
@@ -49,4 +50,9 @@ public class SupplierController {
         return ResponseCreator.success(updatedSupplier);
     }
 
+    @PostMapping(path = "/api/deleteSupplier")
+    public void deletedSupplier(@RequestBody SupplierRequest request) {
+        supplierService.deletSupplier(request.getSupId());
+        System.out.println("OK");
+    }
 }

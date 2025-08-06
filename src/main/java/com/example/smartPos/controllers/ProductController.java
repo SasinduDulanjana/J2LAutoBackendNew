@@ -1,6 +1,7 @@
 package com.example.smartPos.controllers;
 
 import com.example.smartPos.controllers.requests.ProductRequest;
+import com.example.smartPos.controllers.requests.SupplierRequest;
 import com.example.smartPos.controllers.responses.BatchDetailsResponse;
 import com.example.smartPos.controllers.responses.CommonResponse;
 import com.example.smartPos.controllers.responses.ProductResponse;
@@ -72,4 +73,19 @@ public class ProductController {
         return productService.getBatchDetailsByProductSku(productSku);
     }
 
+    @GetMapping(path = "/api/getProductByCategory/{categoryId}")
+    public List<ProductResponse> getProductByCategory(@PathVariable String categoryId) {
+        return productService.getProductsByCategory(categoryId);
+    }
+
+    @GetMapping(path = "/api/inventory/availableQuantity/{skuId}/{batchNumber}")
+    public Double getAvailableQuantity(@PathVariable String skuId, @PathVariable String batchNumber) {
+        return productService.getAvailableQuantity(skuId, batchNumber);
+    }
+
+    @PostMapping(path = "/api/deleteProduct")
+    public void deleteProduct(@RequestBody ProductRequest request) {
+        productService.deleteProduct(request.getProductId());
+        System.out.println("OK");
+    }
 }

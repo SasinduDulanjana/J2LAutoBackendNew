@@ -21,4 +21,8 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
     Optional<Product> findByBarcodeOrSku(String barcode, String sku);
 
+    List<Product> findAllByCatId(Integer categoryId);
+
+    List<Product> findAllByStatus(Integer status);
+
 }
