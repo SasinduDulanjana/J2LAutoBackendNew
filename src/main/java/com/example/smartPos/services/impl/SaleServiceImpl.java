@@ -100,7 +100,7 @@ public class SaleServiceImpl implements ISaleService {
     @Override
     public List<SaleResponse> getAllHoldSales() {
         SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy");
-        return saleRepository.findAllByIsHold(true).stream().map(sale -> {
+        return saleRepository.findAllByIsHoldAndStatusNot(true, 0).stream().map(sale -> {
             SaleResponse saleResponse = new SaleResponse();
             saleResponse.setSaleId(sale.getSaleId());
             saleResponse.setCustId(sale.getCustId());
@@ -125,7 +125,7 @@ public class SaleServiceImpl implements ISaleService {
     @Override
     public List<SaleResponse> getAllPartiallyPaidSales() {
         SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy");
-        return saleRepository.findAllByIsFullyPaid(false).stream().map(sale -> {
+        return saleRepository.findAllByIsFullyPaidAndStatusNot(false, 0).stream().map(sale -> {
             SaleResponse saleResponse = new SaleResponse();
             saleResponse.setSaleId(sale.getSaleId());
             saleResponse.setCustId(sale.getCustId());
@@ -195,6 +195,7 @@ public class SaleServiceImpl implements ISaleService {
             if (sale.getTotalAmount() <= totalPaidAmount){
                 sale.setFullyPaid(true);
             }
+            saleRepository.save(sale);
         }
 
     }
@@ -338,6 +339,31 @@ public class SaleServiceImpl implements ISaleService {
         } else {
             return "INV_1001";
         }
+    }
+
+    @Override
+    public List<SaleResponse> getSalesByDateRange(Date startDate, Date endDate) {
+        SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy");
+        return saleRepository.findAllBySaleDateBetweenAndStatusNot(startDate, endDate).stream().map(sale -> {
+            SaleResponse saleResponse = new SaleResponse();
+            saleResponse.setSaleId(sale.getSaleId());
+            saleResponse.setCustId(sale.getCustId());
+            saleResponse.setUserId(sale.getUserId());
+            saleResponse.setSaleDate(sm.format(sale.getSaleDate()));
+            saleResponse.setTotalAmount(sale.getTotalAmount());
+            saleResponse.setInvoiceNumber(sale.getInvoiceNumber());
+            saleResponse.setSoldProducts(sale.getSaleProducts());
+            saleResponse.setSubTotal(sale.getSubTotal());
+            saleResponse.setBillWiseDiscountPercentage(sale.getBillWiseDiscountPercentage());
+            saleResponse.setBillWiseDiscountTotalAmount(sale.getBillWiseDiscountTotalAmount());
+            saleResponse.setLineWiseDiscountTotalAmount(sale.getLineWiseDiscountTotalAmount());
+            saleResponse.setFullyPaid(sale.getFullyPaid());
+            saleResponse.setPaidAmount(sale.getPaidAmount());
+            saleResponse.setHold(sale.getHold());
+            saleResponse.setModifiedBy(sale.getModifiedBy());
+            saleResponse.setModifiedDate(sm.format(sale.getModifiedDate()));
+            return saleResponse;
+        }).toList();
     }
 
 }

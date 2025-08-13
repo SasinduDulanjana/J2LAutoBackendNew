@@ -1,42 +1,43 @@
 package com.example.smartPos.controllers;
 
-import com.example.smartPos.controllers.requests.CustomerRequest;
-import com.example.smartPos.controllers.responses.CustomerResponse;
-import com.example.smartPos.services.ICustomerService;
+import com.example.smartPos.controllers.requests.UserRequest;
+import com.example.smartPos.controllers.responses.UserResponse;
+import com.example.smartPos.services.IUserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserController {
 
-    ICustomerService customerService;
+    @Autowired
+    private IUserService userService;
 
-    public UserController(ICustomerService customerService) {
-        this.customerService = customerService;
+    @GetMapping
+    public List<UserResponse> getAllUsers() {
+        return userService.getAllUsers();
     }
 
-    @GetMapping(path = "/api/getAllCustomers")
-    public List<CustomerResponse> getAllCustomers() {
-        List<CustomerResponse> customerResponse = customerService.getAllCustomers();
-        return customerResponse;
+    @GetMapping("/{id}")
+    public UserResponse getUser(@PathVariable Integer id) {
+        return userService.getUser(id);
     }
 
-//    @GetMapping(path = "/api/getCustomerById")
-//    public CustomerResponse getCustomerById(Integer customerId) {
-//        CustomerResponse customerResponse = customerService.getCustomerById(customerId);
-//        return customerResponse;
-//    }
-
-    @PostMapping(path = "/api/createCustomer")
-    public void createCustomer(@RequestBody CustomerRequest customerRequest) {
-        customerService.createCustomer(customerRequest);
+    @PostMapping
+    public UserResponse createUser(@RequestBody UserRequest user) {
+        return userService.createUser(user);
     }
 
-    @PostMapping(path = "/api/updateCustomer")
-    public void updateCustomer(@RequestBody CustomerRequest customerRequest) {
-        customerService.updateCustomer(customerRequest);
+    @PutMapping("/{id}")
+    public UserResponse updateUser(@PathVariable Integer id, @RequestBody UserRequest user) {
+        return userService.updateUser(id, user);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable Integer id) {
+        userService.deleteUser(id);
     }
 
 }

@@ -5,10 +5,12 @@ import com.example.smartPos.controllers.responses.ProductResponse;
 import com.example.smartPos.controllers.responses.SaleResponse;
 import com.example.smartPos.services.ISaleService;
 import com.example.smartPos.util.ResponseCreator;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -80,5 +82,11 @@ public class SaleController {
 //    public void updateCustomer(@RequestBody CustomerRequest customerRequest) {
 //        customerService.updateCustomer(customerRequest);
 //    }
+
+    @GetMapping(path = "/api/getSalesByDateRange")
+    public List<SaleResponse> getSalesByDateRange(@RequestParam("startDate") @DateTimeFormat(pattern = "dd-MM-yyyy") Date startDate,
+                                                  @RequestParam("endDate") @DateTimeFormat(pattern = "dd-MM-yyyy") Date endDate) {
+        return saleService.getSalesByDateRange(startDate, endDate);
+    }
 
 }

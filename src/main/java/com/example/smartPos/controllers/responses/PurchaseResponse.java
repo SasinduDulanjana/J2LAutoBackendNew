@@ -12,6 +12,8 @@ public class PurchaseResponse extends CommonResponse {
 
     private Integer supplierId;
 
+    private String supplierName;
+
     private String purchaseName;
 
     private String invoiceNumber;
@@ -29,6 +31,12 @@ public class PurchaseResponse extends CommonResponse {
     private List<ProductResponse> products;
 
     private Integer status;
+
+    private Double totalCost;
+
+    private Double paidAmount;
+
+    private Boolean isFullyPaid;
 
     //    @NotNull
 //    @Size(min = 1, max = 50)
@@ -135,5 +143,38 @@ public class PurchaseResponse extends CommonResponse {
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public Double getTotalCost() {
+        return totalCost;
+    }
+
+    public void setTotalCost(Double totalCost) {
+        this.totalCost = totalCost;
+    }
+
+    public Double getPaidAmount() {
+        return paidAmount;
+    }
+
+    public void setPaidAmount(Double paidAmount) {
+        this.paidAmount = paidAmount;
+    }
+
+
+    public Boolean getFullyPaid() {
+        return isFullyPaid;
+    }
+
+    public void setFullyPaid(Boolean fullyPaid) {
+        isFullyPaid = fullyPaid;
+    }
+
+    public String getSupplierName() {
+        return supplierName;
+    }
+
+    public void setSupplierName(String supplierName) {
+        this.supplierName = supplierName;
     }
 }

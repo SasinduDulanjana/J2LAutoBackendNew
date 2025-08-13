@@ -7,15 +7,15 @@ import java.util.List;
 
 @Entity
 @Table(name = "USERS")
-public class UserEntity {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
     private String username;
-
     private String password;
+    private String email;
+    private String status;
 
 //    private String role;
 
@@ -25,7 +25,7 @@ public class UserEntity {
             joinColumns = @JoinColumn(name = "USER_ID", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "id")
     )
-    private List<RoleEntity> roles;
+    private List<Role> roles;
 
     public Integer getId() {
         return id;
@@ -51,20 +51,27 @@ public class UserEntity {
         this.password = password;
     }
 
-    public List<RoleEntity> getRoles() {
+    public List<Role> getRoles() {
         return roles;
     }
 
-    public void setRoles(List<RoleEntity> roles) {
+    public void setRoles(List<Role> roles) {
         this.roles = roles;
     }
 
+    public String getEmail() {
+        return email;
+    }
 
-//    public String getRole() {
-//        return role;
-//    }
-//
-//    public void setRole(String role) {
-//        this.role = role;
-//    }
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }

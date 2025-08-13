@@ -20,4 +20,8 @@ public interface ICustomerService {
     List<CustomerResponse> getCustomersByPhoneNumber(String phone);
 
     void deletCustomer(Integer custId);
+
+    List<CustomerResponse> getCustomersByName(String name);
+
+    List<CustomerResponse> getCustomersByNameOrPhone(String nameOrPhone);
 }

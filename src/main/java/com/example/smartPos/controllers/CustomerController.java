@@ -61,4 +61,19 @@ public class CustomerController {
         customerService.deletCustomer(request.getCustId());
         System.out.println("OK");
     }
+
+    @GetMapping("/getCustomersByName/{name}")
+    public List<CustomerResponse> getCustomersByName(@PathVariable String name) {
+        return customerService.getCustomersByName(name);
+    }
+
+    @GetMapping("/api/getCustomersByNameOrPhone/{nameOrPhone}")
+    public ResponseEntity<List<CustomerResponse>> getCustomers(@PathVariable String nameOrPhone) {
+        if (nameOrPhone != null) {
+            List<CustomerResponse> customers = customerService.getCustomersByNameOrPhone(nameOrPhone);
+            return ResponseEntity.ok(customers);
+        } else {
+            return ResponseEntity.ok(List.of());
+        }
+    }
 }

@@ -31,7 +31,13 @@ public class Purchase {
 
     private String productType;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private Double totalCost;
+
+    private Double paidAmount;
+
+    private Boolean isFullyPaid;
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     @JoinTable(
             name = "PURCHASE_PRODUCT",
             joinColumns = @JoinColumn(name = "PURCHASE_ID"),
@@ -158,5 +164,29 @@ public class Purchase {
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public Double getTotalCost() {
+        return totalCost;
+    }
+
+    public void setTotalCost(Double totalCost) {
+        this.totalCost = totalCost;
+    }
+
+    public Double getPaidAmount() {
+        return paidAmount;
+    }
+
+    public void setPaidAmount(Double paidAmount) {
+        this.paidAmount = paidAmount;
+    }
+
+    public Boolean getFullyPaid() {
+        return isFullyPaid;
+    }
+
+    public void setFullyPaid(Boolean fullyPaid) {
+        isFullyPaid = fullyPaid;
     }
 }

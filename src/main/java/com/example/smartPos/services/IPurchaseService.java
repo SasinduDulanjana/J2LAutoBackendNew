@@ -4,6 +4,7 @@ import com.example.smartPos.controllers.requests.PurchaseRequest;
 import com.example.smartPos.controllers.responses.PurchaseResponse;
 import com.example.smartPos.repositories.model.Purchase;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +20,11 @@ public interface IPurchaseService {
     PurchaseResponse getPurchaseByInvoiceNumber(String invoiceNumber);
 
     PurchaseResponse createPurchase(PurchaseRequest purchaseRequest);
+
+    PurchaseResponse getPurchaseById(Integer purchaseId);
+
+    List<PurchaseResponse> getPurchasesByDateRange(Date startDate, Date endDate);
+
 
 //    PurchaseResponse updatePurchase(PurchaseRequest purchaseRequest);
 }

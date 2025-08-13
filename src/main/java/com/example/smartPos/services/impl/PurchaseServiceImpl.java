@@ -13,6 +13,8 @@ import com.example.smartPos.util.ProductConstants;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,7 +55,17 @@ public class PurchaseServiceImpl implements IPurchaseService {
             purchResp.setConnectionStatus(purchase.getConnectionStatus());
             purchResp.setPaymentStatus(purchase.getPaymentStatus());
             purchResp.setProductType(purchase.getProductType());
-            purchResp.setStatus(purchase.getStatus());
+            purchResp.setProducts(purchase.getProducts().stream().map(product -> {
+                ProductResponse productResponse = new ProductResponse();
+                productResponse.setProductId(product.getProductId());
+                productResponse.setSku(product.getSku());
+                productResponse.setProductName(product.getProductName());
+                productResponse.setSalePrice(product.getSalePrice());
+                productResponse.setWholeSalePrice(product.getWholeSalePrice());
+                productResponse.setLowQty(product.getLowQty());
+                productResponse.setBatchNo(product.getBatchNo());
+                return productResponse;
+            }).toList());
             return purchResp;
         }).toList();
     }
@@ -244,7 +256,70 @@ public class PurchaseServiceImpl implements IPurchaseService {
             }
         }).toList();
         savePurchase.setProducts(products);
+        savePurchase.setTotalCost(purchaseRequest.getTotalCost());
+        savePurchase.setPaidAmount(purchaseRequest.getPaidAmount());
+        savePurchase.setFullyPaid(purchaseRequest.getFullyPaid());
         return savePurchase;
+    }
+
+    @Override
+    public PurchaseResponse getPurchaseById(Integer purchaseId) {
+        Purchase purchase = purchaseRepository.findByIdWithProducts(purchaseId)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PURCHASE_NOT_FOUND));
+
+        PurchaseResponse purchaseResponse = new PurchaseResponse();
+        purchaseResponse.setPurchaseId(purchase.getPurchaseId());
+        purchaseResponse.setSupplierId(purchase.getSupplierId());
+        purchaseResponse.setPurchaseName(purchase.getPurchaseName());
+        purchaseResponse.setInvoiceNumber(purchase.getInvoiceNumber());
+        purchaseResponse.setDeliveryTime(purchase.getDeliveryTime());
+        purchaseResponse.setInvoiceDate(purchase.getInvoiceDate());
+        purchaseResponse.setConnectionStatus(purchase.getConnectionStatus());
+        purchaseResponse.setPaymentStatus(purchase.getPaymentStatus());
+        purchaseResponse.setProductType(purchase.getProductType());
+        purchaseResponse.setStatus(purchase.getStatus());
+        purchaseResponse.setProducts(purchase.getProducts().stream().map(product -> {
+            ProductResponse productResponse = new ProductResponse();
+            productResponse.setProductId(product.getProductId());
+            productResponse.setProductName(product.getProductName());
+            productResponse.setSku(product.getSku());
+            productResponse.setSalePrice(product.getSalePrice());
+            productResponse.setWholeSalePrice(product.getWholeSalePrice());
+            productResponse.setLowQty(product.getLowQty());
+            productResponse.setBatchNo(product.getBatchNo());
+            return productResponse;
+        }).toList());
+        return purchaseResponse;
+    }
+
+    @Override
+    public List<PurchaseResponse> getPurchasesByDateRange(Date startDate, Date endDate) {
+        SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy");
+        return purchaseRepository.findAllByAddedDateBetweenAndStatusNot(startDate, endDate).stream().map(purchase -> {
+            PurchaseResponse purchaseResponse = new PurchaseResponse();
+            purchaseResponse.setPurchaseId(purchase.getPurchaseId());
+            purchaseResponse.setSupplierId(purchase.getSupplierId());
+            // Fetch supplier name using supplierId
+            Optional<Supplier> supplier = supplierRepository.findById(purchase.getSupplierId());
+            supplier.ifPresent(value -> purchaseResponse.setSupplierName(value.getName()));
+            purchaseResponse.setPurchaseName(purchase.getPurchaseName());
+            purchaseResponse.setInvoiceNumber(purchase.getInvoiceNumber());
+            purchaseResponse.setDeliveryTime(purchase.getDeliveryTime());
+            purchaseResponse.setInvoiceDate(purchase.getInvoiceDate());
+            purchaseResponse.setConnectionStatus(purchase.getConnectionStatus());
+            purchaseResponse.setPaymentStatus(purchase.getPaymentStatus());
+            purchaseResponse.setProductType(purchase.getProductType());
+            purchaseResponse.setStatus(purchase.getStatus());
+            purchaseResponse.setProducts(purchase.getProducts().stream().map(product -> {
+                ProductResponse productResponse = new ProductResponse();
+                productResponse.setProductId(product.getProductId());
+                return productResponse;
+            }).toList());
+            purchaseResponse.setTotalCost(purchase.getTotalCost());
+            purchaseResponse.setPaidAmount(purchase.getPaidAmount());
+            purchaseResponse.setFullyPaid(purchase.getFullyPaid());
+            return purchaseResponse;
+        }).toList();
     }
 
 //    @Override

@@ -138,4 +138,38 @@ public class CustomerServiceImpl implements ICustomerService {
             customerRepository.save(customer);
         }
     }
+
+    @Override
+    public List<CustomerResponse> getCustomersByName(String name) {
+        List<Customer> customers = customerRepository.findByNameContaining(name);
+        return customers.stream().map(customer -> {
+            CustomerResponse customerResponse = new CustomerResponse();
+            customerResponse.setCustId(customer.getCustId());
+            customerResponse.setName(customer.getName());
+            customerResponse.setPhone(customer.getPhone());
+            customerResponse.setAddress(customer.getAddress());
+            customerResponse.setEmail(customer.getEmail());
+            return customerResponse;
+        }).toList();
+    }
+
+    @Override
+    public List<CustomerResponse> getCustomersByNameOrPhone(String nameOrPhone) {
+        List<Customer> customers;
+        if (nameOrPhone != null) {
+            customers = customerRepository.findByNameOrPhone(nameOrPhone);
+        } else {
+            customers = List.of();
+        }
+
+        return customers.stream().map(customer -> {
+            CustomerResponse customerResponse = new CustomerResponse();
+            customerResponse.setCustId(customer.getCustId());
+            customerResponse.setName(customer.getName());
+            customerResponse.setPhone(customer.getPhone());
+            customerResponse.setAddress(customer.getAddress());
+            customerResponse.setEmail(customer.getEmail());
+            return customerResponse;
+        }).toList();
+    }
 }

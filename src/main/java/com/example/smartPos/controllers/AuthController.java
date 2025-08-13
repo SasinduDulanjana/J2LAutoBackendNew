@@ -3,13 +3,12 @@ package com.example.smartPos.controllers;
 import com.example.smartPos.controllers.requests.LoginRequest;
 import com.example.smartPos.controllers.requests.RegisterRequest;
 import com.example.smartPos.controllers.responses.LoginResponse;
-import com.example.smartPos.exception.UserNameNotFoundException;
 import com.example.smartPos.repositories.RoleRepository;
 import com.example.smartPos.repositories.UserRepository;
-import com.example.smartPos.repositories.model.RoleEntity;
-import com.example.smartPos.repositories.model.UserEntity;
-import com.example.smartPos.security.CustomUserDetailService;
+import com.example.smartPos.repositories.model.Role;
+import com.example.smartPos.repositories.model.User;
 
+import com.example.smartPos.security.CustomUserDetailService;
 import com.example.smartPos.util.ResponseCreator;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,11 +55,11 @@ public class AuthController {
             return new ResponseEntity<>("UserName is Taken", HttpStatus.BAD_REQUEST);
         }
 
-        UserEntity user = new UserEntity();
+        User user = new User();
         user.setUsername(registerRequest.getUsername());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
 
-        RoleEntity roles = roleRepository.findByName("USER").get();
+        Role roles = roleRepository.findByName("USER").get();
         user.setRoles(Collections.singletonList(roles));
 
         userRepository.save(user);
