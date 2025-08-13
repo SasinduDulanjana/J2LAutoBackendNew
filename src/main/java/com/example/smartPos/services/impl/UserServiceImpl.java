@@ -7,7 +7,6 @@ import com.example.smartPos.repositories.UserRepository;
 import com.example.smartPos.repositories.model.Role;
 import com.example.smartPos.repositories.model.User;
 import com.example.smartPos.services.IUserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,12 +17,16 @@ import java.util.stream.Collectors;
 @Service
 public class UserServiceImpl implements IUserService {
 
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private RoleRepository roleRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream().map(user -> {
@@ -41,6 +44,21 @@ public class UserServiceImpl implements IUserService {
 
     public UserResponse getUser(Integer id) {
         User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        UserResponse userResponse = new UserResponse();
+        userResponse.setId(user.getId());
+        userResponse.setUsername(user.getUsername());
+        userResponse.setEmail(user.getEmail());
+        userResponse.setStatus(user.getStatus());
+        userResponse.setRoles(user.getRoles().stream()
+                .map(Role::getName)
+                .collect(Collectors.toList()));
+        return userResponse;
+    }
+
+    public UserResponse getUserByUsername(String username) {
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         UserResponse userResponse = new UserResponse();
@@ -153,4 +171,8 @@ public class UserServiceImpl implements IUserService {
         userRepository.save(user); // Save the updated user
     }
 
+    @Override
+    public Boolean existsByUsername(String username) {
+        return userRepository.existsByUsername(username);
+    }
 }

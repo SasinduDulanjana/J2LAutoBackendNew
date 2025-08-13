@@ -6,6 +6,12 @@ import java.util.List;
 
 public class UserResponse {
     private Integer id;
+    private String username;
+
+    private String password;
+    private String email;
+    private String status;
+    private List<String> roles;
 
     public Integer getId() {
         return id;
@@ -47,8 +53,11 @@ public class UserResponse {
         this.roles = roles;
     }
 
-    private String username;
-    private String email;
-    private String status;
-    private List<String> roles;
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }

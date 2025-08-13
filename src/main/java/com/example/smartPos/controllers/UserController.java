@@ -1,9 +1,17 @@
 package com.example.smartPos.controllers;
 
+import com.example.smartPos.controllers.requests.LoginRequest;
 import com.example.smartPos.controllers.requests.UserRequest;
+import com.example.smartPos.controllers.responses.LoginResponse;
 import com.example.smartPos.controllers.responses.UserResponse;
+import com.example.smartPos.security.JwtUtil;
 import com.example.smartPos.services.IUserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.smartPos.util.ResponseCreator;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,8 +20,28 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
 
-    @Autowired
-    private IUserService userService;
+    private final IUserService userService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
+
+    public UserController(IUserService userService, AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
+        this.userService = userService;
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
+    }
+
+    @PostMapping(path = "/login")
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        String token = jwtUtil.generateToken(loginRequest.getUsername());
+
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setToken(token);
+        loginResponse.setMessage("Login Success");
+        return ResponseCreator.success(loginResponse);
+    }
 
     @GetMapping
     public List<UserResponse> getAllUsers() {

@@ -18,4 +18,8 @@ public interface IUserService {
 
     void deleteUser(Integer id);
 
+    UserResponse getUserByUsername(String username);
+
+    Boolean existsByUsername(String username);
+
 }
