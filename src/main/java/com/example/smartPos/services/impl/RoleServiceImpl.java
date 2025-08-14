@@ -2,12 +2,17 @@ package com.example.smartPos.services.impl;
 
 import com.example.smartPos.controllers.requests.RoleRequest;
 import com.example.smartPos.controllers.responses.RoleResponse;
+import com.example.smartPos.repositories.FeatureRepository;
+import com.example.smartPos.repositories.RolePermissionRepository;
 import com.example.smartPos.repositories.RoleRepository;
+import com.example.smartPos.repositories.model.Feature;
 import com.example.smartPos.repositories.model.Role;
+import com.example.smartPos.repositories.model.RolePermission;
 import com.example.smartPos.services.IRoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +21,12 @@ public class RoleServiceImpl implements IRoleService {
 
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private FeatureRepository featureRepository;
+
+    @Autowired
+    private RolePermissionRepository rolePermissionRepository;
 
     public List<RoleResponse> getAllRoles() {
         return roleRepository.findAll().stream()
@@ -50,6 +61,20 @@ public class RoleServiceImpl implements IRoleService {
 
         // Save the Role entity
         Role savedRole = roleRepository.save(role);
+
+        // Get all features (from DB or static list)
+        List<Feature> allFeatures = featureRepository.findAll(); // or static FEATURES list
+
+        // Create default permissions (disabled) for each feature
+        List<RolePermission> defaultPerms = new ArrayList<>();
+        for (Feature feature : allFeatures) {
+            RolePermission perm = new RolePermission();
+            perm.setRole(savedRole.getName());
+            perm.setFeature(feature.getFeatureName());
+            perm.setEnabled(false);
+            defaultPerms.add(perm);
+        }
+        rolePermissionRepository.saveAll(defaultPerms);
 
         // Map the saved Role entity to RoleResponse
         RoleResponse roleResponse = new RoleResponse();
