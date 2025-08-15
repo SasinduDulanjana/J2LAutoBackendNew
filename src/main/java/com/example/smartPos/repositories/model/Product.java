@@ -35,9 +35,9 @@ public class Product {
 
     private Boolean isStockManagementEnable;
 
-    private String salePrice;
-
-    private String wholeSalePrice;
+//    private String salePrice;
+//
+//    private String wholeSalePrice;
 
     private String lowQty;
 
@@ -53,7 +53,7 @@ public class Product {
 
     private String batchNo;
 
-    private Double cost;
+//    private Double cost;
 
     private Double remainingQty;
 
@@ -178,21 +178,21 @@ public class Product {
         isStockManagementEnable = stockManagementEnable;
     }
 
-    public String getSalePrice() {
-        return salePrice;
-    }
-
-    public void setSalePrice(String salePrice) {
-        this.salePrice = salePrice;
-    }
-
-    public String getWholeSalePrice() {
-        return wholeSalePrice;
-    }
-
-    public void setWholeSalePrice(String wholeSalePrice) {
-        this.wholeSalePrice = wholeSalePrice;
-    }
+//    public String getSalePrice() {
+//        return salePrice;
+//    }
+//
+//    public void setSalePrice(String salePrice) {
+//        this.salePrice = salePrice;
+//    }
+//
+//    public String getWholeSalePrice() {
+//        return wholeSalePrice;
+//    }
+//
+//    public void setWholeSalePrice(String wholeSalePrice) {
+//        this.wholeSalePrice = wholeSalePrice;
+//    }
 
     public String getLowQty() {
         return lowQty;
@@ -258,13 +258,13 @@ public class Product {
         this.status = status;
     }
 
-    public Double getCost() {
-        return cost;
-    }
-
-    public void setCost(Double cost) {
-        this.cost = cost;
-    }
+//    public Double getCost() {
+//        return cost;
+//    }
+//
+//    public void setCost(Double cost) {
+//        this.cost = cost;
+//    }
 
     public Double getRemainingQty() {
         return remainingQty;

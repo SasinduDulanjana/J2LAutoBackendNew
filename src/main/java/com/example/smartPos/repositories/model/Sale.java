@@ -25,6 +25,8 @@ public class Sale {
 
     private Double subTotal;
 
+    private String paymentMethod;
+
     private Double billWiseDiscountPercentage;
 
     private Double billWiseDiscountTotalAmount;
@@ -226,5 +228,13 @@ public class Sale {
 
     public void setModifiedDate(Date modifiedDate) {
         this.modifiedDate = modifiedDate;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 }

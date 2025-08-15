@@ -12,13 +12,13 @@ public interface IUserService {
 
     UserResponse getUser(Integer id);
 
+    UserResponse getUserByUsername(String username);
+
     UserResponse createUser(UserRequest user);
 
     UserResponse updateUser(Integer id, UserRequest user);
 
     void deleteUser(Integer id);
-
-    UserResponse getUserByUsername(String username);
 
     Boolean existsByUsername(String username);
 

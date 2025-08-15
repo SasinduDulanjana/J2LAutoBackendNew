@@ -266,6 +266,7 @@ public class SaleServiceImpl implements ISaleService {
             saveSale.setInvoiceNumber(saleRequest.getInvoiceNumber());
             saveSale.setSaleDate(saleRequest.getOrderDate());
             saveSale.setSubTotal(saleRequest.getSubTotal());
+            saveSale.setPaymentMethod(saleRequest.getPaymentType());
             saveSale.setTotalAmount(saleRequest.getTotalAmount());
             saveSale.setLineWiseDiscountTotalAmount(saleRequest.getLineWiseDiscountTotalAmount());
             saveSale.setBillWiseDiscountPercentage(saleRequest.getBillWiseDiscountPercentage());
@@ -319,6 +320,8 @@ public class SaleServiceImpl implements ISaleService {
             saleResponse.setCustId(savedOrder.getCustId());
             saleResponse.setUserId(savedOrder.getUserId());
             saleResponse.setSaleDate(sm.format(savedOrder.getSaleDate()));
+            saleResponse.setSubTotal(savedOrder.getSubTotal());
+            saleResponse.setPaymentMethod(savedOrder.getPaymentMethod());
             saleResponse.setTotalAmount(savedOrder.getTotalAmount());
             saleResponse.setInvoiceNumber(savedOrder.getInvoiceNumber());
             saleResponse.setSoldProducts(savedOrder.getSaleProducts());

@@ -21,6 +21,8 @@ public class SaleResponse extends CommonResponse {
 
     private Double subTotal;
 
+    private String paymentMethod;
+
     private Double billWiseDiscountPercentage;
 
     private Double billWiseDiscountTotalAmount;
@@ -210,4 +212,11 @@ public class SaleResponse extends CommonResponse {
         this.paidAmount = paidAmount;
     }
 
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
 }

@@ -3,8 +3,10 @@ package com.example.smartPos.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
@@ -12,7 +14,7 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    private final String SECRET_KEY = "40f02ca045227c7e17ee2f37342d8b3a0b5bea750f36d10dd186217b60362193";
+    private final SecretKey SECRET_KEY = Keys.hmacShaKeyFor("8a83df73325bd820a069caf22fc0fef6189c47366e96eb88c512f05088270c48aca67185a1bae66a8111f28af76d56362c5b752e48ddb411ccc7aedcbfab34cb".getBytes());
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -41,7 +43,7 @@ public class JwtUtil {
                 .claim("roles", roles) // Add roles to the token payload
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .signWith(SECRET_KEY,SignatureAlgorithm.HS256)
                 .compact();
     }
 

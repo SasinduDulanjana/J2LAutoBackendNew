@@ -2,6 +2,7 @@ package com.example.smartPos.services.impl;
 
 import com.example.smartPos.controllers.requests.ProductRequest;
 import com.example.smartPos.controllers.responses.BatchDetailsResponse;
+import com.example.smartPos.controllers.responses.BatchDetails;
 import com.example.smartPos.controllers.responses.ProductResponse;
 import com.example.smartPos.exception.AlreadyExistsException;
 import com.example.smartPos.exception.ResourceNotFoundException;
@@ -10,7 +11,6 @@ import com.example.smartPos.repositories.InventoryRepository;
 import com.example.smartPos.repositories.ProductRepository;
 import com.example.smartPos.repositories.model.Inventory;
 import com.example.smartPos.repositories.model.Product;
-import com.example.smartPos.repositories.model.Supplier;
 import com.example.smartPos.services.IProductService;
 import com.example.smartPos.util.ErrorCodes;
 import com.example.smartPos.util.ProductConstants;
@@ -51,8 +51,8 @@ public class ProductServiceImpl implements IProductService {
             prodResp.setProductStatus(product.getProductStatus());
             prodResp.setDescription(product.getDescription());
             prodResp.setStockManagementEnable(product.getStockManagementEnable());
-            prodResp.setSalePrice(product.getSalePrice());
-            prodResp.setWholeSalePrice(product.getWholeSalePrice());
+//            prodResp.setSalePrice(product.getSalePrice());
+//            prodResp.setWholeSalePrice(product.getWholeSalePrice());
             prodResp.setLowQty(product.getLowQty());
             prodResp.setExpDateAvailable(product.getExpDateAvailable());
             prodResp.setExpDate(product.getExpDate());
@@ -63,6 +63,59 @@ public class ProductServiceImpl implements IProductService {
             prodResp.setStatus(product.getStatus());
             return prodResp;
         }).toList();
+    }
+
+    @Override
+    public List<ProductResponse> getAllProductsByBatchWise() {
+
+        List<Product> productlist = productRepository.findAllByStatus(1);
+        return productlist.stream().
+                map(product -> {
+                    ProductResponse prodResp = new ProductResponse();
+                    prodResp.setProductId(product.getProductId());
+                    prodResp.setCatId(product.getCatId());
+                    prodResp.setProductName(product.getProductName());
+                    prodResp.setBarCodeAvailable(product.getBarCodeAvailable());
+                    prodResp.setBarCode(product.getBarcode());
+                    prodResp.setSku(product.getSku());
+                    prodResp.setBarCodeType(product.getBarCodeType());
+                    prodResp.setProductType(product.getProductType());
+                    prodResp.setProductStatus(product.getProductStatus());
+                    prodResp.setDescription(product.getDescription());
+                    prodResp.setStockManagementEnable(product.getStockManagementEnable());
+//                    prodResp.setSalePrice(product.getSalePrice());
+//                    prodResp.setWholeSalePrice(product.getWholeSalePrice());
+                    prodResp.setLowQty(product.getLowQty());
+                    prodResp.setExpDateAvailable(product.getExpDateAvailable());
+                    prodResp.setExpDate(product.getExpDate());
+                    prodResp.setTaxGroup(product.getTaxGroup());
+                    prodResp.setTaxType(product.getTaxType());
+                    prodResp.setImgUrl(product.getImgUrl());
+                    prodResp.setBatchNo(product.getBatchNo());
+                    prodResp.setStatus(product.getStatus());
+                    // Fetch batch-wise quantities
+//    List<BatchDetails> batchQuantities = inventoryRepository.findAllBySku(product.getSku())
+//            .stream()
+//            .map(inventory -> new BatchDetails(inventory.getBatchNumber(), inventory.getQty()))
+//            .toList();
+
+                    // Fetch batch-wise quantities with cost and retail price
+                    List<BatchDetails> batchQuantities = getBatchDetailsByProductSku(product.getSku())
+                            .stream()
+                            .map(batch -> new BatchDetails(
+                                    batch.getBatchNumber(),
+                                    inventoryRepository.findBySkuAndBatchNumber(product.getSku(), batch.getBatchNumber())
+                                            .map(Inventory::getQty).orElse(0.0),
+                                    batch.getUnitCost(),
+                                    batch.getRetailPrice(),
+                                    batch.getWholesalePrice()
+                            ))
+                            .toList();
+
+
+                    prodResp.setBatchQuantities(batchQuantities);
+                    return prodResp;
+                }).toList();
     }
 
     @Override
@@ -80,8 +133,8 @@ public class ProductServiceImpl implements IProductService {
             prodResp.setProductStatus(product.getProductStatus());
             prodResp.setDescription(product.getDescription());
             prodResp.setStockManagementEnable(product.getStockManagementEnable());
-            prodResp.setSalePrice(product.getSalePrice());
-            prodResp.setWholeSalePrice(product.getWholeSalePrice());
+//            prodResp.setSalePrice(product.getSalePrice());
+//            prodResp.setWholeSalePrice(product.getWholeSalePrice());
             prodResp.setLowQty(product.getLowQty());
             prodResp.setExpDateAvailable(product.getExpDateAvailable());
             prodResp.setExpDate(product.getExpDate());
@@ -111,8 +164,8 @@ public class ProductServiceImpl implements IProductService {
         prodResp.setProductStatus(product.getProductStatus());
         prodResp.setDescription(product.getDescription());
         prodResp.setStockManagementEnable(product.getStockManagementEnable());
-        prodResp.setSalePrice(product.getSalePrice());
-        prodResp.setWholeSalePrice(product.getWholeSalePrice());
+//        prodResp.setSalePrice(product.getSalePrice());
+//        prodResp.setWholeSalePrice(product.getWholeSalePrice());
         prodResp.setLowQty(product.getLowQty());
         prodResp.setExpDateAvailable(product.getExpDateAvailable());
         prodResp.setExpDate(product.getExpDate());
@@ -141,8 +194,8 @@ public class ProductServiceImpl implements IProductService {
         prodResp.setProductStatus(product.getProductStatus());
         prodResp.setDescription(product.getDescription());
         prodResp.setStockManagementEnable(product.getStockManagementEnable());
-        prodResp.setSalePrice(product.getSalePrice());
-        prodResp.setWholeSalePrice(product.getWholeSalePrice());
+//        prodResp.setSalePrice(product.getSalePrice());
+//        prodResp.setWholeSalePrice(product.getWholeSalePrice());
         prodResp.setLowQty(product.getLowQty());
         prodResp.setExpDateAvailable(product.getExpDateAvailable());
         prodResp.setExpDate(product.getExpDate());
@@ -171,8 +224,8 @@ public class ProductServiceImpl implements IProductService {
         prodResp.setProductStatus(product.getProductStatus());
         prodResp.setDescription(product.getDescription());
         prodResp.setStockManagementEnable(product.getStockManagementEnable());
-        prodResp.setSalePrice(product.getSalePrice());
-        prodResp.setWholeSalePrice(product.getWholeSalePrice());
+//        prodResp.setSalePrice(product.getSalePrice());
+//        prodResp.setWholeSalePrice(product.getWholeSalePrice());
         prodResp.setLowQty(product.getLowQty());
         prodResp.setExpDateAvailable(product.getExpDateAvailable());
         prodResp.setExpDate(product.getExpDate());
@@ -200,8 +253,8 @@ public class ProductServiceImpl implements IProductService {
         prodResp.setProductStatus(product.getProductStatus());
         prodResp.setDescription(product.getDescription());
         prodResp.setStockManagementEnable(product.getStockManagementEnable());
-        prodResp.setSalePrice(product.getSalePrice());
-        prodResp.setWholeSalePrice(product.getWholeSalePrice());
+//        prodResp.setSalePrice(product.getSalePrice());
+//        prodResp.setWholeSalePrice(product.getWholeSalePrice());
         prodResp.setLowQty(product.getLowQty());
         prodResp.setExpDateAvailable(product.getExpDateAvailable());
         prodResp.setExpDate(product.getExpDate());
@@ -231,8 +284,8 @@ public class ProductServiceImpl implements IProductService {
         prodResp.setProductStatus(product.getProductStatus());
         prodResp.setDescription(product.getDescription());
         prodResp.setStockManagementEnable(product.getStockManagementEnable());
-        prodResp.setSalePrice(product.getSalePrice());
-        prodResp.setWholeSalePrice(product.getWholeSalePrice());
+//        prodResp.setSalePrice(product.getSalePrice());
+//        prodResp.setWholeSalePrice(product.getWholeSalePrice());
         prodResp.setLowQty(product.getLowQty());
         prodResp.setExpDateAvailable(product.getExpDateAvailable());
         prodResp.setExpDate(product.getExpDate());
@@ -336,8 +389,8 @@ public class ProductServiceImpl implements IProductService {
             updatedProductResponse.setProductStatus(updateProduct.getProductStatus());
             updatedProductResponse.setDescription(updateProduct.getDescription());
             updatedProductResponse.setStockManagementEnable(updateProduct.getStockManagementEnable());
-            updatedProductResponse.setSalePrice(updateProduct.getSalePrice());
-            updatedProductResponse.setWholeSalePrice(updateProduct.getWholeSalePrice());
+//            updatedProductResponse.setSalePrice(updateProduct.getSalePrice());
+//            updatedProductResponse.setWholeSalePrice(updateProduct.getWholeSalePrice());
             updatedProductResponse.setLowQty(updateProduct.getLowQty());
             updatedProductResponse.setExpDateAvailable(updateProduct.getExpDateAvailable());
             updatedProductResponse.setExpDate(updateProduct.getExpDate());
@@ -361,6 +414,8 @@ public class ProductServiceImpl implements IProductService {
             batchDetails.setSupplier(batch.getSupplier());
             batchDetails.setInvoiceNumber(batch.getInvoiceNumber());
             batchDetails.setPurchaseDate(batch.getPurchaseDate());
+            batchDetails.setRetailPrice(batch.getRetailPrice());
+            batchDetails.setWholesalePrice(batch.getWholesalePrice());
 
             return batchDetails;
         }).toList();
@@ -381,8 +436,8 @@ public class ProductServiceImpl implements IProductService {
             prodResp.setProductStatus(product.getProductStatus());
             prodResp.setDescription(product.getDescription());
             prodResp.setStockManagementEnable(product.getStockManagementEnable());
-            prodResp.setSalePrice(product.getSalePrice());
-            prodResp.setWholeSalePrice(product.getWholeSalePrice());
+//            prodResp.setSalePrice(product.getSalePrice());
+//            prodResp.setWholeSalePrice(product.getWholeSalePrice());
             prodResp.setLowQty(product.getLowQty());
             prodResp.setExpDateAvailable(product.getExpDateAvailable());
             prodResp.setExpDate(product.getExpDate());
@@ -400,7 +455,7 @@ public class ProductServiceImpl implements IProductService {
     @Override
     public Double getAvailableQuantity(String skuId, String batchNumber) {
         Optional<Inventory> bySkuAndBatchNumber = inventoryRepository.findBySkuAndBatchNumber(skuId, batchNumber);
-        if (bySkuAndBatchNumber.isEmpty()){
+        if (bySkuAndBatchNumber.isEmpty()) {
             throw new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND);
         }
         return bySkuAndBatchNumber.get().getQty();
@@ -409,7 +464,7 @@ public class ProductServiceImpl implements IProductService {
     @Override
     public void deleteProduct(Integer prodId) {
         Optional<Product> productOptional = productRepository.findById(prodId);
-        if (productOptional.isPresent()){
+        if (productOptional.isPresent()) {
             Product product = productOptional.get();
             product.setStatus(0);
             productRepository.save(product);

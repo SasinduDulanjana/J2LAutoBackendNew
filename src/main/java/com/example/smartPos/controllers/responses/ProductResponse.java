@@ -3,6 +3,7 @@ package com.example.smartPos.controllers.responses;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class ProductResponse extends CommonResponse {
@@ -47,6 +48,8 @@ public class ProductResponse extends CommonResponse {
     private String batchNo;
 
     private Integer status;
+
+    private List<BatchDetails> batchQuantities;
 
     //    @NotNull
 //    @Size(min = 1, max = 50)
@@ -233,5 +236,13 @@ public class ProductResponse extends CommonResponse {
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public List<BatchDetails> getBatchQuantities() {
+        return batchQuantities;
+    }
+
+    public void setBatchQuantities(List<BatchDetails> batchQuantities) {
+        this.batchQuantities = batchQuantities;
     }
 }

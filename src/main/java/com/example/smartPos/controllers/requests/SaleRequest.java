@@ -19,6 +19,7 @@ public class SaleRequest {
 
     private Double subTotal;
 
+    private String paymentType;
     private Double billWiseDiscountPercentage;
 
     private Double billWiseDiscountTotalAmount;
@@ -163,6 +164,26 @@ public class SaleRequest {
     }
 
     public void setHold(boolean hold) {
+        isHold = hold;
+    }
+
+    public String getPaymentType() {
+        return paymentType;
+    }
+
+    public void setPaymentType(String paymentMethod) {
+        this.paymentType = paymentMethod;
+    }
+
+    public Boolean getFullyPaid() {
+        return isFullyPaid;
+    }
+
+    public Boolean getHold() {
+        return isHold;
+    }
+
+    public void setHold(Boolean hold) {
         isHold = hold;
     }
 }

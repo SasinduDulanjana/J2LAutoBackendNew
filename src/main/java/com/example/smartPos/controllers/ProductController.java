@@ -27,6 +27,11 @@ public class ProductController {
         return productService.getAllProducts();
     }
 
+    @GetMapping(path = "/api/getAllProductsByBatchWise")
+    public List<ProductResponse> getAllProductsByBatchWise() {
+        return productService.getAllProductsByBatchWise();
+    }
+
     @GetMapping(path = "/api/getProductsByName/{name}")
     public List<ProductResponse> getProductsByName(@PathVariable String name) {
         return productService.getProductsByName(name);

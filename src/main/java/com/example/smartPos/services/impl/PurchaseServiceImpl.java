@@ -60,8 +60,8 @@ public class PurchaseServiceImpl implements IPurchaseService {
                 productResponse.setProductId(product.getProductId());
                 productResponse.setSku(product.getSku());
                 productResponse.setProductName(product.getProductName());
-                productResponse.setSalePrice(product.getSalePrice());
-                productResponse.setWholeSalePrice(product.getWholeSalePrice());
+//                productResponse.setSalePrice(product.getSalePrice());
+//                productResponse.setWholeSalePrice(product.getWholeSalePrice());
                 productResponse.setLowQty(product.getLowQty());
                 productResponse.setBatchNo(product.getBatchNo());
                 return productResponse;
@@ -283,8 +283,8 @@ public class PurchaseServiceImpl implements IPurchaseService {
             productResponse.setProductId(product.getProductId());
             productResponse.setProductName(product.getProductName());
             productResponse.setSku(product.getSku());
-            productResponse.setSalePrice(product.getSalePrice());
-            productResponse.setWholeSalePrice(product.getWholeSalePrice());
+//            productResponse.setSalePrice(product.getSalePrice());
+//            productResponse.setWholeSalePrice(product.getWholeSalePrice());
             productResponse.setLowQty(product.getLowQty());
             productResponse.setBatchNo(product.getBatchNo());
             return productResponse;

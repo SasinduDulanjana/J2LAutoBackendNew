@@ -9,6 +9,8 @@ import java.util.List;
 public interface IProductService {
     List<ProductResponse> getAllProducts();
 
+    List<ProductResponse> getAllProductsByBatchWise();
+
     List<ProductResponse> getProductsByName(String name);
 
     ProductResponse getProductByBarcode(String barcode);
