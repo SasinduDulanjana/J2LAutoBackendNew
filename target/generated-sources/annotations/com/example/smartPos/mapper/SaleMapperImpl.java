@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-08-15T13:23:18+0530",
-    comments = "version: 1.5.0.Final, compiler: javac, environment: Java 17.0.9 (Oracle Corporation)"
+    date = "2025-08-16T11:02:16+0530",
+    comments = "version: 1.5.0.Final, compiler: Eclipse JDT (IDE) 3.42.50.v20250729-0351, environment: Java 21.0.8 (Eclipse Adoptium)"
 )
 @Component
 public class SaleMapperImpl implements SaleMapper {
@@ -46,6 +46,7 @@ public class SaleMapperImpl implements SaleMapper {
         saleResponse.setLineWiseDiscountTotalAmount( sale.getLineWiseDiscountTotalAmount() );
         saleResponse.setStatus( sale.getStatus() );
         saleResponse.setPaidAmount( sale.getPaidAmount() );
+        saleResponse.setPaymentMethod( sale.getPaymentMethod() );
 
         return saleResponse;
     }
