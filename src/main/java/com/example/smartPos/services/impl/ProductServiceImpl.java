@@ -14,6 +14,7 @@ import com.example.smartPos.repositories.model.Product;
 import com.example.smartPos.services.IProductService;
 import com.example.smartPos.util.ErrorCodes;
 import com.example.smartPos.util.ProductConstants;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -321,6 +322,9 @@ public class ProductServiceImpl implements IProductService {
     }
 
     private static Product getSaveProduct(ProductRequest productRequest) {
+        // Retrieve the currently authenticated user's username
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+
         Product saveProduct = new Product();
         saveProduct.setCatId(productRequest.getCatId());
         saveProduct.setProductName(productRequest.getProductName());
@@ -343,13 +347,17 @@ public class ProductServiceImpl implements IProductService {
         saveProduct.setBatchNo(productRequest.getBatchNo());
         saveProduct.setStatus(productRequest.getStatus());
         saveProduct.setStatus(1);
-        saveProduct.fillNew("ADMIN USER");
+        saveProduct.fillNew(currentUser);
         return saveProduct;
     }
 
     @Override
     public ProductResponse updateProduct(ProductRequest productRequest) {
         ProductResponse updatedProductResponse = new ProductResponse();
+
+        // Retrieve the currently authenticated user's username
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+
         if (productRequest.getProductId() != null) {
             Product product = productRepository.findById(productRequest.getProductId()).orElseThrow(
                     () -> new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND)
@@ -375,7 +383,7 @@ public class ProductServiceImpl implements IProductService {
             product.setBatchNo(productRequest.getBatchNo());
             product.setStatus(productRequest.getStatus());
             product.setStatus(1);
-            product.fillNew("ADMIN USER");
+            product.fillUpdated(currentUser);
             Product updateProduct = productRepository.save(product);
 
             updatedProductResponse.setProductId(updateProduct.getProductId());
@@ -416,6 +424,7 @@ public class ProductServiceImpl implements IProductService {
             batchDetails.setPurchaseDate(batch.getPurchaseDate());
             batchDetails.setRetailPrice(batch.getRetailPrice());
             batchDetails.setWholesalePrice(batch.getWholesalePrice());
+            batchDetails.setQty(batch.getQty());
 
             return batchDetails;
         }).toList();
@@ -465,8 +474,11 @@ public class ProductServiceImpl implements IProductService {
     public void deleteProduct(Integer prodId) {
         Optional<Product> productOptional = productRepository.findById(prodId);
         if (productOptional.isPresent()) {
+            // Retrieve the currently authenticated user's username
+            String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
             Product product = productOptional.get();
             product.setStatus(0);
+            product.fillUpdated(currentUser);
             productRepository.save(product);
         }
     }

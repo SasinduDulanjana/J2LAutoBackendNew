@@ -11,6 +11,7 @@ import com.example.smartPos.services.ISupplierService;
 import com.example.smartPos.util.CustomerConstants;
 import com.example.smartPos.util.ErrorCodes;
 import com.example.smartPos.util.SupplierConstants;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -75,15 +76,17 @@ public class SupplierServiceImpl implements ISupplierService {
     public SupplierResponse createSupplier(SupplierRequest supplierRequest) {
         Optional<Supplier> supplier = supplierRepository.findByPhone(supplierRequest.getPhone());
         if (supplier.isPresent()) {
-            throw new AlreadyExistsException(ErrorCodes.ALREADY_EXISTS_CUSTOMER);
+            throw new AlreadyExistsException(ErrorCodes.ALREADY_EXISTS_SUPPLIER);
         }
+        // Retrieve the currently authenticated user's username
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
         Supplier saveSupplier = new Supplier();
         saveSupplier.setName(supplierRequest.getName());
         saveSupplier.setAddress(supplierRequest.getAddress());
         saveSupplier.setPhone(supplierRequest.getPhone());
         saveSupplier.setEmail(supplierRequest.getEmail());
         saveSupplier.setStatus(1);
-        saveSupplier.fillNew("ADMIN USER");
+        saveSupplier.fillNew(currentUser);
         Supplier savedSupplier = supplierRepository.save(saveSupplier);
 
         SupplierResponse supplierResponse = new SupplierResponse();
@@ -100,11 +103,13 @@ public class SupplierServiceImpl implements ISupplierService {
             Supplier supplier = supplierRepository.findById(supplierRequest.getSupId()).orElseThrow(
                     () -> new ResourceNotFoundException(ErrorCodes.SUPPLIER_NOT_FOUND)
             );
+            // Retrieve the currently authenticated user's username
+            String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
             supplier.setPhone(supplierRequest.getPhone());
             supplier.setName(supplierRequest.getName());
             supplier.setAddress(supplierRequest.getAddress());
             supplier.setEmail(supplierRequest.getEmail());
-            supplier.fillUpdated("ADMIN USER");
+            supplier.fillUpdated(currentUser);
             Supplier updatedSupplier = supplierRepository.save(supplier);
 
             updatedSupplierResponse.setSupId(updatedSupplier.getSupId());
@@ -120,8 +125,11 @@ public class SupplierServiceImpl implements ISupplierService {
     public void deletSupplier(Integer supId) {
         Optional<Supplier> supplierOptional = supplierRepository.findById(supId);
         if (supplierOptional.isPresent()){
+            // Retrieve the currently authenticated user's username
+            String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
             Supplier supplier = supplierOptional.get();
             supplier.setStatus(0);
+            supplier.fillUpdated(currentUser);
             supplierRepository.save(supplier);
         }
     }

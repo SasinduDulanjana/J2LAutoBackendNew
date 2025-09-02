@@ -50,6 +50,12 @@ public class SaleController {
         System.out.println("OK");
     }
 
+    @PostMapping(path = "/api/deleteHoldSale")
+    public void deleteHoldSale(@RequestBody SaleRequest request) {
+        saleService.deleteHoldSale(request.getSaleId());
+        System.out.println("OK");
+    }
+
     @PostMapping(path = "/api/updatePaidAMount")
     public void updatePaidAMount(@RequestBody SaleRequest request) {
         saleService.updatePaidAMount(request);

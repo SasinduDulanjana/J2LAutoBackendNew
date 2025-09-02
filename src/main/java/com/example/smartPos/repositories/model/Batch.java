@@ -22,6 +22,8 @@ public class Batch {
 
     private Double retailPrice;
 
+    private Double qty;
+
     private Double wholesalePrice;
 
 
@@ -165,4 +167,14 @@ public class Batch {
     public void setWholesalePrice(Double wholesalePrice) {
         this.wholesalePrice = wholesalePrice;
     }
+
+    public Double getQty() {
+        return qty;
+    }
+
+    public void setQty(Double qty) {
+        this.qty = qty;
+    }
+
 }
+

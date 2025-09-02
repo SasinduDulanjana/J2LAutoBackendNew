@@ -1,41 +1,29 @@
-package com.example.smartPos.repositories.model;
+package com.example.smartPos.controllers.responses;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.*;
+import com.example.smartPos.repositories.model.Product;
+import com.example.smartPos.repositories.model.Sale;
 import lombok.Data;
 
-@Entity
 @Data
-@Table(name = "SALE_PRODUCT")
-public class SaleProduct {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+public class SoldProductResponse {
     private Integer saleProductId;
 
-    @ManyToOne
-    @JoinColumn(name = "SALE_ID")
-    @JsonBackReference
     private Sale sale;
 
-    @ManyToOne
-    @JoinColumn(name = "PRODUCT_ID")
     private Product product;
 
-    @Column(name = "QUANTITY")
     private Integer quantity;
 
-    @Column(name = "DISCOUNTED_TOTAL")
     private Double discountedTotal;
 
-    @Column(name = "DISCOUNT_PERCENTAGE")
     private Double discountPercentage;
 
-    @Column(name = "DISCOUNT_AMOUNT")
     private Double discountAmount;
 
-    @Column(name = "BATCH_NUMBER")
     private String batchNo;
+
+    private Double retailPrice;
+
     public Integer getSaleProductId() {
         return saleProductId;
     }
@@ -98,5 +86,13 @@ public class SaleProduct {
 
     public void setBatchNo(String batchNo) {
         this.batchNo = batchNo;
+    }
+
+    public Double getRetailPrice() {
+        return retailPrice;
+    }
+
+    public void setRetailPrice(Double retailPrice) {
+        this.retailPrice = retailPrice;
     }
 }

@@ -143,11 +143,11 @@ CREATE TABLE ROLE (
     status VARCHAR(255)
 );
 INSERT INTO ROLE (name, description, status) VALUES
-('Admin', 'System administrator', 'Active'),
-('Manager', 'Store manager', 'Active'),
-('Cashier', 'Handles sales', 'Active'),
-('Supplier', 'Manages supplies', 'Inactive'),
-('Customer', 'End user', 'Active');
+('ADMIN', 'System administrator', 'Active'),
+('MANAGER', 'Store manager', 'Active'),
+('CASHIER', 'Handles sales', 'Active'),
+('SUPPLIER', 'Manages supplies', 'Inactive'),
+('CUSTOMER', 'End user', 'Active');
 
 -- role_permissions Table
 CREATE TABLE role_permissions (
@@ -305,11 +305,11 @@ CREATE TABLE CATEGORY (
     modified_date DATETIME
 );
 INSERT INTO CATEGORY (cat_id, name, cat_desc, parent, status, add_by, modified_by, added_date, modified_date) VALUES
-(1, 'Electronics', 'Electronic items', NULL, 1, 'admin', 'admin', NOW(), NOW()),
-(2, 'Accessories', 'Computer accessories', 1, 1, 'admin', 'admin', NOW(), NOW()),
-(3, 'Office', 'Office equipment', NULL, 1, 'admin', 'admin', NOW(), NOW()),
-(4, 'Printing', 'Printing devices', 3, 1, 'admin', 'admin', NOW(), NOW()),
-(5, 'Furniture', 'Office furniture', NULL, 1, 'admin', 'admin', NOW(), NOW());
+(1, 'Electronics', 'Electronic items', NULL, 1, 'admin', 'admin', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 'Accessories', 'Computer accessories', 1, 1, 'admin', 'admin', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 'Office', 'Office equipment', NULL, 1, 'admin', 'admin', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(4, 'Printing', 'Printing devices', 3, 1, 'admin', 'admin', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(5, 'Furniture', 'Office furniture', NULL, 1, 'admin', 'admin', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- BATCH Table
 CREATE TABLE BATCH (

@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProductBatchRepository extends JpaRepository<ProductBatch, Integer> {
 
+    ProductBatch findByPurchaseIdAndProduct_ProductId(Integer purchaseId, Integer productId);
 }

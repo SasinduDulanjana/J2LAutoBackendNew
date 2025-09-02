@@ -2,48 +2,45 @@ package com.example.smartPos.services.impl;
 
 import com.example.smartPos.controllers.requests.SaleRequest;
 import com.example.smartPos.controllers.responses.SaleResponse;
+import com.example.smartPos.controllers.responses.SoldProductResponse;
 import com.example.smartPos.exception.ResourceNotFoundException;
 import com.example.smartPos.mapper.SaleMapper;
+import com.example.smartPos.repositories.BatchRepository;
 import com.example.smartPos.repositories.InventoryRepository;
 import com.example.smartPos.repositories.ProductRepository;
-import com.example.smartPos.repositories.SaleProductRepository;
 import com.example.smartPos.repositories.SaleRepository;
-import com.example.smartPos.repositories.model.Inventory;
-import com.example.smartPos.repositories.model.Product;
-import com.example.smartPos.repositories.model.Sale;
-import com.example.smartPos.repositories.model.SaleProduct;
+import com.example.smartPos.repositories.model.*;
 import com.example.smartPos.services.ISaleService;
 import com.example.smartPos.util.ErrorCodes;
 import com.example.smartPos.util.SaleConstants;
 import org.hibernate.service.spi.ServiceException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.TimeZone;
 
 @Service
 public class SaleServiceImpl implements ISaleService {
 
     private final SaleRepository saleRepository;
 
-    private final SaleProductRepository saleProductRepository;
-
     private final ProductRepository productRepository;
 
     private final InventoryRepository inventoryRepository;
 
+    private final BatchRepository batchRepository;
+
     private final SaleMapper saleMapper;
 
-    public SaleServiceImpl(SaleRepository saleRepository, SaleProductRepository saleProductRepository, ProductRepository productRepository, InventoryRepository inventoryRepository, SaleMapper saleMapper) {
+    public SaleServiceImpl(SaleRepository saleRepository, ProductRepository productRepository, InventoryRepository inventoryRepository, BatchRepository batchRepository, SaleMapper saleMapper) {
         this.saleRepository = saleRepository;
-        this.saleProductRepository = saleProductRepository;
         this.productRepository = productRepository;
         this.inventoryRepository = inventoryRepository;
+        this.batchRepository = batchRepository;
         this.saleMapper = saleMapper;
     }
 
@@ -58,7 +55,21 @@ public class SaleServiceImpl implements ISaleService {
             saleResponse.setSaleDate(sm.format(sale.getSaleDate()));
             saleResponse.setTotalAmount(sale.getTotalAmount());
             saleResponse.setInvoiceNumber(sale.getInvoiceNumber());
-            saleResponse.setSoldProducts(sale.getSaleProducts());
+            List<SoldProductResponse> soldProductResponse = sale.getSaleProducts().stream().map(soldProduct -> {
+                SoldProductResponse response = new SoldProductResponse();
+                response.setSaleProductId(soldProduct.getSaleProductId());
+                response.setProduct(soldProduct.getProduct());
+                response.setSale(soldProduct.getSale());
+                response.setBatchNo(soldProduct.getBatchNo());
+                Optional<Batch> optionalBatch = batchRepository.findByBatchNumber(soldProduct.getBatchNo());
+                optionalBatch.ifPresent(batch -> response.setRetailPrice(batch.getRetailPrice()));
+                response.setQuantity(soldProduct.getQuantity());
+                response.setDiscountPercentage(soldProduct.getDiscountPercentage());
+                response.setDiscountAmount(soldProduct.getDiscountAmount());
+                response.setDiscountedTotal(soldProduct.getDiscountedTotal());
+                return response;
+            }).toList();
+            saleResponse.setSoldProducts(soldProductResponse);
             saleResponse.setSubTotal(sale.getSubTotal());
             saleResponse.setBillWiseDiscountPercentage(sale.getBillWiseDiscountPercentage());
             saleResponse.setBillWiseDiscountTotalAmount(sale.getBillWiseDiscountTotalAmount());
@@ -83,7 +94,19 @@ public class SaleServiceImpl implements ISaleService {
             saleResponse.setSaleDate(sm.format(sale.getSaleDate()));
             saleResponse.setTotalAmount(sale.getTotalAmount());
             saleResponse.setInvoiceNumber(sale.getInvoiceNumber());
-            saleResponse.setSoldProducts(sale.getSaleProducts());
+            List<SoldProductResponse> soldProductResponse = sale.getSaleProducts().stream().map(soldProduct -> {
+                SoldProductResponse response = new SoldProductResponse();
+                response.setSaleProductId(soldProduct.getSaleProductId());
+                response.setProduct(soldProduct.getProduct());
+                response.setSale(soldProduct.getSale());
+                response.setBatchNo(soldProduct.getBatchNo());
+                response.setQuantity(soldProduct.getQuantity());
+                response.setDiscountPercentage(soldProduct.getDiscountPercentage());
+                response.setDiscountAmount(soldProduct.getDiscountAmount());
+                response.setDiscountedTotal(soldProduct.getDiscountedTotal());
+                return response;
+            }).toList();
+            saleResponse.setSoldProducts(soldProductResponse);
             saleResponse.setSubTotal(sale.getSubTotal());
             saleResponse.setBillWiseDiscountPercentage(sale.getBillWiseDiscountPercentage());
             saleResponse.setBillWiseDiscountTotalAmount(sale.getBillWiseDiscountTotalAmount());
@@ -108,7 +131,19 @@ public class SaleServiceImpl implements ISaleService {
             saleResponse.setSaleDate(sm.format(sale.getSaleDate()));
             saleResponse.setTotalAmount(sale.getTotalAmount());
             saleResponse.setInvoiceNumber(sale.getInvoiceNumber());
-            saleResponse.setSoldProducts(sale.getSaleProducts());
+            List<SoldProductResponse> soldProductResponse = sale.getSaleProducts().stream().map(soldProduct -> {
+                SoldProductResponse response = new SoldProductResponse();
+                response.setSaleProductId(soldProduct.getSaleProductId());
+                response.setProduct(soldProduct.getProduct());
+                response.setSale(soldProduct.getSale());
+                response.setBatchNo(soldProduct.getBatchNo());
+                response.setQuantity(soldProduct.getQuantity());
+                response.setDiscountPercentage(soldProduct.getDiscountPercentage());
+                response.setDiscountAmount(soldProduct.getDiscountAmount());
+                response.setDiscountedTotal(soldProduct.getDiscountedTotal());
+                return response;
+            }).toList();
+            saleResponse.setSoldProducts(soldProductResponse);
             saleResponse.setSubTotal(sale.getSubTotal());
             saleResponse.setBillWiseDiscountPercentage(sale.getBillWiseDiscountPercentage());
             saleResponse.setBillWiseDiscountTotalAmount(sale.getBillWiseDiscountTotalAmount());
@@ -133,7 +168,19 @@ public class SaleServiceImpl implements ISaleService {
             saleResponse.setSaleDate(sm.format(sale.getSaleDate()));
             saleResponse.setTotalAmount(sale.getTotalAmount());
             saleResponse.setInvoiceNumber(sale.getInvoiceNumber());
-            saleResponse.setSoldProducts(sale.getSaleProducts());
+            List<SoldProductResponse> soldProductResponse = sale.getSaleProducts().stream().map(soldProduct -> {
+                SoldProductResponse response = new SoldProductResponse();
+                response.setSaleProductId(soldProduct.getSaleProductId());
+                response.setProduct(soldProduct.getProduct());
+                response.setSale(soldProduct.getSale());
+                response.setBatchNo(soldProduct.getBatchNo());
+                response.setQuantity(soldProduct.getQuantity());
+                response.setDiscountPercentage(soldProduct.getDiscountPercentage());
+                response.setDiscountAmount(soldProduct.getDiscountAmount());
+                response.setDiscountedTotal(soldProduct.getDiscountedTotal());
+                return response;
+            }).toList();
+            saleResponse.setSoldProducts(soldProductResponse);
             saleResponse.setSubTotal(sale.getSubTotal());
             saleResponse.setBillWiseDiscountPercentage(sale.getBillWiseDiscountPercentage());
             saleResponse.setBillWiseDiscountTotalAmount(sale.getBillWiseDiscountTotalAmount());
@@ -150,11 +197,13 @@ public class SaleServiceImpl implements ISaleService {
     @Override
     public void deleteSale(Integer saleId) {
         try {
+            // Retrieve the currently authenticated user's username
+            String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
             Optional<Sale> optionalSale = saleRepository.findById(saleId);
             if (optionalSale.isPresent()) {
                 Sale sale = optionalSale.get();
                 sale.setStatus(0);
-                sale.fillUpdated("ADMIN");
+                sale.fillUpdated(currentUser);
                 saleRepository.save(sale);
 
                 sale.getSaleProducts().stream().forEach(soldProduct -> {
@@ -175,6 +224,25 @@ public class SaleServiceImpl implements ISaleService {
                         throw new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND);
                     }
                 });
+            } else {
+                throw new ResourceNotFoundException(ErrorCodes.SALE_NOT_FOUND);
+            }
+        } catch (Exception e) {
+            throw new ServiceException("Error while deleting sale", e);
+        }
+    }
+
+    @Override
+    public void deleteHoldSale(Integer saleId) {
+        try {
+            // Retrieve the currently authenticated user's username
+            String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+            Optional<Sale> optionalSale = saleRepository.findById(saleId);
+            if (optionalSale.isPresent()) {
+                Sale sale = optionalSale.get();
+                sale.setStatus(0);
+                sale.fillUpdated(currentUser);
+                saleRepository.save(sale);
             } else {
                 throw new ResourceNotFoundException(ErrorCodes.SALE_NOT_FOUND);
             }
@@ -234,7 +302,19 @@ public class SaleServiceImpl implements ISaleService {
         saleResponse.setSaleDate(sm.format(order.getSaleDate()));
         saleResponse.setTotalAmount(order.getTotalAmount());
         saleResponse.setInvoiceNumber(order.getInvoiceNumber());
-        saleResponse.setSoldProducts(order.getSaleProducts());
+        List<SoldProductResponse> soldProductResponse = order.getSaleProducts().stream().map(soldProduct -> {
+            SoldProductResponse response = new SoldProductResponse();
+            response.setSaleProductId(soldProduct.getSaleProductId());
+            response.setProduct(soldProduct.getProduct());
+            response.setSale(soldProduct.getSale());
+            response.setBatchNo(soldProduct.getBatchNo());
+            response.setQuantity(soldProduct.getQuantity());
+            response.setDiscountPercentage(soldProduct.getDiscountPercentage());
+            response.setDiscountAmount(soldProduct.getDiscountAmount());
+            response.setDiscountedTotal(soldProduct.getDiscountedTotal());
+            return response;
+        }).toList();
+        saleResponse.setSoldProducts(soldProductResponse);
         return saleResponse;
     }
 
@@ -251,7 +331,19 @@ public class SaleServiceImpl implements ISaleService {
         saleResponse.setSaleDate(sm.format(order.getSaleDate()));
         saleResponse.setTotalAmount(order.getTotalAmount());
         saleResponse.setInvoiceNumber(order.getInvoiceNumber());
-        saleResponse.setSoldProducts(order.getSaleProducts());
+        List<SoldProductResponse> soldProductResponse = order.getSaleProducts().stream().map(soldProduct -> {
+            SoldProductResponse response = new SoldProductResponse();
+            response.setSaleProductId(soldProduct.getSaleProductId());
+            response.setProduct(soldProduct.getProduct());
+            response.setSale(soldProduct.getSale());
+            response.setBatchNo(soldProduct.getBatchNo());
+            response.setQuantity(soldProduct.getQuantity());
+            response.setDiscountPercentage(soldProduct.getDiscountPercentage());
+            response.setDiscountAmount(soldProduct.getDiscountAmount());
+            response.setDiscountedTotal(soldProduct.getDiscountedTotal());
+            return response;
+        }).toList();
+        saleResponse.setSoldProducts(soldProductResponse);
         return saleResponse;
     }
 
@@ -260,6 +352,9 @@ public class SaleServiceImpl implements ISaleService {
     @Transactional
     public SaleResponse createSale(SaleRequest saleRequest) {
         try {
+            // Retrieve the currently authenticated user's username
+            String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+
             Sale saveSale = new Sale();
             saveSale.setCustId(saleRequest.getCustId());
             saveSale.setUserId(saleRequest.getUserId());
@@ -275,7 +370,8 @@ public class SaleServiceImpl implements ISaleService {
             saveSale.setHold(saleRequest.isHold());
             saveSale.setFullyPaid(saleRequest.isFullyPaid());
             saveSale.setStatus(1);
-            saveSale.fillNew("ADMIN USER");
+            saveSale.fillNew(currentUser);
+
 
             List<SaleProduct> saleProductList = saleRequest.getSoldProducts().stream().map(soldProduct -> {
                 if (soldProduct.getProduct().getProductId() != null) {
@@ -288,11 +384,13 @@ public class SaleServiceImpl implements ISaleService {
                     Inventory inventory = inventoryRepository.findBySkuAndBatchNumber(byProductIdAndSku.getSku(), soldProduct.getProduct().getBatchNo())
                             .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.INVENTORY_NOT_FOUND));
 
-                    if (inventory.getQty() > 0){
-                        inventory.setQty(inventory.getQty() - soldProduct.getProduct().getRemainingQty());
-                        inventoryRepository.save(inventory);
-                    }else {
-                        throw new ServiceException("Quantity is not enough");
+                    if (!saleRequest.isHold()){
+                        if (inventory.getQty() > 0){
+                            inventory.setQty(inventory.getQty() - soldProduct.getProduct().getRemainingQty());
+                            inventoryRepository.save(inventory);
+                        }else {
+                            throw new ServiceException("Quantity is not enough");
+                        }
                     }
 
 
@@ -303,6 +401,7 @@ public class SaleServiceImpl implements ISaleService {
                     saleProduct.setDiscountAmount(soldProduct.getDiscountAmount());
                     saleProduct.setDiscountPercentage(soldProduct.getDiscountPercentage());
                     saleProduct.setDiscountedTotal(soldProduct.getDiscountedTotal());
+                    saleProduct.setBatchNo(soldProduct.getProduct().getBatchNo());
                     return saleProduct;
                 } else {
                     throw new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND);
@@ -324,7 +423,19 @@ public class SaleServiceImpl implements ISaleService {
             saleResponse.setPaymentMethod(savedOrder.getPaymentMethod());
             saleResponse.setTotalAmount(savedOrder.getTotalAmount());
             saleResponse.setInvoiceNumber(savedOrder.getInvoiceNumber());
-            saleResponse.setSoldProducts(savedOrder.getSaleProducts());
+            List<SoldProductResponse> soldProductResponse = savedOrder.getSaleProducts().stream().map(soldProduct -> {
+                SoldProductResponse response = new SoldProductResponse();
+                response.setSaleProductId(soldProduct.getSaleProductId());
+                response.setProduct(soldProduct.getProduct());
+                response.setSale(soldProduct.getSale());
+                response.setBatchNo(soldProduct.getBatchNo());
+                response.setQuantity(soldProduct.getQuantity());
+                response.setDiscountPercentage(soldProduct.getDiscountPercentage());
+                response.setDiscountAmount(soldProduct.getDiscountAmount());
+                response.setDiscountedTotal(soldProduct.getDiscountedTotal());
+                return response;
+            }).toList();
+            saleResponse.setSoldProducts(soldProductResponse);
             saleResponse.setStatusCode(SaleConstants.STATUS_201);
             saleResponse.setDesc(SaleConstants.MESSAGE_201);
             return saleResponse;
@@ -355,7 +466,19 @@ public class SaleServiceImpl implements ISaleService {
             saleResponse.setSaleDate(sm.format(sale.getSaleDate()));
             saleResponse.setTotalAmount(sale.getTotalAmount());
             saleResponse.setInvoiceNumber(sale.getInvoiceNumber());
-            saleResponse.setSoldProducts(sale.getSaleProducts());
+            List<SoldProductResponse> soldProductResponse = sale.getSaleProducts().stream().map(soldProduct -> {
+                SoldProductResponse response = new SoldProductResponse();
+                response.setSaleProductId(soldProduct.getSaleProductId());
+                response.setProduct(soldProduct.getProduct());
+                response.setSale(soldProduct.getSale());
+                response.setBatchNo(soldProduct.getBatchNo());
+                response.setQuantity(soldProduct.getQuantity());
+                response.setDiscountPercentage(soldProduct.getDiscountPercentage());
+                response.setDiscountAmount(soldProduct.getDiscountAmount());
+                response.setDiscountedTotal(soldProduct.getDiscountedTotal());
+                return response;
+            }).toList();
+            saleResponse.setSoldProducts(soldProductResponse);
             saleResponse.setSubTotal(sale.getSubTotal());
             saleResponse.setBillWiseDiscountPercentage(sale.getBillWiseDiscountPercentage());
             saleResponse.setBillWiseDiscountTotalAmount(sale.getBillWiseDiscountTotalAmount());

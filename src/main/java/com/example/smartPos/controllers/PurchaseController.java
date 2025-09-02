@@ -1,8 +1,10 @@
 package com.example.smartPos.controllers;
 
+import com.example.smartPos.controllers.requests.ProductBatchRequest;
 import com.example.smartPos.controllers.requests.ProductRequest;
 import com.example.smartPos.controllers.requests.PurchaseRequest;
 import com.example.smartPos.controllers.responses.CommonResponse;
+import com.example.smartPos.controllers.responses.ProductBatchResponse;
 import com.example.smartPos.controllers.responses.ProductResponse;
 import com.example.smartPos.controllers.responses.PurchaseResponse;
 import com.example.smartPos.services.IProductService;
@@ -66,6 +68,14 @@ public class PurchaseController {
                                                           @RequestParam("endDate") @DateTimeFormat(pattern = "dd-MM-yyyy") Date endDate) {
         return purchaseService.getPurchasesByDateRange(startDate, endDate);
     }
+
+    @PostMapping(path = "/api/getProductBatchDetails")
+    public ResponseEntity<ProductBatchResponse> getProductBatchDetails(@RequestBody ProductBatchRequest request) {
+        ProductBatchResponse response = purchaseService.fetchProductBatchDetails(request);
+        return ResponseCreator.success(response);
+    }
+
+
 //
 //    @PostMapping(path = "/api/updateProduct")
 //    public ResponseEntity<ProductResponse> updateProduct(@RequestBody ProductRequest productRequest) {

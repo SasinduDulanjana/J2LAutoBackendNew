@@ -12,6 +12,9 @@ import java.util.Optional;
 public interface BatchRepository extends JpaRepository<Batch, Integer> {
     Optional<Batch> findByBatchNumberAndSku(String batchNumber, String sku);
 
+    Optional<Batch> findByBatchNumber(String batchNumber);
+
+
     List<Batch> findAllBySku(String sku);
 
 }

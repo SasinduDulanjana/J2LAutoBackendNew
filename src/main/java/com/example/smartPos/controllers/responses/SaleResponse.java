@@ -31,7 +31,7 @@ public class SaleResponse extends CommonResponse {
 
     private String invoiceNumber;
 
-    private List<SaleProduct> soldProducts;
+    private List<SoldProductResponse> soldProducts;
 
     private Integer status;
 
@@ -188,11 +188,11 @@ public class SaleResponse extends CommonResponse {
         this.lineWiseDiscountTotalAmount = lineWiseDiscountTotalAmount;
     }
 
-    public List<SaleProduct> getSoldProducts() {
+    public List<SoldProductResponse> getSoldProducts() {
         return soldProducts;
     }
 
-    public void setSoldProducts(List<SaleProduct> soldProducts) {
+    public void setSoldProducts(List<SoldProductResponse> soldProducts) {
         this.soldProducts = soldProducts;
     }
 

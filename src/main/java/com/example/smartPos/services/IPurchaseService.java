@@ -1,6 +1,8 @@
 package com.example.smartPos.services;
 
+import com.example.smartPos.controllers.requests.ProductBatchRequest;
 import com.example.smartPos.controllers.requests.PurchaseRequest;
+import com.example.smartPos.controllers.responses.ProductBatchResponse;
 import com.example.smartPos.controllers.responses.PurchaseResponse;
 import com.example.smartPos.repositories.model.Purchase;
 
@@ -26,5 +28,5 @@ public interface IPurchaseService {
     List<PurchaseResponse> getPurchasesByDateRange(Date startDate, Date endDate);
 
 
-//    PurchaseResponse updatePurchase(PurchaseRequest purchaseRequest);
+    ProductBatchResponse fetchProductBatchDetails(ProductBatchRequest request);
 }

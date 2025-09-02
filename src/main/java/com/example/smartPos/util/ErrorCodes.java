@@ -37,7 +37,12 @@ public enum ErrorCodes {
     USER_NAME_NOT_FOUND("79", "Username Not Found"),
 
     INVENTORY_NOT_FOUND("89", "Inventory Not Found"),
-    SALE_NOT_FOUND("88", "Sale Not Found");
+    SALE_NOT_FOUND("88", "Sale Not Found"),
+
+    PRODUCT_BATCH_NOT_FOUND("60", "Product Batch doesn't exist"),
+
+    BATCH_NOT_FOUND("61", "Batch doesn't exist");
+
 
     public final String code;
     public final String description;

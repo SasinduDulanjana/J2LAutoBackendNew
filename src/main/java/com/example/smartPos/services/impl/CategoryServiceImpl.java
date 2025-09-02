@@ -11,6 +11,7 @@ import com.example.smartPos.services.ICategoryService;
 import com.example.smartPos.util.CategoryConstants;
 import com.example.smartPos.util.CustomerConstants;
 import com.example.smartPos.util.ErrorCodes;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -71,12 +72,16 @@ public class CategoryServiceImpl implements ICategoryService {
         if (category.isPresent()) {
             throw new AlreadyExistsException(ErrorCodes.ALREADY_EXISTS_CATEGORY);
         }
+
+        // Retrieve the currently authenticated user's username
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+
         Category saveCategory = new Category();
         saveCategory.setName(categoryRequest.getName());
         saveCategory.setCatDesc(categoryRequest.getCatDesc());
         saveCategory.setParent(categoryRequest.getParent());
         saveCategory.setStatus(1);
-        saveCategory.fillNew("ADMIN USER");
+        saveCategory.fillNew(currentUser);
         Category savedCategory = categoryRepository.save(saveCategory);
 
         CategoryResponse categoryResponse = new CategoryResponse();
@@ -93,10 +98,12 @@ public class CategoryServiceImpl implements ICategoryService {
             Category category = categoryRepository.findById(categoryRequest.getCatId()).orElseThrow(
                     () -> new ResourceNotFoundException(ErrorCodes.CATEGORY_NOT_FOUND)
             );
+            // Retrieve the currently authenticated user's username
+            String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
             category.setName(categoryRequest.getName());
             category.setCatDesc(categoryRequest.getCatDesc());
             category.setParent(categoryRequest.getParent());
-            category.fillUpdated("ADMIN USER");
+            category.fillUpdated(currentUser);
             Category updatedCategory = categoryRepository.save(category);
 
             updatedCategoryResponse.setCatId(updatedCategory.getCatId());
@@ -111,8 +118,11 @@ public class CategoryServiceImpl implements ICategoryService {
     public void deleteCategory(Integer catId) {
         Optional<Category> categoryOptional = categoryRepository.findById(catId);
         if (categoryOptional.isPresent()){
+            // Retrieve the currently authenticated user's username
+            String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
             Category category = categoryOptional.get();
             category.setStatus(0);
+            category.fillUpdated(currentUser);
             categoryRepository.save(category);
         }
     }

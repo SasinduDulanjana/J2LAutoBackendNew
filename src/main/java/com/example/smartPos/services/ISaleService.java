@@ -17,6 +17,8 @@ public interface ISaleService {
 
     void deleteSale(Integer saleId);
 
+    void deleteHoldSale(Integer saleId);
+
     void updatePaidAMount(SaleRequest request);
 
     void deleteSalesByIds(List<Long> saleIds);

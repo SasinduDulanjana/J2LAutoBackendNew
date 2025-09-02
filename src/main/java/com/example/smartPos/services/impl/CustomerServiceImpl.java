@@ -9,6 +9,7 @@ import com.example.smartPos.repositories.model.Customer;
 import com.example.smartPos.services.ICustomerService;
 import com.example.smartPos.util.CustomerConstants;
 import com.example.smartPos.util.ErrorCodes;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -76,13 +77,17 @@ public class CustomerServiceImpl implements ICustomerService {
         if (customer.isPresent()) {
             throw new AlreadyExistsException(ErrorCodes.ALREADY_EXISTS_CUSTOMER);
         }
+
+        // Retrieve the currently authenticated user's username
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+
         Customer saveCustomer = new Customer();
         saveCustomer.setName(customerRequest.getName());
         saveCustomer.setAddress(customerRequest.getAddress());
         saveCustomer.setPhone(customerRequest.getPhone());
         saveCustomer.setEmail(customerRequest.getEmail());
         saveCustomer.setStatus(1);
-        saveCustomer.fillNew("ADMIN USER");
+        saveCustomer.fillNew(currentUser);
         Customer savedCustomer = customerRepository.save(saveCustomer);
 
         CustomerResponse customerResponse = new CustomerResponse();
@@ -99,11 +104,13 @@ public class CustomerServiceImpl implements ICustomerService {
             Customer customer = customerRepository.findById(customerRequest.getCustId()).orElseThrow(
                     () -> new ResourceNotFoundException(ErrorCodes.CUSTOMER_NOT_FOUND)
             );
+            // Retrieve the currently authenticated user's username
+            String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
             customer.setPhone(customerRequest.getPhone());
             customer.setName(customerRequest.getName());
             customer.setAddress(customerRequest.getAddress());
             customer.setEmail(customerRequest.getEmail());
-            customer.fillUpdated("ADMIN USER");
+            customer.fillUpdated(currentUser);
             Customer updatedCustomer = customerRepository.save(customer);
 
             updatedCustomerResponse.setCustId(updatedCustomer.getCustId());
@@ -133,8 +140,11 @@ public class CustomerServiceImpl implements ICustomerService {
     public void deletCustomer(Integer custId) {
         Optional<Customer> customerOptional = customerRepository.findById(custId);
         if (customerOptional.isPresent()){
+            // Retrieve the currently authenticated user's username
+            String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
             Customer customer = customerOptional.get();
             customer.setStatus(0);
+            customer.fillUpdated(currentUser);
             customerRepository.save(customer);
         }
     }

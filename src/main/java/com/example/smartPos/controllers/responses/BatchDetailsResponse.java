@@ -9,6 +9,8 @@ public class BatchDetailsResponse extends CommonResponse {
 
     private Double unitCost;
 
+    private Double qty;
+
     private Double retailPrice;
 
     private Double wholesalePrice;
@@ -89,5 +91,12 @@ public class BatchDetailsResponse extends CommonResponse {
 
     public void setWholesalePrice(Double wholesalePrice) {
         this.wholesalePrice = wholesalePrice;
+    }
+
+    public Double getQty() {
+        return qty;
+    }
+    public void setQty(Double qty) {
+        this.qty = qty;
     }
 }

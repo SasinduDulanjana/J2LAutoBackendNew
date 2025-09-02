@@ -27,7 +27,7 @@ public class SaleRequest {
     private Double lineWiseDiscountTotalAmount;
     private String invoiceNumber;
 
-    private List<SaleProduct> soldProducts;
+    private List<SoldProductRequest> soldProducts;
 
     private Integer status;
 
@@ -87,11 +87,11 @@ public class SaleRequest {
         this.invoiceNumber = invoiceNumber;
     }
 
-    public List<SaleProduct> getSoldProducts() {
+    public List<SoldProductRequest> getSoldProducts() {
         return soldProducts;
     }
 
-    public void setSoldProducts(List<SaleProduct> soldProducts) {
+    public void setSoldProducts(List<SoldProductRequest> soldProducts) {
         this.soldProducts = soldProducts;
     }
 

@@ -27,4 +27,13 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Integer> {
 
     @Query("SELECT p FROM Purchase p WHERE p.addedDate BETWEEN :startDate AND :endDate AND p.status != 0")
     List<Purchase> findAllByAddedDateBetweenAndStatusNot(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
+    @Query("SELECT COALESCE(SUM(p.totalCost), 0) FROM Purchase p WHERE p.status = 1")
+    Double findTotalTotalCostForActivePurchases();
+
+    @Query("SELECT COALESCE(SUM(p.totalCost), 0) - COALESCE(SUM(p.paidAmount), 0) FROM Purchase p WHERE p.status = 1")
+    Double findDueAmountForActivePurchases();
+
+    @Query("SELECT TO_CHAR(p.addedDate, 'YYYY-MM') AS month, COALESCE(SUM(p.totalCost), 0) AS purchases FROM Purchase p WHERE p.status = 1 GROUP BY TO_CHAR(p.addedDate, 'YYYY-MM') ORDER BY month")
+    List<Object[]> findMonthlyPurchases();
 }

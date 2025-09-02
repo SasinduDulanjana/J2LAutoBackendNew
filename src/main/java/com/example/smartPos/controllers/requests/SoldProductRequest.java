@@ -1,34 +1,88 @@
 package com.example.smartPos.controllers.requests;
 
+import com.example.smartPos.repositories.model.Product;
+import com.example.smartPos.repositories.model.Sale;
 import lombok.Data;
 
 @Data
 public class SoldProductRequest {
-    private Integer productId;
-    private Integer batchId;
-    private Integer qty;
+    private Integer saleProductId;
 
-    public Integer getProductId() {
-        return productId;
+    private Sale sale;
+
+    private Product product;
+
+    private Integer quantity;
+
+    private Double discountedTotal;
+
+    private Double discountPercentage;
+
+    private Double discountAmount;
+
+    private String batchNo;
+
+    public Integer getSaleProductId() {
+        return saleProductId;
     }
 
-    public void setProductId(Integer productId) {
-        this.productId = productId;
+    public void setSaleProductId(Integer saleProductId) {
+        this.saleProductId = saleProductId;
     }
 
-    public Integer getBatchId() {
-        return batchId;
+    public Sale getSale() {
+        return sale;
     }
 
-    public void setBatchId(Integer batchId) {
-        this.batchId = batchId;
+    public void setSale(Sale sale) {
+        this.sale = sale;
     }
 
-    public Integer getQty() {
-        return qty;
+    public Product getProduct() {
+        return product;
     }
 
-    public void setQty(Integer qty) {
-        this.qty = qty;
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+
+    public Double getDiscountedTotal() {
+        return discountedTotal;
+    }
+
+    public void setDiscountedTotal(Double discountedTotal) {
+        this.discountedTotal = discountedTotal;
+    }
+
+    public Double getDiscountPercentage() {
+        return discountPercentage;
+    }
+
+    public void setDiscountPercentage(Double discountPercentage) {
+        this.discountPercentage = discountPercentage;
+    }
+
+    public Double getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public void setDiscountAmount(Double discountAmount) {
+        this.discountAmount = discountAmount;
+    }
+
+    public String getBatchNo() {
+        return batchNo;
+    }
+
+    public void setBatchNo(String batchNo) {
+        this.batchNo = batchNo;
     }
 }
