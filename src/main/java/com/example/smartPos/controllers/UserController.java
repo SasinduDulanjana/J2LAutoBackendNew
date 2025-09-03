@@ -78,4 +78,9 @@ public class UserController {
         userService.deleteUser(id);
     }
 
+    @GetMapping("/test")
+    public void test(@PathVariable Integer id) {
+        System.out.println("testingggg");
+    }
+
 }
