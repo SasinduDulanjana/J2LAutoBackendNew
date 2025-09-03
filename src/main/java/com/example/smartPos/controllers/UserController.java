@@ -79,7 +79,7 @@ public class UserController {
     }
 
     @GetMapping("/test")
-    public void test(@PathVariable Integer id) {
+    public void test() {
         System.out.println("testingggg");
     }
 
