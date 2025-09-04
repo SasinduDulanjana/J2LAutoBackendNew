@@ -79,8 +79,8 @@ public class UserController {
     }
 
     @GetMapping("/test")
-    public void test() {
-        System.out.println("testingggg");
+    public String test() {
+        return "Test successful";
     }
 
 }
