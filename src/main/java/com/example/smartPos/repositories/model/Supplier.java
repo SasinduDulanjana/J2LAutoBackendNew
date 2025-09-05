@@ -9,7 +9,7 @@ import java.util.Date;
 public class Supplier {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer supId;
 
     private String name;

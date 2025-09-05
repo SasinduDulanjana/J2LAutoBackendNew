@@ -12,7 +12,7 @@ import java.util.List;
 public class Purchase {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer purchaseId;
 
     private Integer supplierId;

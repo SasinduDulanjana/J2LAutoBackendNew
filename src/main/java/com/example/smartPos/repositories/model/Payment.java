@@ -9,7 +9,7 @@ import lombok.Data;
 public class Payment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer paymentId;
 
     private String saleId;

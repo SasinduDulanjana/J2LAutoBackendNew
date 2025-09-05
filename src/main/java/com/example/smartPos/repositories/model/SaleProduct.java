@@ -10,7 +10,7 @@ import lombok.Data;
 public class SaleProduct {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer saleProductId;
 
     @ManyToOne

@@ -11,7 +11,7 @@ import java.util.Date;
 public class Inventory {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     private String sku;

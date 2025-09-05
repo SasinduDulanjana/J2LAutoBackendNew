@@ -5,10 +5,10 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # Copy the Maven build output (JAR file) into the container
-COPY target/smartPos-0.0.1-SNAPSHOT.jar app.jar
+COPY target/pos-app.jar pos-app.jar
 
 # Expose the port your Spring Boot application runs on
 EXPOSE 8080
 
 # Command to run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "pos-app.jar"]
