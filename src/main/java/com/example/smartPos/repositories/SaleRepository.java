@@ -43,6 +43,6 @@ public interface SaleRepository extends JpaRepository<Sale, Integer> {
     @Query("SELECT COALESCE(SUM(s.totalAmount), 0) - COALESCE(SUM(s.paidAmount), 0) FROM Sale s WHERE s.status = 1")
     Double findDueAmountForActiveSales();
 
-    @Query("SELECT TO_CHAR(s.addedDate, 'YYYY-MM') AS month, COALESCE(SUM(s.totalAmount), 0) AS revenue FROM Sale s WHERE s.status = 1 GROUP BY TO_CHAR(s.addedDate, 'YYYY-MM') ORDER BY month")
+    @Query("SELECT DATE_FORMAT(s.addedDate, '%Y-%m') AS month, COALESCE(SUM(s.totalAmount), 0) AS revenue FROM Sale s WHERE s.status = 1 GROUP BY DATE_FORMAT(s.addedDate, '%Y-%m') ORDER BY month")
     List<Object[]> findMonthlyRevenue();
 }

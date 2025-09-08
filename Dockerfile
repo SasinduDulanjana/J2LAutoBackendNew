@@ -5,10 +5,10 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # Copy the Maven build output (JAR file) into the container
-COPY target/pos-app.jar pos-app.jar
+COPY target/posapp.jar posapp.jar
 
 # Expose the port your Spring Boot application runs on
 EXPOSE 8080
 
 # Command to run the application
-ENTRYPOINT ["java", "-jar", "pos-app.jar"]
+ENTRYPOINT ["java", "-jar", "posapp.jar"]

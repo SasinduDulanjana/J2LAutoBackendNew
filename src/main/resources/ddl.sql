@@ -25,12 +25,14 @@ CREATE TABLE feature (
     feature_name VARCHAR(255),
     description VARCHAR(255)
 );
-INSERT INTO feature (feature_name, description) VALUES
-('Inventory', 'Manage inventory items'),
-('Sales', 'Handle sales transactions'),
-('Purchase', 'Track purchases'),
-('Reporting', 'Generate business reports'),
-('User Management', 'Manage system users');
+INSERT INTO `smartpos`.`feature` (`description`, `feature_name`) VALUES ('Manage inventory items', 'inventory');
+INSERT INTO `smartpos`.`feature` (`description`, `feature_name`) VALUES ('Manage purchases', 'purchase');
+INSERT INTO `smartpos`.`feature` (`description`, `feature_name`) VALUES ('Manage customers', 'customer');
+INSERT INTO `smartpos`.`feature` (`description`, `feature_name`) VALUES ('Manage sales return', 'salesReturn');
+INSERT INTO `smartpos`.`feature` (`description`, `feature_name`) VALUES ('Manage reports', 'reports');
+INSERT INTO `smartpos`.`feature` (`description`, `feature_name`) VALUES ('Manage suppliers', 'viewSupplierList');
+INSERT INTO `smartpos`.`feature` (`description`, `feature_name`) VALUES ('Manage User Access', 'userManagement');
+INSERT INTO `smartpos`.`feature` (`description`, `feature_name`) VALUES ('Manage sales', 'sale');
 
 -- PAYMENT Table
 CREATE TABLE PAYMENT (
@@ -142,12 +144,11 @@ CREATE TABLE ROLE (
     description VARCHAR(255),
     status VARCHAR(255)
 );
-INSERT INTO ROLE (name, description, status) VALUES
-('ADMIN', 'System administrator', 'Active'),
-('MANAGER', 'Store manager', 'Active'),
-('CASHIER', 'Handles sales', 'Active'),
-('SUPPLIER', 'Manages supplies', 'Inactive'),
-('CUSTOMER', 'End user', 'Active');
+INSERT INTO `smartpos`.`role` (`description`, `name`, `status`) VALUES ('Admin with all feature access', 'SUPER ADMIN', '1');
+INSERT INTO `smartpos`.`role` (`description`, `name`, `status`) VALUES ('ADMIN', 'ADMIN', '1');
+INSERT INTO `smartpos`.`role` (`description`, `name`, `status`) VALUES ('CASHIER', 'Handles sales', '1');
+INSERT INTO `smartpos`.`role` (`description`, `name`, `status`) VALUES ('MANAGER', 'Store manager', '1');
+
 
 -- role_permissions Table
 CREATE TABLE role_permissions (
@@ -156,12 +157,16 @@ CREATE TABLE role_permissions (
     feature VARCHAR(255),
     enabled BOOLEAN
 );
-INSERT INTO role_permissions (role, feature, enabled) VALUES
-('Admin', 'Inventory', true),
-('Manager', 'Sales', true),
-('Cashier', 'Sales', true),
-('Supplier', 'Purchase', true),
-('Customer', 'Reporting', false);
+INSERT INTO `smartpos`.`role_permissions` (`enabled`, `feature`, `role`) VALUES (1, 'inventory', 'SUPER ADMIN');
+INSERT INTO `smartpos`.`role_permissions` (`enabled`, `feature`, `role`) VALUES (1, 'purchase', 'SUPER ADMIN');
+INSERT INTO `smartpos`.`role_permissions` (`enabled`, `feature`, `role`) VALUES (1, 'customer', 'SUPER ADMIN');
+INSERT INTO `smartpos`.`role_permissions` (`enabled`, `feature`, `role`) VALUES (1, 'salesReturn', 'SUPER ADMIN');
+INSERT INTO `smartpos`.`role_permissions` (`enabled`, `feature`, `role`) VALUES (1, 'reports', 'SUPER ADMIN');
+INSERT INTO `smartpos`.`role_permissions` (`enabled`, `feature`, `role`) VALUES (1, 'viewSupplierList', 'SUPER ADMIN');
+INSERT INTO `smartpos`.`role_permissions` (`enabled`, `feature`, `role`) VALUES (1, 'userManagement', 'SUPER ADMIN');
+INSERT INTO `smartpos`.`role_permissions` (`enabled`, `feature`, `role`) VALUES (1, 'sale', 'SUPER ADMIN');
+
+
 
 -- SALE Table
 CREATE TABLE SALE (

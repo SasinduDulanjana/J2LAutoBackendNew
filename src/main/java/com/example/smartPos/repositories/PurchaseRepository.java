@@ -34,6 +34,6 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Integer> {
     @Query("SELECT COALESCE(SUM(p.totalCost), 0) - COALESCE(SUM(p.paidAmount), 0) FROM Purchase p WHERE p.status = 1")
     Double findDueAmountForActivePurchases();
 
-    @Query("SELECT TO_CHAR(p.addedDate, 'YYYY-MM') AS month, COALESCE(SUM(p.totalCost), 0) AS purchases FROM Purchase p WHERE p.status = 1 GROUP BY TO_CHAR(p.addedDate, 'YYYY-MM') ORDER BY month")
+    @Query("SELECT DATE_FORMAT(p.addedDate, '%Y-%m') AS month, COALESCE(SUM(p.totalCost), 0) AS purchases FROM Purchase p WHERE p.status = 1 GROUP BY DATE_FORMAT(p.addedDate, '%Y-%m') ORDER BY month")
     List<Object[]> findMonthlyPurchases();
 }
