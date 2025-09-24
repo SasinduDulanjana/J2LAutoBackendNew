@@ -1,7 +1,7 @@
 package com.example.smartPos.controllers.responses;
 
-import com.example.smartPos.repositories.model.SaleProduct;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.example.smartPos.repositories.model.Customer;
+import com.example.smartPos.repositories.model.User;
 import lombok.Data;
 
 import java.util.Date;
@@ -11,9 +11,9 @@ import java.util.List;
 public class SaleResponse extends CommonResponse {
     private Integer saleId;
 
-    private Integer custId;
+    private Customer customer;
 
-    private Integer userId;
+    private User user;
 
     private String saleDate;
 
@@ -116,20 +116,20 @@ public class SaleResponse extends CommonResponse {
         this.saleId = saleId;
     }
 
-    public Integer getCustId() {
-        return custId;
+    public Customer getCustomer() {
+        return customer;
     }
 
-    public void setCustId(Integer custId) {
-        this.custId = custId;
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
     }
 
-    public Integer getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getSaleDate() {

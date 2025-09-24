@@ -3,6 +3,7 @@ package com.example.smartPos.controllers;
 import com.example.smartPos.controllers.requests.SaleRequest;
 import com.example.smartPos.controllers.responses.ProductResponse;
 import com.example.smartPos.controllers.responses.SaleResponse;
+import com.example.smartPos.controllers.responses.SoldProductResponse;
 import com.example.smartPos.services.ISaleService;
 import com.example.smartPos.util.ResponseCreator;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -40,16 +41,10 @@ public class SaleController {
         return saleService.getAllHoldSales();
     }
 
-    @GetMapping(path = "/api/getAllPartiallyPaidSales")
-    public List<SaleResponse> getAllPartiallyPaidSales() {
-        return saleService.getAllPartiallyPaidSales();
-    }
-
-    @PostMapping(path = "/api/deleteSale")
-    public void deletedSales(@RequestBody SaleRequest request) {
-        saleService.deleteSale(request.getSaleId());
-        System.out.println("OK");
-    }
+//    @GetMapping(path = "/api/getAllPartiallyPaidSales")
+//    public List<SaleResponse> getAllPartiallyPaidSales() {
+//        return saleService.getAllPartiallyPaidSales();
+//    }
 
     @PostMapping(path = "/api/deleteHoldSale")
     public void deleteHoldSale(@RequestBody SaleRequest request) {
@@ -63,17 +58,6 @@ public class SaleController {
         System.out.println("OK");
     }
 
-    @PostMapping(path = "/api/deleteSales")
-    public void deleteSales(@RequestBody List<Long> saleIds) {
-
-    }
-
-//    @GetMapping(path = "/api/getCustomerById")
-//    public CustomerResponse getCustomerById(Integer customerId) {
-//        CustomerResponse customerResponse = customerService.getCustomerById(customerId);
-//        return customerResponse;
-//    }
-
     @PostMapping(path = "/api/createSale")
     public ResponseEntity<SaleResponse> createSale(@RequestBody SaleRequest saleRequest) {
         SaleResponse saleResponse = saleService.createSale(saleRequest);
@@ -85,15 +69,17 @@ public class SaleController {
         return saleService.generateInvoiceNumber();
     }
 
-//    @PostMapping(path = "/api/updateCustomer")
-//    public void updateCustomer(@RequestBody CustomerRequest customerRequest) {
-//        customerService.updateCustomer(customerRequest);
-//    }
 
     @GetMapping(path = "/api/getSalesByDateRange")
     public List<SaleResponse> getSalesByDateRange(@RequestParam("startDate") @DateTimeFormat(pattern = "dd-MM-yyyy") Date startDate,
                                                   @RequestParam("endDate") @DateTimeFormat(pattern = "dd-MM-yyyy") Date endDate) {
         return saleService.getSalesByDateRange(startDate, endDate);
+    }
+
+    @PostMapping(path = "/api/getProductsForSale/{saleId}")
+    public ResponseEntity<List<SoldProductResponse>> getProductsForSale(@PathVariable Integer saleId) {
+        List<SoldProductResponse> soldProductResponses = saleService.getProductsForSale(saleId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(soldProductResponses);
     }
 
 }

@@ -15,15 +15,18 @@ public interface SaleRepository extends JpaRepository<Sale, Integer> {
 
 //    List<Sale> findAllBySaleDate(String saleDate);
 
-    List<Sale> findAllByCustId(Integer custId);
 
-    List<Sale> findAllByUserId(Integer userId);
+//    List<Sale> findAllByUserId(Integer userId);
 
     Optional<Sale> findByInvoiceNumber(String invoiceNumber);
 
     Sale findTopByOrderBySaleIdDesc();
 
-    List<Sale> findAllByStatus(Integer status);
+    @Query("SELECT s FROM Sale s " +
+            "LEFT JOIN FETCH s.customer c " +
+            "LEFT JOIN FETCH s.user u " +
+            "WHERE s.status = :status")
+    List<Sale> findAllByStatus(@Param("status") Integer status);
 
     List<Sale> findAllByIsHold(Boolean isHold);
 
@@ -45,4 +48,7 @@ public interface SaleRepository extends JpaRepository<Sale, Integer> {
 
     @Query("SELECT DATE_FORMAT(s.addedDate, '%Y-%m') AS month, COALESCE(SUM(s.totalAmount), 0) AS revenue FROM Sale s WHERE s.status = 1 GROUP BY DATE_FORMAT(s.addedDate, '%Y-%m') ORDER BY month")
     List<Object[]> findMonthlyRevenue();
+
+    @Query("SELECT s FROM Sale s JOIN FETCH s.saleProducts WHERE s.saleId = :saleId")
+    Optional<Sale> findSaleWithProductsById(@Param("saleId") Integer saleId);
 }

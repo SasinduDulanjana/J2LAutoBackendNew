@@ -1,7 +1,10 @@
 package com.example.smartPos.repositories;
 
+import com.example.smartPos.repositories.model.Category;
 import com.example.smartPos.repositories.model.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -21,8 +24,10 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
     Optional<Product> findByBarcodeOrSku(String barcode, String sku);
 
-    List<Product> findAllByCatId(Integer categoryId);
+    List<Product> findAllByCategory_catId(Integer catId);
 
-    List<Product> findAllByStatus(Integer status);
+    //added fetch join to avoid lazy loading problem
+    @Query("SELECT p FROM Product p JOIN FETCH p.category WHERE p.status = :status")
+    List<Product> findAllByStatus(@Param("status") Integer status);
 
 }

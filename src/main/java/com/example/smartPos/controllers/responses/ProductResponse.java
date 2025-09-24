@@ -9,7 +9,7 @@ import java.util.List;
 public class ProductResponse extends CommonResponse {
     private Integer productId;
 
-    private Integer catId;
+    private CategoryResponse category;
 
     private String productName;
 
@@ -78,12 +78,12 @@ public class ProductResponse extends CommonResponse {
         this.productId = productId;
     }
 
-    public Integer getCatId() {
-        return catId;
+    public CategoryResponse getCategory() {
+        return category;
     }
 
-    public void setCatId(Integer catId) {
-        this.catId = catId;
+    public void setCategory(CategoryResponse category) {
+        this.category = category;
     }
 
     public String getProductName() {

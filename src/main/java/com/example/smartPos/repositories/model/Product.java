@@ -15,7 +15,9 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer productId;
 
-    private Integer catId;
+    @ManyToOne
+    @JoinColumn(name = "cat_Id", referencedColumnName = "catId")
+    private Category category;
 
     private String productName;
 
@@ -98,12 +100,12 @@ public class Product {
         this.productId = productId;
     }
 
-    public Integer getCatId() {
-        return catId;
+    public Category getCategory() {
+        return category;
     }
 
-    public void setCatId(Integer catId) {
-        this.catId = catId;
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     public String getProductName() {

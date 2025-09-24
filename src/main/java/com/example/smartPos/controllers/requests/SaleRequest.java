@@ -1,6 +1,8 @@
 package com.example.smartPos.controllers.requests;
 
+import com.example.smartPos.repositories.model.Customer;
 import com.example.smartPos.repositories.model.SaleProduct;
+import com.example.smartPos.repositories.model.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -12,8 +14,8 @@ public class SaleRequest {
 
     private Integer saleId;
     private Integer orderId;
-    private Integer custId;
-    private Integer userId;
+    private CustomerRequest customer;
+    private UserRequest user;
     private Date orderDate;
     private Double totalAmount;
 
@@ -47,20 +49,20 @@ public class SaleRequest {
         this.orderId = orderId;
     }
 
-    public Integer getCustId() {
-        return custId;
+    public CustomerRequest getCustomer() {
+        return customer;
     }
 
-    public void setCustId(Integer custId) {
-        this.custId = custId;
+    public void setCustomer(CustomerRequest customer) {
+        this.customer = customer;
     }
 
-    public Integer getUserId() {
-        return userId;
+    public UserRequest getUser() {
+        return user;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setUser(UserRequest user) {
+        this.user = user;
     }
 
     public Date getOrderDate() {

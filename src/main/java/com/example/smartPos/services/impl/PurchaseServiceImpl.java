@@ -1,6 +1,7 @@
 package com.example.smartPos.services.impl;
 
 import com.example.smartPos.controllers.requests.ProductBatchRequest;
+import com.example.smartPos.controllers.requests.ProductRequest;
 import com.example.smartPos.controllers.requests.PurchaseRequest;
 import com.example.smartPos.controllers.responses.ProductBatchResponse;
 import com.example.smartPos.controllers.responses.ProductResponse;
@@ -197,10 +198,116 @@ public class PurchaseServiceImpl implements IPurchaseService {
     }
 
 
+//    private Purchase getSavedPurchase(PurchaseRequest purchaseRequest) {
+//        // Retrieve the currently authenticated user's username
+//        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+//
+//        Purchase purchase = new Purchase();
+//        purchase.setSupplierId(purchaseRequest.getSupId());
+//        purchase.setPurchaseName(purchaseRequest.getPurchaseName());
+//        purchase.setInvoiceNumber(purchaseRequest.getInvoiceNumber());
+//        purchase.setDeliveryTime(purchaseRequest.getDeliveryTime());
+//        purchase.setInvoiceDate(purchaseRequest.getInvoiceDate());
+//        purchase.setConnectionStatus(purchaseRequest.getConnectionStatus());
+//        purchase.setPaymentStatus(purchaseRequest.getPaymentStatus());
+//        purchase.setProductType(purchaseRequest.getProductType());
+//        purchase.setStatus(1);
+//        purchase.fillNew(currentUser);
+//        List<Product> productlist = purchaseRequest.getProducts().stream().map(productRequest -> {
+//            Product byProductIdAndSku = new Product();
+//            if (productRequest.getProductId() != null) {
+//                byProductIdAndSku = productRepository.findByProductIdAndSku(productRequest.getProductId(), productRequest.getSku());
+//            }
+//            return byProductIdAndSku;
+//        }).toList();
+//        purchase.setProducts(productlist);
+//        purchase.setTotalCost(purchaseRequest.getTotalCost());
+//        purchase.setPaidAmount(purchaseRequest.getPaidAmount());
+//        purchase.setFullyPaid(purchaseRequest.getFullyPaid());
+//        Purchase savedPurchase = purchaseRepository.save(purchase);
+//
+//        List<Product> products = purchaseRequest.getProducts().stream().map(product -> {
+//            if (product.getProductId() != null) {
+//                Product byProductIdAndSku = productRepository.findByProductIdAndSku(product.getProductId(), product.getSku());
+//
+//                // Update Purchased products details with batches
+//                ProductBatch productBatch = new ProductBatch();
+//                productBatch.setProduct(byProductIdAndSku);
+//                productBatch.setQty(product.getRemainingQty());
+//                productBatch.setUnitCost(product.getCost());
+//                productBatch.setPurchaseId(savedPurchase.getPurchaseId());
+//                productBatch.setInvoiceNumber(purchaseRequest.getInvoiceNumber());
+//                productBatch.setPurchaseDate(purchaseRequest.getInvoiceDate());
+//                productBatch.setSupId(purchaseRequest.getSupId());
+//                productBatch.setRetailPrice(product.getRetailPrice());
+//                productBatch.fillNew(currentUser);
+//
+//                //Check Batch Number is already exist
+//                Optional<Batch> batchByBatchNumberAndSku = batchRepository.findByBatchNumberAndSku(product.getBatchNo(), byProductIdAndSku.getSku());
+//                if (batchByBatchNumberAndSku.isEmpty()) {
+//                    //Save Batch Details
+//                    Batch batch = new Batch();
+//                    batch.setSku(byProductIdAndSku.getSku());
+//                    batch.setBatchNumber(product.getBatchNo());
+//                    batch.setUnitCost(product.getCost());
+//                    batch.setRetailPrice(product.getRetailPrice());
+//                    batch.setQty(product.getRemainingQty());
+//                    batch.setWholesalePrice(product.getWholeSalePrice());
+//                    batch.fillNew(currentUser);
+//                    Batch savedBatch = batchRepository.save(batch);
+//                    // Update batch into purchase details
+//                    productBatch.setBatch(savedBatch);
+//                } else {
+//                    // Update batch into purchase details
+//                    Batch exisitingBatch = batchByBatchNumberAndSku.get();
+//                    exisitingBatch.setQty((exisitingBatch.getQty() == null ? 0 : exisitingBatch.getQty()) + product.getRemainingQty());
+//                    exisitingBatch.fillUpdated(currentUser);
+//                    productBatch.setBatch(exisitingBatch);
+//                }
+//                productBatchRepository.save(productBatch);
+//
+//                // Update inventory
+//                Optional<Inventory> inventoryBySkuAndBatchId = inventoryRepository.findBySkuAndBatchNumber(byProductIdAndSku.getSku(), product.getBatchNo());
+//                //if inventory already exist update the qty
+//                if (inventoryBySkuAndBatchId.isPresent()) {
+//                    inventoryBySkuAndBatchId.get().setQty((inventoryBySkuAndBatchId.get().getQty() == null ? 0 : inventoryBySkuAndBatchId.get().getQty()) + product.getRemainingQty());
+//                } else {
+//                    //if inventory not exist create new inventory
+//                    Inventory inventory = new Inventory();
+//                    inventory.setSku(byProductIdAndSku.getSku());
+//                    inventory.setBatchNumber(product.getBatchNo());
+//                    inventory.setQty(product.getRemainingQty());
+//                    inventoryRepository.save(inventory);
+//                }
+//                return byProductIdAndSku;
+//            } else {
+//                throw new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND);
+//            }
+//        }).toList();
+//        return purchase;
+//    }
+
+    @Transactional
     private Purchase getSavedPurchase(PurchaseRequest purchaseRequest) {
-        // Retrieve the currently authenticated user's username
         String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
 
+        // Create and populate the Purchase object
+        Purchase purchase = createPurchaseEntity(purchaseRequest, currentUser);
+
+        // Fetch all products in bulk
+        List<Product> products = fetchProducts(purchaseRequest);
+
+        // Set products and save the purchase
+        purchase.setProducts(products);
+        Purchase savedPurchase = purchaseRepository.save(purchase);
+
+        // Process batches and inventory
+        processBatchesAndInventory(purchaseRequest, products, savedPurchase, currentUser);
+
+        return savedPurchase;
+    }
+
+    private Purchase createPurchaseEntity(PurchaseRequest purchaseRequest, String currentUser) {
         Purchase purchase = new Purchase();
         purchase.setSupplierId(purchaseRequest.getSupId());
         purchase.setPurchaseName(purchaseRequest.getPurchaseName());
@@ -212,79 +319,89 @@ public class PurchaseServiceImpl implements IPurchaseService {
         purchase.setProductType(purchaseRequest.getProductType());
         purchase.setStatus(1);
         purchase.fillNew(currentUser);
-        List<Product> productlist = purchaseRequest.getProducts().stream().map(productRequest -> {
-            Product byProductIdAndSku = new Product();
-            if (productRequest.getProductId() != null) {
-                byProductIdAndSku = productRepository.findByProductIdAndSku(productRequest.getProductId(), productRequest.getSku());
-            }
-            return byProductIdAndSku;
-        }).toList();
-        purchase.setProducts(productlist);
         purchase.setTotalCost(purchaseRequest.getTotalCost());
         purchase.setPaidAmount(purchaseRequest.getPaidAmount());
         purchase.setFullyPaid(purchaseRequest.getFullyPaid());
-        Purchase savedPurchase = purchaseRepository.save(purchase);
-
-        List<Product> products = purchaseRequest.getProducts().stream().map(product -> {
-            if (product.getProductId() != null) {
-                Product byProductIdAndSku = productRepository.findByProductIdAndSku(product.getProductId(), product.getSku());
-
-                // Update Purchased products details with batches
-                ProductBatch productBatch = new ProductBatch();
-                productBatch.setProduct(byProductIdAndSku);
-                productBatch.setQty(product.getRemainingQty());
-                productBatch.setUnitCost(product.getCost());
-                productBatch.setPurchaseId(savedPurchase.getPurchaseId());
-                productBatch.setInvoiceNumber(purchaseRequest.getInvoiceNumber());
-                productBatch.setPurchaseDate(purchaseRequest.getInvoiceDate());
-                productBatch.setSupId(purchaseRequest.getSupId());
-                productBatch.setRetailPrice(product.getRetailPrice());
-                productBatch.fillNew(currentUser);
-
-                //Check Batch Number is already exist
-                Optional<Batch> batchByBatchNumberAndSku = batchRepository.findByBatchNumberAndSku(product.getBatchNo(), byProductIdAndSku.getSku());
-                if (batchByBatchNumberAndSku.isEmpty()) {
-                    //Save Batch Details
-                    Batch batch = new Batch();
-                    batch.setSku(byProductIdAndSku.getSku());
-                    batch.setBatchNumber(product.getBatchNo());
-                    batch.setUnitCost(product.getCost());
-                    batch.setRetailPrice(product.getRetailPrice());
-                    batch.setQty(product.getRemainingQty());
-                    batch.setWholesalePrice(product.getWholeSalePrice());
-                    batch.fillNew(currentUser);
-                    Batch savedBatch = batchRepository.save(batch);
-                    // Update batch into purchase details
-                    productBatch.setBatch(savedBatch);
-                } else {
-                    // Update batch into purchase details
-                    Batch exisitingBatch = batchByBatchNumberAndSku.get();
-                    exisitingBatch.setQty((exisitingBatch.getQty() == null ? 0 : exisitingBatch.getQty()) + product.getRemainingQty());
-                    exisitingBatch.fillUpdated(currentUser);
-                    productBatch.setBatch(exisitingBatch);
-                }
-                productBatchRepository.save(productBatch);
-
-                // Update inventory
-                Optional<Inventory> inventoryBySkuAndBatchId = inventoryRepository.findBySkuAndBatchNumber(byProductIdAndSku.getSku(), product.getBatchNo());
-                //if inventory already exist update the qty
-                if (inventoryBySkuAndBatchId.isPresent()) {
-                    inventoryBySkuAndBatchId.get().setQty((inventoryBySkuAndBatchId.get().getQty() == null ? 0 : inventoryBySkuAndBatchId.get().getQty()) + product.getRemainingQty());
-                } else {
-                    //if inventory not exist create new inventory
-                    Inventory inventory = new Inventory();
-                    inventory.setSku(byProductIdAndSku.getSku());
-                    inventory.setBatchNumber(product.getBatchNo());
-                    inventory.setQty(product.getRemainingQty());
-                    inventoryRepository.save(inventory);
-                }
-                return byProductIdAndSku;
-            } else {
-                throw new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND);
-            }
-        }).toList();
         return purchase;
     }
+
+    private List<Product> fetchProducts(PurchaseRequest purchaseRequest) {
+        return purchaseRequest.getProducts().stream()
+                .map(productRequest -> {
+                    if (productRequest.getProductId() != null) {
+                        return productRepository.findByProductIdAndSku(productRequest.getProductId(), productRequest.getSku());
+                    } else {
+                        throw new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND);
+                    }
+                })
+                .toList();
+    }
+
+    private void processBatchesAndInventory(PurchaseRequest purchaseRequest, List<Product> products, Purchase savedPurchase, String currentUser) {
+        purchaseRequest.getProducts().forEach(productRequest -> {
+            Product product = products.stream()
+                    .filter(p -> p.getProductId().equals(productRequest.getProductId()))
+                    .findFirst()
+                    .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND));
+
+            // Process ProductBatch
+            ProductBatch productBatch = createProductBatch(productRequest, product, savedPurchase, currentUser);
+            productBatchRepository.save(productBatch);
+
+            // Process Batch
+            Batch batch = processBatch(productRequest, product, currentUser);
+            productBatch.setBatch(batch);
+        });
+    }
+
+    private ProductBatch createProductBatch(ProductRequest productRequest, Product product, Purchase savedPurchase, String currentUser) {
+        ProductBatch productBatch = new ProductBatch();
+        productBatch.setProduct(product);
+        productBatch.setQty(productRequest.getRemainingQty());
+        productBatch.setUnitCost(productRequest.getCost());
+        productBatch.setPurchaseId(savedPurchase.getPurchaseId());
+        productBatch.setInvoiceNumber(savedPurchase.getInvoiceNumber());
+        productBatch.setPurchaseDate(savedPurchase.getInvoiceDate());
+        productBatch.setSupId(savedPurchase.getSupplierId());
+        productBatch.setRetailPrice(productRequest.getRetailPrice());
+        productBatch.fillNew(currentUser);
+        return productBatch;
+    }
+
+    private Batch processBatch(ProductRequest productRequest, Product product, String currentUser) {
+        Optional<Batch> existingBatch = batchRepository.findByBatchNumberAndSku(productRequest.getBatchNo(), product.getSku());
+        if (existingBatch.isPresent()) {
+            Batch batch = existingBatch.get();
+            batch.setQty((batch.getQty() == null ? 0 : batch.getQty()) + productRequest.getRemainingQty());
+            batch.fillUpdated(currentUser);
+            return batch;
+        } else {
+            Batch batch = new Batch();
+            batch.setSku(product.getSku());
+            batch.setBatchNumber(productRequest.getBatchNo());
+            batch.setUnitCost(productRequest.getCost());
+            batch.setRetailPrice(productRequest.getRetailPrice());
+            batch.setQty(productRequest.getRemainingQty());
+            batch.setWholesalePrice(productRequest.getWholeSalePrice());
+            batch.fillNew(currentUser);
+            return batchRepository.save(batch);
+        }
+    }
+
+//    private void processInventory(ProductRequest productRequest, Product product, String currentUser) {
+//        Optional<Inventory> existingInventory = inventoryRepository.findBySkuAndBatchNumber(product.getSku(), productRequest.getBatchNo());
+//        if (existingInventory.isPresent()) {
+//            Inventory inventory = existingInventory.get();
+//            inventory.setQty((inventory.getQty() == null ? 0 : inventory.getQty()) + productRequest.getRemainingQty());
+//            inventoryRepository.save(inventory);
+//        } else {
+//            Inventory inventory = new Inventory();
+//            inventory.setSku(product.getSku());
+//            inventory.setBatchNumber(productRequest.getBatchNo());
+//            inventory.setQty(productRequest.getRemainingQty());
+//            inventoryRepository.save(inventory);
+//        }
+//    }
 
     @Override
     public PurchaseResponse getPurchaseById(Integer purchaseId) {

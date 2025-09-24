@@ -15,9 +15,13 @@ public class Sale {
     @Column(name = "SALE_ID")
     private Integer saleId;
 
-    private Integer custId;
+    @ManyToOne
+    @JoinColumn(name = "custId", referencedColumnName = "custId")
+    private Customer customer;
 
-    private Integer userId;
+    @ManyToOne
+    @JoinColumn(name = "userId", referencedColumnName = "id")
+    private User user;
 
     private Date saleDate;
 
@@ -86,20 +90,20 @@ public class Sale {
         this.saleId = saleId;
     }
 
-    public Integer getCustId() {
-        return custId;
+    public Customer getCustomer() {
+        return customer;
     }
 
-    public void setCustId(Integer custId) {
-        this.custId = custId;
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
     }
 
-    public Integer getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public Date getSaleDate() {

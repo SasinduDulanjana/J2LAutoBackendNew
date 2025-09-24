@@ -7,6 +7,7 @@ import com.example.smartPos.controllers.responses.UserResponse;
 import com.example.smartPos.security.JwtUtil;
 import com.example.smartPos.services.IUserService;
 import com.example.smartPos.util.ResponseCreator;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -59,6 +60,7 @@ public class UserController {
         return userService.getUser(id);
     }
 
+    @Cacheable(value = "users", key = "#username")
     @GetMapping("/getUserByName/{username}")
     public UserResponse getUserByUsername(@PathVariable String username) {
         return userService.getUserByUsername(username);
