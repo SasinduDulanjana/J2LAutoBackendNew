@@ -1,9 +1,11 @@
 package com.example.smartPos.controllers;
 
+import com.example.smartPos.controllers.requests.PaymentDetailsRequest;
 import com.example.smartPos.controllers.requests.SaleRequest;
-import com.example.smartPos.controllers.responses.ProductResponse;
-import com.example.smartPos.controllers.responses.SaleResponse;
-import com.example.smartPos.controllers.responses.SoldProductResponse;
+import com.example.smartPos.controllers.requests.SalesReturnRequest;
+import com.example.smartPos.controllers.requests.TransactionDetails;
+import com.example.smartPos.controllers.responses.*;
+import com.example.smartPos.repositories.model.PaymentDetails;
 import com.example.smartPos.services.ISaleService;
 import com.example.smartPos.util.ResponseCreator;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -82,4 +84,33 @@ public class SaleController {
         return ResponseEntity.status(HttpStatus.CREATED).body(soldProductResponses);
     }
 
+    @GetMapping(path = "/api/getSaleByInvoiceNumber/{invoiceNumber}")
+    public ResponseEntity<SaleResponse> getSaleByInvoiceNumber(@PathVariable String invoiceNumber) {
+        SaleResponse saleResponse = saleService.getSaleByInvoiceNumber(invoiceNumber);
+        return ResponseEntity.ok(saleResponse);
+    }
+
+    @PostMapping(path = "/api/salesReturn")
+    public ResponseEntity<String> processSalesReturn(@RequestBody SalesReturnRequest salesReturnRequest) {
+        saleService.processSalesReturn(salesReturnRequest);
+        return ResponseEntity.ok("Sales return processed successfully.");
+    }
+
+    @GetMapping(path = "/api/getAllSalesReturn")
+    public ResponseEntity<List<SalesReturnResponse>> getAllSalesReturn() {
+        List<SalesReturnResponse> salesReturnResponseList = saleService.getAllSalesReturns();
+        return ResponseEntity.ok(salesReturnResponseList);
+    }
+
+    @GetMapping(path = "/api/getPaymentDetailsByInvoice/{invoiceNumber}")
+    public ResponseEntity<List<PaymentDetails>> getPaymentDetailsByInvoice(@PathVariable String invoiceNumber) {
+        List<PaymentDetails> paymentDetails = saleService.getPaymentDetailsByInvoice(invoiceNumber);
+        return ResponseEntity.ok(paymentDetails);
+    }
+
+    @PostMapping(path = "/api/createPaymentDetails")
+    public ResponseEntity<PaymentDetailsResponse> createPaymentDetails(@RequestBody PaymentDetailsRequest paymentDetailsRequest) {
+        PaymentDetailsResponse paymentDetailsResponse = saleService.createPaymentDetails(paymentDetailsRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(paymentDetailsResponse);
+    }
 }

@@ -1,12 +1,7 @@
 package com.example.smartPos.controllers;
 
-import com.example.smartPos.controllers.requests.ProductBatchRequest;
-import com.example.smartPos.controllers.requests.ProductRequest;
-import com.example.smartPos.controllers.requests.PurchaseRequest;
-import com.example.smartPos.controllers.responses.CommonResponse;
-import com.example.smartPos.controllers.responses.ProductBatchResponse;
-import com.example.smartPos.controllers.responses.ProductResponse;
-import com.example.smartPos.controllers.responses.PurchaseResponse;
+import com.example.smartPos.controllers.requests.*;
+import com.example.smartPos.controllers.responses.*;
 import com.example.smartPos.services.IProductService;
 import com.example.smartPos.services.IPurchaseService;
 import com.example.smartPos.util.ResponseCreator;
@@ -33,24 +28,7 @@ public class PurchaseController {
     public List<PurchaseResponse> getALlPurchase() {
         return purchaseService.getAllPurchases();
     }
-//
-//    @GetMapping(path = "/api/getProductsByName/{name}")
-//    public List<ProductResponse> getProductsByName(@PathVariable String name) {
-//        return productService.getProductsByName(name);
-//    }
-//
-//    @GetMapping(path = "/api/getProductByBarcode/{barcode}")
-//    public ResponseEntity<CommonResponse> getProductsByBarcode(@PathVariable String barcode) {
-//        ProductResponse productResponse = productService.getProductByBarcode(barcode);
-//        return ResponseCreator.success(productResponse);
-//    }
-//
-//    @GetMapping(path = "/api/getProductBySku/{sku}")
-//    public ResponseEntity<CommonResponse> getProductBySku(@PathVariable String sku) {
-//        ProductResponse productResponse = productService.getProductBySku(sku);
-//        return ResponseCreator.success(productResponse);
-//    }
-//
+
     @PostMapping(path = "/api/createPurchase")
     public ResponseEntity<PurchaseResponse> createPurchase(@RequestBody PurchaseRequest purchaseRequest) {
         PurchaseResponse savedPurchase = purchaseService.createPurchase(purchaseRequest);
@@ -76,12 +54,22 @@ public class PurchaseController {
         return ResponseCreator.success(response);
     }
 
+    @GetMapping(path = "/api/getPurchaseByIdentifier/{identifier}")
+    public ResponseEntity<PurchaseResponse> getPurchaseByIdentifier(@PathVariable String identifier) {
+        PurchaseResponse purchaseResponse = purchaseService.getPurchaseByIdentifier(identifier);
+        return ResponseCreator.success(purchaseResponse);
+    }
 
-//
-//    @PostMapping(path = "/api/updateProduct")
-//    public ResponseEntity<ProductResponse> updateProduct(@RequestBody ProductRequest productRequest) {
-//        ProductResponse updatedProduct = productService.updateProduct(productRequest);
-//        return ResponseCreator.success(updatedProduct);
-//    }
+    @PostMapping(path = "/api/purchaseReturn")
+    public ResponseEntity<PurchaseReturnResponse> processSalesReturn(@RequestBody PurchaseReturnRequest purchaseReturnRequest) {
+        PurchaseReturnResponse purchaseReturnResponse = purchaseService.processPurchaseReturn(purchaseReturnRequest);
+        return ResponseCreator.success(purchaseReturnResponse);
+    }
+
+    @GetMapping(path = "/api/getAllPurchaseReturn")
+    public ResponseEntity<List<PurchaseReturnResponse>> getAllPurchaseReturn() {
+        List<PurchaseReturnResponse> responses = purchaseService.getAllPurchaseReturns();
+        return ResponseEntity.ok(responses);
+    }
 
 }

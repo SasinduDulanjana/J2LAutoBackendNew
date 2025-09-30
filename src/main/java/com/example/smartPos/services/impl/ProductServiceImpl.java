@@ -4,24 +4,26 @@ import com.example.smartPos.controllers.requests.ProductRequest;
 import com.example.smartPos.controllers.responses.BatchDetailsResponse;
 import com.example.smartPos.controllers.responses.BatchDetails;
 import com.example.smartPos.controllers.responses.ProductResponse;
+import com.example.smartPos.controllers.responses.VehicleResponse;
 import com.example.smartPos.exception.AlreadyExistsException;
 import com.example.smartPos.exception.ResourceNotFoundException;
 import com.example.smartPos.mapper.CategoryMapper;
+import com.example.smartPos.mapper.VehicleMapper;
 import com.example.smartPos.repositories.BatchRepository;
 import com.example.smartPos.repositories.CategoryRepository;
 import com.example.smartPos.repositories.ProductRepository;
+import com.example.smartPos.repositories.VehicleRepository;
 import com.example.smartPos.repositories.model.Batch;
 import com.example.smartPos.repositories.model.Category;
 import com.example.smartPos.repositories.model.Product;
+import com.example.smartPos.repositories.model.Vehicle;
 import com.example.smartPos.services.IProductService;
 import com.example.smartPos.util.ErrorCodes;
 import com.example.smartPos.util.ProductConstants;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,13 +35,19 @@ public class ProductServiceImpl implements IProductService {
 
     private final CategoryRepository categoryRepository;
 
+    private final VehicleRepository vehicleRepository;
+
     private final CategoryMapper categoryMapper;
 
-    public ProductServiceImpl(ProductRepository productRepository, BatchRepository batchRepository, CategoryRepository categoryRepository, CategoryMapper categoryMapper) {
+    private final VehicleMapper vehicleMapper;
+
+    public ProductServiceImpl(ProductRepository productRepository, BatchRepository batchRepository, CategoryRepository categoryRepository, VehicleRepository vehicleRepository, CategoryMapper categoryMapper, VehicleMapper vehicleMapper) {
         this.productRepository = productRepository;
         this.batchRepository = batchRepository;
         this.categoryRepository = categoryRepository;
+        this.vehicleRepository = vehicleRepository;
         this.categoryMapper = categoryMapper;
+        this.vehicleMapper = vehicleMapper;
     }
 
     @Override
@@ -67,6 +75,9 @@ public class ProductServiceImpl implements IProductService {
             prodResp.setImgUrl(product.getImgUrl());
             prodResp.setBatchNo(product.getBatchNo());
             prodResp.setStatus(product.getStatus());
+            prodResp.setPartNumber(product.getPartNumber());
+            prodResp.setBrandName(product.getBrandName());
+            prodResp.setVehicleList(new ArrayList<>(product.getVehicles()));
             return prodResp;
         }).toList();
     }
@@ -209,6 +220,9 @@ public class ProductServiceImpl implements IProductService {
         prodResp.setImgUrl(product.getImgUrl());
         prodResp.setBatchNo(product.getBatchNo());
         prodResp.setStatus(product.getStatus());
+        prodResp.setBrandName(product.getBrandName());
+        prodResp.setPartNumber(product.getPartNumber());
+        prodResp.setVehicleList(new ArrayList<>(product.getVehicles()));
         return prodResp;
     }
 
@@ -328,8 +342,12 @@ public class ProductServiceImpl implements IProductService {
         Category category = categoryRepository.findById(catId)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.CATEGORY_NOT_FOUND));
 
+
         Product saveProduct = new Product();
         saveProduct.setCategory(category);
+        saveProduct.setVehicles(new HashSet<>(productRequest.getVehicleList()));
+        saveProduct.setBrandName(productRequest.getBrandName());
+        saveProduct.setPartNumber(productRequest.getPartNumber());
         saveProduct.setProductName(productRequest.getProductName());
         saveProduct.setBarCodeAvailable(productRequest.getBarCodeAvailable());
         saveProduct.setBarcode(productRequest.getBarCode());
@@ -385,8 +403,9 @@ public class ProductServiceImpl implements IProductService {
             product.setTaxType(productRequest.getTaxType());
             product.setImgUrl(productRequest.getImgUrl());
             product.setBatchNo(productRequest.getBatchNo());
-            product.setStatus(productRequest.getStatus());
-            product.setStatus(1);
+            product.setBrandName(productRequest.getBrandName());
+            product.setPartNumber(productRequest.getPartNumber());
+            product.setVehicles(new HashSet<>(productRequest.getVehicleList()));
             product.fillUpdated(currentUser);
             Product updateProduct = productRepository.save(product);
 
@@ -481,5 +500,10 @@ public class ProductServiceImpl implements IProductService {
             product.fillUpdated(currentUser);
             productRepository.save(product);
         }
+    }
+
+    @Override
+    public List<VehicleResponse> availableVehicles() {
+        return vehicleRepository.findAll().stream().map(vehicleMapper::toVehicleResponse).toList();
     }
 }

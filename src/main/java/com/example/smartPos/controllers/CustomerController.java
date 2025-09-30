@@ -2,7 +2,9 @@ package com.example.smartPos.controllers;
 
 import com.example.smartPos.controllers.requests.CustomerRequest;
 import com.example.smartPos.controllers.requests.SaleRequest;
+import com.example.smartPos.controllers.requests.TransactionDetails;
 import com.example.smartPos.controllers.responses.CommonResponse;
+import com.example.smartPos.controllers.responses.CustomerPaymentDetailsResponse;
 import com.example.smartPos.controllers.responses.CustomerResponse;
 import com.example.smartPos.repositories.model.Customer;
 import com.example.smartPos.services.ICustomerService;
@@ -26,6 +28,11 @@ public class CustomerController {
     @GetMapping(path = "/api/getAllCustomers")
     public List<CustomerResponse> getAllCustomers() {
         return customerService.getAllCustomers();
+    }
+
+    @GetMapping(path = "/api/getAllCustomersWithoutStatus")
+    public List<CustomerResponse> getAllCustomersWithoutStatus() {
+        return customerService.getAllCustomersWithoutStatus();
     }
 
     @GetMapping(path = "/api/getCustomerByPhone/{mobileNo}")
@@ -76,5 +83,15 @@ public class CustomerController {
         } else {
             return ResponseEntity.ok(List.of());
         }
+    }
+
+    @GetMapping("/api/getCustomerWithOutstanding/{custId}")
+    public CustomerPaymentDetailsResponse getCustomerWithOutstanding(@PathVariable Integer custId) {
+        return customerService.getCustomerDetailsWithSummary(custId);
+    }
+
+    @GetMapping("/api/getAllCustomerDetailsWithSummary")
+    public List<CustomerResponse> getAllCustomerDetailsWithSummary() {
+        return customerService.getAllCustomerDetailsWithSummary();
     }
 }

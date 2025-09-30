@@ -27,6 +27,11 @@ public class SupplierController {
         return supplierService.getAllSuppliers();
     }
 
+    @GetMapping(path = "/api/getAllSuppliersWithoutStatus")
+    public List<SupplierResponse> getAllSuppliersWithoutStatus() {
+        return supplierService.getAllSuppliersWithoutStatus();
+    }
+
     @GetMapping(path = "/api/getSupplierByPhone/{mobileNo}")
     public ResponseEntity<CommonResponse> getSupplierByPhone(@PathVariable String mobileNo) {
         SupplierResponse supplierResponse = supplierService.getSupplierByPhone(mobileNo);

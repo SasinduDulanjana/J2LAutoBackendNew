@@ -1,5 +1,6 @@
 package com.example.smartPos.controllers.responses;
 
+import com.example.smartPos.repositories.model.Vehicle;
 import lombok.Data;
 
 import java.util.Date;
@@ -51,23 +52,18 @@ public class ProductResponse extends CommonResponse {
 
     private List<BatchDetails> batchQuantities;
 
-    //    @NotNull
-//    @Size(min = 1, max = 50)
-//    @Column(name = "ADD_BY")
-//    @ApiField(fieldName = "addBy")
+    private  String brandName;
+
+    private String partNumber;
+
+    private List<Vehicle> vehicleList;
+
     private String addBy;
-    //    @Size(max = 50)
-//    @Column(name = "MDFY_BY")
-//    @ApiField(fieldName = "modifiedBy")
+
     private String modifiedBy;
-    //    @NotNull
-//    @Column(name = "ADD_DATE")
-//    @ApiField(fieldName = "addDate")
-//    @Temporal(TemporalType.TIMESTAMP)
+
     private Date addedDate;
-    //    @Column(name = "MDFY_DATE")
-//    @ApiField(fieldName = "modifiedDate")
-//    @Temporal(TemporalType.TIMESTAMP)
+
     private Date modifiedDate;
 
     public Integer getProductId() {
@@ -244,5 +240,29 @@ public class ProductResponse extends CommonResponse {
 
     public void setBatchQuantities(List<BatchDetails> batchQuantities) {
         this.batchQuantities = batchQuantities;
+    }
+
+    public String getBrandName() {
+        return brandName;
+    }
+
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
+    }
+
+    public String getPartNumber() {
+        return partNumber;
+    }
+
+    public void setPartNumber(String partNumber) {
+        this.partNumber = partNumber;
+    }
+
+    public List<Vehicle> getVehicleList() {
+        return vehicleList;
+    }
+
+    public void setVehicleList(List<Vehicle> vehicleList) {
+        this.vehicleList = vehicleList;
     }
 }

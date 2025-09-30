@@ -26,6 +26,10 @@ public class PurchaseRequest {
 
     private String productType;
 
+    private String paymentType;
+
+    private String chequeNo;
+
     private List<ProductRequest> products;
 
     private Integer status;
@@ -36,24 +40,12 @@ public class PurchaseRequest {
 
     private Boolean isFullyPaid;
 
-
-    //    @NotNull
-//    @Size(min = 1, max = 50)
-//    @Column(name = "ADD_BY")
-//    @ApiField(fieldName = "addBy")
     private String addBy;
-    //    @Size(max = 50)
-//    @Column(name = "MDFY_BY")
-//    @ApiField(fieldName = "modifiedBy")
+
     private String modifiedBy;
-    //    @NotNull
-//    @Column(name = "ADD_DATE")
-//    @ApiField(fieldName = "addDate")
-//    @Temporal(TemporalType.TIMESTAMP)
+
     private Date addedDate;
-    //    @Column(name = "MDFY_DATE")
-//    @ApiField(fieldName = "modifiedDate")
-//    @Temporal(TemporalType.TIMESTAMP)
+
     private Date modifiedDate;
 
     public Integer getPurchaseId() {
@@ -168,4 +160,19 @@ public class PurchaseRequest {
         isFullyPaid = fullyPaid;
     }
 
+    public String getPaymentType() {
+        return paymentType;
+    }
+
+    public void setPaymentType(String paymentType) {
+        this.paymentType = paymentType;
+    }
+
+    public String getChequeNo() {
+        return chequeNo;
+    }
+
+    public void setChequeNo(String chequeNo) {
+        this.chequeNo = chequeNo;
+    }
 }

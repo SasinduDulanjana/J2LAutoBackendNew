@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -37,10 +39,6 @@ public class Product {
 
     private Boolean isStockManagementEnable;
 
-//    private String salePrice;
-//
-//    private String wholeSalePrice;
-
     private String lowQty;
 
     private Boolean isExpDateAvailable;
@@ -61,6 +59,10 @@ public class Product {
 
     private Integer status;
 
+    private String brandName;
+
+    private String partNumber;
+
     //    @NotNull
 //    @Size(min = 1, max = 50)
 //    @Column(name = "ADD_BY")
@@ -79,6 +81,15 @@ public class Product {
 //    @ApiField(fieldName = "modifiedDate")
 //    @Temporal(TemporalType.TIMESTAMP)
     private Date modifiedDate;
+
+
+    @ManyToMany
+    @JoinTable(
+            name = "vehicles_of_product",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "vehicle_id")
+    )
+    private Set<Vehicle> vehicles = new HashSet<>();
 
     public void fillNew(String userId){
         this.addBy = userId;
@@ -180,21 +191,6 @@ public class Product {
         isStockManagementEnable = stockManagementEnable;
     }
 
-//    public String getSalePrice() {
-//        return salePrice;
-//    }
-//
-//    public void setSalePrice(String salePrice) {
-//        this.salePrice = salePrice;
-//    }
-//
-//    public String getWholeSalePrice() {
-//        return wholeSalePrice;
-//    }
-//
-//    public void setWholeSalePrice(String wholeSalePrice) {
-//        this.wholeSalePrice = wholeSalePrice;
-//    }
 
     public String getLowQty() {
         return lowQty;
@@ -260,19 +256,35 @@ public class Product {
         this.status = status;
     }
 
-//    public Double getCost() {
-//        return cost;
-//    }
-//
-//    public void setCost(Double cost) {
-//        this.cost = cost;
-//    }
-
     public Double getRemainingQty() {
         return remainingQty;
     }
 
     public void setRemainingQty(Double remainingQty) {
         this.remainingQty = remainingQty;
+    }
+
+    public Set<Vehicle> getVehicles() {
+        return vehicles;
+    }
+
+    public void setVehicles(Set<Vehicle> vehicles) {
+        this.vehicles = vehicles;
+    }
+
+    public String getBrandName() {
+        return brandName;
+    }
+
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
+    }
+
+    public String getPartNumber() {
+        return partNumber;
+    }
+
+    public void setPartNumber(String partNumber) {
+        this.partNumber = partNumber;
     }
 }

@@ -41,24 +41,15 @@ public class SaleResponse extends CommonResponse {
 
     private Boolean isHold;
 
-    //    @NotNull
-//    @Size(min = 1, max = 50)
-//    @Column(name = "ADD_BY")
-//    @ApiField(fieldName = "addBy")
     private String addBy;
-    //    @Size(max = 50)
-//    @Column(name = "MDFY_BY")
-//    @ApiField(fieldName = "modifiedBy")
+
     private String modifiedBy;
-    //    @NotNull
-//    @Column(name = "ADD_DATE")
-//    @ApiField(fieldName = "addDate")
-//    @Temporal(TemporalType.TIMESTAMP)
+
     private Date addedDate;
-    //    @Column(name = "MDFY_DATE")
-//    @ApiField(fieldName = "modifiedDate")
-//    @Temporal(TemporalType.TIMESTAMP)
+
     private String modifiedDate;
+
+    private Double outstandingBalance;
 
     public Boolean getFullyPaid() {
         return isFullyPaid;
@@ -218,5 +209,13 @@ public class SaleResponse extends CommonResponse {
 
     public void setPaymentMethod(String paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public Double getOutstandingBalance() {
+        return outstandingBalance;
+    }
+
+    public void setOutstandingBalance(Double outstandingBalance) {
+        this.outstandingBalance = outstandingBalance;
     }
 }

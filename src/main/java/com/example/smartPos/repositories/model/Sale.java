@@ -49,24 +49,13 @@ public class Sale {
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL)
     private List<SaleProduct> saleProducts;
 
-    //    @NotNull
-//    @Size(min = 1, max = 50)
-//    @Column(name = "ADD_BY")
-//    @ApiField(fieldName = "addBy")
     private String addBy;
-    //    @Size(max = 50)
-//    @Column(name = "MDFY_BY")
-//    @ApiField(fieldName = "modifiedBy")
+
     @Column(name = "MODIFIED_BY")
     private String modifiedBy;
-    //    @NotNull
-//    @Column(name = "ADD_DATE")
-//    @ApiField(fieldName = "addDate")
-//    @Temporal(TemporalType.TIMESTAMP)
+
     private Date addedDate;
-    //    @Column(name = "MDFY_DATE")
-//    @ApiField(fieldName = "modifiedDate")
-//    @Temporal(TemporalType.TIMESTAMP)
+
     @Column(name = "MODIFIED_DATE")
     private Date modifiedDate;
 

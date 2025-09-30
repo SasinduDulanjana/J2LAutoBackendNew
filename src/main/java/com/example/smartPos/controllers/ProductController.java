@@ -5,6 +5,7 @@ import com.example.smartPos.controllers.requests.SupplierRequest;
 import com.example.smartPos.controllers.responses.BatchDetailsResponse;
 import com.example.smartPos.controllers.responses.CommonResponse;
 import com.example.smartPos.controllers.responses.ProductResponse;
+import com.example.smartPos.controllers.responses.VehicleResponse;
 import com.example.smartPos.services.IProductService;
 import com.example.smartPos.util.ResponseCreator;
 import org.springframework.http.ResponseEntity;
@@ -93,5 +94,10 @@ public class ProductController {
     public void deleteProduct(@RequestBody ProductRequest request) {
         productService.deleteProduct(request.getProductId());
         System.out.println("OK");
+    }
+
+    @GetMapping(path = "/api/vehicles")
+    public List<VehicleResponse> getAvailableQuantity() {
+        return productService.availableVehicles();
     }
 }

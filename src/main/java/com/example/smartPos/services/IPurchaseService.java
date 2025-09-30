@@ -2,8 +2,10 @@ package com.example.smartPos.services;
 
 import com.example.smartPos.controllers.requests.ProductBatchRequest;
 import com.example.smartPos.controllers.requests.PurchaseRequest;
+import com.example.smartPos.controllers.requests.PurchaseReturnRequest;
 import com.example.smartPos.controllers.responses.ProductBatchResponse;
 import com.example.smartPos.controllers.responses.PurchaseResponse;
+import com.example.smartPos.controllers.responses.PurchaseReturnResponse;
 import com.example.smartPos.repositories.model.Purchase;
 
 import java.util.Date;
@@ -27,6 +29,11 @@ public interface IPurchaseService {
 
     List<PurchaseResponse> getPurchasesByDateRange(Date startDate, Date endDate);
 
-
     ProductBatchResponse fetchProductBatchDetails(ProductBatchRequest request);
+
+    PurchaseResponse getPurchaseByIdentifier(String identifier);
+
+    PurchaseReturnResponse processPurchaseReturn(PurchaseReturnRequest purchaseReturnRequest);
+
+    List<PurchaseReturnResponse> getAllPurchaseReturns();
 }

@@ -24,6 +24,10 @@ public class SoldProductResponse {
 
     private Double retailPrice;
 
+    private Double refundedAmount;
+
+    private Double refundedQty;
+
     public Integer getSaleProductId() {
         return saleProductId;
     }
@@ -94,5 +98,21 @@ public class SoldProductResponse {
 
     public void setRetailPrice(Double retailPrice) {
         this.retailPrice = retailPrice;
+    }
+
+    public Double getRefundedAmount() {
+        return refundedAmount;
+    }
+
+    public void setRefundedAmount(Double refundedAmount) {
+        this.refundedAmount = refundedAmount;
+    }
+
+    public Double getRefundedQty() {
+        return refundedQty;
+    }
+
+    public void setRefundedQty(Double refundedQty) {
+        this.refundedQty = refundedQty;
     }
 }

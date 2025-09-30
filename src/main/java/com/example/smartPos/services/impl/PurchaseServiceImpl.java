@@ -1,13 +1,11 @@
 package com.example.smartPos.services.impl;
 
-import com.example.smartPos.controllers.requests.ProductBatchRequest;
-import com.example.smartPos.controllers.requests.ProductRequest;
-import com.example.smartPos.controllers.requests.PurchaseRequest;
-import com.example.smartPos.controllers.responses.ProductBatchResponse;
-import com.example.smartPos.controllers.responses.ProductResponse;
-import com.example.smartPos.controllers.responses.PurchaseResponse;
+import com.example.smartPos.controllers.requests.*;
+import com.example.smartPos.controllers.responses.*;
 import com.example.smartPos.exception.AlreadyExistsException;
 import com.example.smartPos.exception.ResourceNotFoundException;
+import com.example.smartPos.mapper.PurchaseMapper;
+import com.example.smartPos.mapper.PurchaseReturnMapper;
 import com.example.smartPos.repositories.*;
 import com.example.smartPos.repositories.model.*;
 import com.example.smartPos.services.IPurchaseService;
@@ -32,17 +30,22 @@ public class PurchaseServiceImpl implements IPurchaseService {
 
     private final BatchRepository batchRepository;
 
-    private final InventoryRepository inventoryRepository;
-
     private final ProductBatchRepository productBatchRepository;
 
-    public PurchaseServiceImpl(PurchaseRepository purchaseRepository, ProductRepository productRepository, SupplierRepository supplierRepository, BatchRepository batchRepository, InventoryRepository inventoryRepository, ProductBatchRepository productBatchRepository) {
+    private final PurchaseReturnRepository purchaseReturnRepository;
+    private final PurchaseMapper purchaseMapper;
+
+    private final PurchaseReturnMapper purchaseReturnMapper;
+
+    public PurchaseServiceImpl(PurchaseRepository purchaseRepository, ProductRepository productRepository, SupplierRepository supplierRepository, BatchRepository batchRepository, ProductBatchRepository productBatchRepository, PurchaseReturnRepository purchaseReturnRepository, PurchaseMapper purchaseMapper, PurchaseReturnMapper purchaseReturnMapper) {
         this.purchaseRepository = purchaseRepository;
         this.productRepository = productRepository;
         this.supplierRepository = supplierRepository;
         this.batchRepository = batchRepository;
-        this.inventoryRepository = inventoryRepository;
         this.productBatchRepository = productBatchRepository;
+        this.purchaseReturnRepository = purchaseReturnRepository;
+        this.purchaseMapper = purchaseMapper;
+        this.purchaseReturnMapper = purchaseReturnMapper;
     }
 
     @Override
@@ -198,95 +201,6 @@ public class PurchaseServiceImpl implements IPurchaseService {
     }
 
 
-//    private Purchase getSavedPurchase(PurchaseRequest purchaseRequest) {
-//        // Retrieve the currently authenticated user's username
-//        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
-//
-//        Purchase purchase = new Purchase();
-//        purchase.setSupplierId(purchaseRequest.getSupId());
-//        purchase.setPurchaseName(purchaseRequest.getPurchaseName());
-//        purchase.setInvoiceNumber(purchaseRequest.getInvoiceNumber());
-//        purchase.setDeliveryTime(purchaseRequest.getDeliveryTime());
-//        purchase.setInvoiceDate(purchaseRequest.getInvoiceDate());
-//        purchase.setConnectionStatus(purchaseRequest.getConnectionStatus());
-//        purchase.setPaymentStatus(purchaseRequest.getPaymentStatus());
-//        purchase.setProductType(purchaseRequest.getProductType());
-//        purchase.setStatus(1);
-//        purchase.fillNew(currentUser);
-//        List<Product> productlist = purchaseRequest.getProducts().stream().map(productRequest -> {
-//            Product byProductIdAndSku = new Product();
-//            if (productRequest.getProductId() != null) {
-//                byProductIdAndSku = productRepository.findByProductIdAndSku(productRequest.getProductId(), productRequest.getSku());
-//            }
-//            return byProductIdAndSku;
-//        }).toList();
-//        purchase.setProducts(productlist);
-//        purchase.setTotalCost(purchaseRequest.getTotalCost());
-//        purchase.setPaidAmount(purchaseRequest.getPaidAmount());
-//        purchase.setFullyPaid(purchaseRequest.getFullyPaid());
-//        Purchase savedPurchase = purchaseRepository.save(purchase);
-//
-//        List<Product> products = purchaseRequest.getProducts().stream().map(product -> {
-//            if (product.getProductId() != null) {
-//                Product byProductIdAndSku = productRepository.findByProductIdAndSku(product.getProductId(), product.getSku());
-//
-//                // Update Purchased products details with batches
-//                ProductBatch productBatch = new ProductBatch();
-//                productBatch.setProduct(byProductIdAndSku);
-//                productBatch.setQty(product.getRemainingQty());
-//                productBatch.setUnitCost(product.getCost());
-//                productBatch.setPurchaseId(savedPurchase.getPurchaseId());
-//                productBatch.setInvoiceNumber(purchaseRequest.getInvoiceNumber());
-//                productBatch.setPurchaseDate(purchaseRequest.getInvoiceDate());
-//                productBatch.setSupId(purchaseRequest.getSupId());
-//                productBatch.setRetailPrice(product.getRetailPrice());
-//                productBatch.fillNew(currentUser);
-//
-//                //Check Batch Number is already exist
-//                Optional<Batch> batchByBatchNumberAndSku = batchRepository.findByBatchNumberAndSku(product.getBatchNo(), byProductIdAndSku.getSku());
-//                if (batchByBatchNumberAndSku.isEmpty()) {
-//                    //Save Batch Details
-//                    Batch batch = new Batch();
-//                    batch.setSku(byProductIdAndSku.getSku());
-//                    batch.setBatchNumber(product.getBatchNo());
-//                    batch.setUnitCost(product.getCost());
-//                    batch.setRetailPrice(product.getRetailPrice());
-//                    batch.setQty(product.getRemainingQty());
-//                    batch.setWholesalePrice(product.getWholeSalePrice());
-//                    batch.fillNew(currentUser);
-//                    Batch savedBatch = batchRepository.save(batch);
-//                    // Update batch into purchase details
-//                    productBatch.setBatch(savedBatch);
-//                } else {
-//                    // Update batch into purchase details
-//                    Batch exisitingBatch = batchByBatchNumberAndSku.get();
-//                    exisitingBatch.setQty((exisitingBatch.getQty() == null ? 0 : exisitingBatch.getQty()) + product.getRemainingQty());
-//                    exisitingBatch.fillUpdated(currentUser);
-//                    productBatch.setBatch(exisitingBatch);
-//                }
-//                productBatchRepository.save(productBatch);
-//
-//                // Update inventory
-//                Optional<Inventory> inventoryBySkuAndBatchId = inventoryRepository.findBySkuAndBatchNumber(byProductIdAndSku.getSku(), product.getBatchNo());
-//                //if inventory already exist update the qty
-//                if (inventoryBySkuAndBatchId.isPresent()) {
-//                    inventoryBySkuAndBatchId.get().setQty((inventoryBySkuAndBatchId.get().getQty() == null ? 0 : inventoryBySkuAndBatchId.get().getQty()) + product.getRemainingQty());
-//                } else {
-//                    //if inventory not exist create new inventory
-//                    Inventory inventory = new Inventory();
-//                    inventory.setSku(byProductIdAndSku.getSku());
-//                    inventory.setBatchNumber(product.getBatchNo());
-//                    inventory.setQty(product.getRemainingQty());
-//                    inventoryRepository.save(inventory);
-//                }
-//                return byProductIdAndSku;
-//            } else {
-//                throw new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND);
-//            }
-//        }).toList();
-//        return purchase;
-//    }
-
     @Transactional
     private Purchase getSavedPurchase(PurchaseRequest purchaseRequest) {
         String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -322,6 +236,8 @@ public class PurchaseServiceImpl implements IPurchaseService {
         purchase.setTotalCost(purchaseRequest.getTotalCost());
         purchase.setPaidAmount(purchaseRequest.getPaidAmount());
         purchase.setFullyPaid(purchaseRequest.getFullyPaid());
+        purchase.setPaymentType(purchaseRequest.getPaymentType());
+        purchase.setChequeNo(purchaseRequest.getChequeNo());
         return purchase;
     }
 
@@ -387,21 +303,6 @@ public class PurchaseServiceImpl implements IPurchaseService {
             return batchRepository.save(batch);
         }
     }
-
-//    private void processInventory(ProductRequest productRequest, Product product, String currentUser) {
-//        Optional<Inventory> existingInventory = inventoryRepository.findBySkuAndBatchNumber(product.getSku(), productRequest.getBatchNo());
-//        if (existingInventory.isPresent()) {
-//            Inventory inventory = existingInventory.get();
-//            inventory.setQty((inventory.getQty() == null ? 0 : inventory.getQty()) + productRequest.getRemainingQty());
-//            inventoryRepository.save(inventory);
-//        } else {
-//            Inventory inventory = new Inventory();
-//            inventory.setSku(product.getSku());
-//            inventory.setBatchNumber(productRequest.getBatchNo());
-//            inventory.setQty(productRequest.getRemainingQty());
-//            inventoryRepository.save(inventory);
-//        }
-//    }
 
     @Override
     public PurchaseResponse getPurchaseById(Integer purchaseId) {
@@ -475,61 +376,111 @@ public class PurchaseServiceImpl implements IPurchaseService {
                 () -> new ResourceNotFoundException(ErrorCodes.BATCH_NOT_FOUND)
         );
 
+        //add return details
+        List<PurchaseReturn> purchaseReturns = purchaseReturnRepository.findByPurchase_PurchaseId(productBatch.getPurchaseId());
+
+        // Deduct returned amounts
+        double totalReturnedAmount = purchaseReturns.stream()
+                .mapToDouble(PurchaseReturn::getRefundAmount)
+                .sum();
+
+
+        // Adjust the quantity for each PurchaseProduct
+        double quantityReturned = purchaseReturns.stream()
+                .mapToDouble(PurchaseReturn::getQuantityReturned)
+                .sum();
+
         ProductBatchResponse response = new ProductBatchResponse();
         response.setPurchaseId(productBatch.getPurchaseId());
         response.setBatchNumber(batch.getBatchNumber());
         response.setProductId(productBatch.getProduct().getProductId());
+        response.setProductName(productBatch.getProduct().getProductName());
         response.setQty(productBatch.getQty());
         response.setUnitCost(productBatch.getUnitCost());
         response.setRetailPrice(productBatch.getRetailPrice());
+        response.setRefundedAmount(totalReturnedAmount);
+        response.setRefundedQty(quantityReturned);
         return response;
     }
 
-    //    @Override
-//    public PurchaseResponse updatePurchase(PurchaseRequest purchaseRequest) {
-//        PurchaseResponse updatedPurchaseResponse = new PurchaseResponse();
-//        if (purchaseRequest.getPurchaseId() != null) {
-//            Purchase purchase = purchaseRepository.findById(purchaseRequest.getPurchaseId()).orElseThrow(
-//                    () -> new ResourceNotFoundException(ErrorCodes.PURCHASE_NOT_FOUND)
-//            );
-//            purchase.setSupplierId(purchaseRequest.getSupplierId());
-//            purchase.setPurchaseName(purchaseRequest.getPurchaseName());
-//            purchase.setInvoiceNumber(purchaseRequest.getInvoiceNumber());
-//            purchase.setDeliveryTime(purchaseRequest.getDeliveryTime());
-//            purchase.setInvoiceDate(purchaseRequest.getInvoiceDate());
-//            purchase.setConnectionStatus(purchaseRequest.getConnectionStatus());
-//            purchase.setPaymentStatus(purchaseRequest.getPaymentStatus());
-//            purchase.setProductType(purchaseRequest.getProductType());
-//            purchase.setStatus(1);
-//            purchase.fillUpdated("ADMIN USER");
-//            List<Product> products = purchaseRequest.getProducts().stream().map(product -> {
-//                if (product.getProductId() != null) {
-//                    Product byProductIdAndSku = productRepository.findByProductIdAndSku(product.getProductId(), product.getSku());
-//
-//                    Double reducedQty = byProductIdAndSku.getRemainingQty()-product.getExistingQty();
-//                    //Stock management logic
-//                    Double currentTotalQty = reducedQty + product.getRemainingQty();
-//                    Double remainingTotalCost = byProductIdAndSku.getCost() * byProductIdAndSku.getRemainingQty();
-//                    Double currentTotalCost = product.getCost() * product.getRemainingQty();
-//                    Double totalCost = remainingTotalCost + currentTotalCost;
-//                    Double CurrentUnitPrice = totalCost / currentTotalQty;
-//                    byProductIdAndSku.setCost(CurrentUnitPrice);
-//                    byProductIdAndSku.setRemainingQty(currentTotalQty);
-//                    productRepository.save(byProductIdAndSku);
-//
-//                    return byProductIdAndSku;
-//                } else {
-//                    throw new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND);
-//                }
-//            }).toList();
-//            purchase.setProducts(products);
-//            Purchase updatePurchase = purchaseRepository.save(purchase);
-//
-//            updatedPurchaseResponse.setPurchaseId(updatePurchase.getPurchaseId());
-//            updatedPurchaseResponse.setInvoiceNumber(updatePurchase.getInvoiceNumber());
-//            updatedPurchaseResponse.setProducts(updatePurchase.getProducts());
-//
-//        }
-//        return updatedPurchaseResponse;
-//    }
+    @Override
+    public PurchaseResponse getPurchaseByIdentifier(String identifier) {
+        Purchase purchase;
+        if (identifier.matches("\\d+")) { // Check if the identifier is numeric
+            Integer purchaseId = Integer.parseInt(identifier);
+            purchase = purchaseRepository.findById(purchaseId)
+                    .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PURCHASE_NOT_FOUND));
+        } else {
+            purchase = purchaseRepository.findByInvoiceNumber(identifier)
+                    .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PURCHASE_NOT_FOUND));
+        }
+        PurchaseResponse purchaseResponse = purchaseMapper.toPurchaseResponse(purchase);
+        purchaseResponse.setSupplierName(
+                supplierRepository.findById(purchase.getSupplierId())
+                        .map(Supplier::getName)
+                        .orElse(null)
+        );
+
+        return purchaseResponse;
+    }
+
+    @Override
+    @Transactional
+    public PurchaseReturnResponse processPurchaseReturn(PurchaseReturnRequest purchaseReturnRequest) {
+        // Fetch the purchase by ID
+        Purchase purchase = purchaseRepository.findById(purchaseReturnRequest.getPurchaseId())
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PURCHASE_NOT_FOUND));
+
+        // Process each return item
+        purchaseReturnRequest.getReturns().forEach(returnItem -> {
+            // Validate if the product is part of the purchase
+            ProductBatch productBatch = productBatchRepository.findByPurchaseIdAndProduct_ProductId(
+                            purchase.getPurchaseId(), returnItem.getProductId());
+            if (productBatch == null) {
+                throw new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND);
+            }
+
+            // Validate the return quantity
+            if (returnItem.getQuantityToReturn() > productBatch.getQty()) {
+                throw new IllegalArgumentException("Return quantity exceeds purchased quantity");
+            }
+
+            // Fetch the batch by product and batch number
+            Batch batch = batchRepository.findByBatchNumberAndSku(productBatch.getBatch().getBatchNumber(), productBatch.getProduct().getSku())
+                    .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.BATCH_NOT_FOUND));
+
+            // Update inventory quantity
+            batch.setQty(batch.getQty() - returnItem.getQuantityToReturn());
+
+            batchRepository.save(batch);
+
+            // Save return details
+            PurchaseReturn purchaseReturn = new PurchaseReturn();
+            purchaseReturn.setPurchase(purchase);
+            purchaseReturn.setSupplierName(purchaseReturnRequest.getSupplierName());
+            purchaseReturn.setInvoiceNumber(purchaseReturnRequest.getInvoiceNumber());
+            purchaseReturn.setProduct(productBatch.getProduct());
+            purchaseReturn.setQuantityReturned(returnItem.getQuantityToReturn());
+            purchaseReturn.setCondition(returnItem.getCondition());
+            purchaseReturn.setReason(returnItem.getReason());
+            purchaseReturn.setRefundAmount(returnItem.getRefundAmount());
+            purchaseReturn.setReturnDate(new Date());
+            purchaseReturn.setBatchNumber(returnItem.getBatchNumber());
+            purchaseReturnRepository.save(purchaseReturn);
+        });
+
+        PurchaseReturnResponse purchaseReturnResponse = new PurchaseReturnResponse();
+        purchaseReturnResponse.setInvoiceNumber("9797");
+        return purchaseReturnResponse;
+    }
+
+    @Override
+    public List<PurchaseReturnResponse> getAllPurchaseReturns() {
+        return purchaseReturnRepository.findAll().stream().map(purchaseReturn -> {
+            PurchaseReturnResponse response = purchaseReturnMapper.toPurchaseReturnResponse(purchaseReturn);
+            SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+            response.setReturnDate(sm.format(purchaseReturn.getReturnDate()));
+            return response;
+        }).toList();
+    }
 }

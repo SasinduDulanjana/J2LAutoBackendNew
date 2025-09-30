@@ -11,6 +11,8 @@ public class ProductBatchResponse extends CommonResponse {
 
     private Integer productId;
 
+    private String productName;
+
     private String batchNumber;
 
     private Integer purchaseId;
@@ -20,6 +22,10 @@ public class ProductBatchResponse extends CommonResponse {
     private Double unitCost;
 
     private Double retailPrice;
+
+    private Double  refundedAmount;
+
+    private Double refundedQty;
 
     public Integer getId() {
         return id;
@@ -75,5 +81,29 @@ public class ProductBatchResponse extends CommonResponse {
 
     public void setRetailPrice(Double retailPrice) {
         this.retailPrice = retailPrice;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public Double getRefundedAmount() {
+        return refundedAmount;
+    }
+
+    public void setRefundedAmount(Double refundedAmount) {
+        this.refundedAmount = refundedAmount;
+    }
+
+    public Double getRefundedQty() {
+        return refundedQty;
+    }
+
+    public void setRefundedQty(Double refundedQty) {
+        this.refundedQty = refundedQty;
     }
 }

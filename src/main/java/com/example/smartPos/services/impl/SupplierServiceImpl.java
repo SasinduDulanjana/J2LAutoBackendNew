@@ -45,6 +45,23 @@ public class SupplierServiceImpl implements ISupplierService {
     }
 
     @Override
+    public List<SupplierResponse> getAllSuppliersWithoutStatus() {
+
+        List<Supplier> supplierList = supplierRepository.findAll();
+        return supplierList.stream().map(supplier -> {
+            SupplierResponse supResp = new SupplierResponse();
+            supResp.setSupId(supplier.getSupId());
+            supResp.setPhone(supplier.getPhone());
+            supResp.setName(supplier.getName());
+            supResp.setAddress(supplier.getAddress());
+            supResp.setEmail(supplier.getEmail());
+            supResp.setStatus(supplier.getStatus());
+            return supResp;
+        }).toList();
+
+    }
+
+    @Override
     public SupplierResponse getSupplierByPhone(String mobileNo) {
         Supplier supplier = supplierRepository.findByPhone(mobileNo).orElseThrow(
                 () -> new ResourceNotFoundException(ErrorCodes.SUPPLIER_NOT_FOUND)

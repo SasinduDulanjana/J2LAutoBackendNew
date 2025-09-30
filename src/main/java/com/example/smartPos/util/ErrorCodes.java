@@ -41,7 +41,9 @@ public enum ErrorCodes {
 
     PRODUCT_BATCH_NOT_FOUND("60", "Product Batch doesn't exist"),
 
-    BATCH_NOT_FOUND("61", "Batch doesn't exist");
+    BATCH_NOT_FOUND("61", "Batch doesn't exist"),
+
+    PAYMENT_NOT_FOUND("62", "Payment doesn't exist");
 
 
     public final String code;

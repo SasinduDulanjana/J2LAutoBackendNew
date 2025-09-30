@@ -1,8 +1,5 @@
 package com.example.smartPos.controllers.requests;
 
-import com.example.smartPos.repositories.model.Customer;
-import com.example.smartPos.repositories.model.SaleProduct;
-import com.example.smartPos.repositories.model.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -40,6 +37,12 @@ public class SaleRequest {
     private Boolean isHold;
 
     private Double paidAmount;
+
+    private String chequeNumber;
+
+    private String bankName;
+
+    private String chequeDate;
 
     public Integer getOrderId() {
         return orderId;
@@ -187,5 +190,29 @@ public class SaleRequest {
 
     public void setHold(Boolean hold) {
         isHold = hold;
+    }
+
+    public String getChequeNumber() {
+        return chequeNumber;
+    }
+
+    public void setChequeNumber(String chequeNumber) {
+        this.chequeNumber = chequeNumber;
+    }
+
+    public String getBankName() {
+        return bankName;
+    }
+
+    public void setBankName(String bankName) {
+        this.bankName = bankName;
+    }
+
+    public String getChequeDate() {
+        return chequeDate;
+    }
+
+    public void setChequeDate(String chequeDate) {
+        this.chequeDate = chequeDate;
     }
 }

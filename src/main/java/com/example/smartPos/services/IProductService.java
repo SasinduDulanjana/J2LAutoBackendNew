@@ -3,6 +3,7 @@ package com.example.smartPos.services;
 import com.example.smartPos.controllers.requests.ProductRequest;
 import com.example.smartPos.controllers.responses.BatchDetailsResponse;
 import com.example.smartPos.controllers.responses.ProductResponse;
+import com.example.smartPos.controllers.responses.VehicleResponse;
 
 import java.util.List;
 
@@ -34,4 +35,6 @@ public interface IProductService {
     Double getAvailableQuantity(String skuId, String batchNumber);
 
     void deleteProduct(Integer prodId);
+
+    List<VehicleResponse> availableVehicles();
 }

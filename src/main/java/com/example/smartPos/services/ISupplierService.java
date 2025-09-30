@@ -8,6 +8,8 @@ import java.util.List;
 public interface ISupplierService {
     List<SupplierResponse> getAllSuppliers();
 
+    List<SupplierResponse> getAllSuppliersWithoutStatus();
+
     SupplierResponse getSupplierByPhone(String mobileNo);
 
     SupplierResponse getSupplierById(Integer id);

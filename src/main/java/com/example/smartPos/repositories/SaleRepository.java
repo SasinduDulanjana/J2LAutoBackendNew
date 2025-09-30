@@ -13,10 +13,6 @@ import java.util.Optional;
 @Repository
 public interface SaleRepository extends JpaRepository<Sale, Integer> {
 
-//    List<Sale> findAllBySaleDate(String saleDate);
-
-
-//    List<Sale> findAllByUserId(Integer userId);
 
     Optional<Sale> findByInvoiceNumber(String invoiceNumber);
 
@@ -51,4 +47,10 @@ public interface SaleRepository extends JpaRepository<Sale, Integer> {
 
     @Query("SELECT s FROM Sale s JOIN FETCH s.saleProducts WHERE s.saleId = :saleId")
     Optional<Sale> findSaleWithProductsById(@Param("saleId") Integer saleId);
+
+    @Query("SELECT s FROM Sale s JOIN FETCH s.customer WHERE s.customer.custId = :custId")
+    List<Sale> findAllSalesWithCustomer(@Param("custId") Integer custId);
+
+    @Query("SELECT s FROM Sale s JOIN FETCH s.customer")
+    List<Sale> findAllWithCustomer();
 }

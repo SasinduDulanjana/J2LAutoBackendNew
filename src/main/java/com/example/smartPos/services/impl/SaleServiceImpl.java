@@ -1,20 +1,22 @@
 package com.example.smartPos.services.impl;
 
+import com.example.smartPos.controllers.requests.PaymentDetailsRequest;
 import com.example.smartPos.controllers.requests.SaleRequest;
+import com.example.smartPos.controllers.requests.SalesReturnRequest;
 import com.example.smartPos.controllers.requests.SoldProductRequest;
+import com.example.smartPos.controllers.responses.PaymentDetailsResponse;
 import com.example.smartPos.controllers.responses.SaleResponse;
+import com.example.smartPos.controllers.responses.SalesReturnResponse;
 import com.example.smartPos.controllers.responses.SoldProductResponse;
 import com.example.smartPos.exception.ResourceNotFoundException;
 import com.example.smartPos.mapper.CustomerMapper;
+import com.example.smartPos.mapper.PaymentDetailsMapper;
+import com.example.smartPos.mapper.SalesReturnMapper;
 import com.example.smartPos.mapper.UserMapper;
-import com.example.smartPos.repositories.BatchRepository;
-import com.example.smartPos.repositories.InventoryRepository;
-import com.example.smartPos.repositories.ProductRepository;
-import com.example.smartPos.repositories.SaleRepository;
+import com.example.smartPos.repositories.*;
 import com.example.smartPos.repositories.model.*;
 import com.example.smartPos.services.ISaleService;
-import com.example.smartPos.util.ErrorCodes;
-import com.example.smartPos.util.SaleConstants;
+import com.example.smartPos.util.*;
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -34,7 +36,7 @@ public class SaleServiceImpl implements ISaleService {
 
     private final ProductRepository productRepository;
 
-    private final InventoryRepository inventoryRepository;
+    private final SalesReturnRepository salesReturnRepository;
 
     private final BatchRepository batchRepository;
 
@@ -42,19 +44,51 @@ public class SaleServiceImpl implements ISaleService {
 
     private final UserMapper userMapper;
 
-    public SaleServiceImpl(SaleRepository saleRepository, ProductRepository productRepository, InventoryRepository inventoryRepository, BatchRepository batchRepository, CustomerMapper customerMapper, UserMapper userMapper) {
+    private final SalesReturnMapper salesReturnMapper;
+
+    private final PaymentRepository paymentRepository;
+
+    private final PaymentDetailsRepository paymentDetailsRepository;
+
+    private final PaymentDetailsMapper paymentDetailsMapper;
+
+    public SaleServiceImpl(SaleRepository saleRepository, ProductRepository productRepository, SalesReturnRepository salesReturnRepository, BatchRepository batchRepository, CustomerMapper customerMapper, UserMapper userMapper, SalesReturnMapper salesReturnMapper, PaymentRepository paymentRepository, PaymentDetailsRepository paymentDetailsRepository, PaymentDetailsMapper paymentDetailsMapper) {
         this.saleRepository = saleRepository;
         this.productRepository = productRepository;
-        this.inventoryRepository = inventoryRepository;
+        this.salesReturnRepository = salesReturnRepository;
         this.batchRepository = batchRepository;
         this.customerMapper = customerMapper;
         this.userMapper = userMapper;
+        this.salesReturnMapper = salesReturnMapper;
+        this.paymentRepository = paymentRepository;
+        this.paymentDetailsRepository = paymentDetailsRepository;
+        this.paymentDetailsMapper = paymentDetailsMapper;
     }
 
     @Override
     public List<SaleResponse> getAllSales() {
         SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy");
-        return saleRepository.findAllByStatus(1).stream().map(sale -> {
+
+        // Fetch all sales with status 1
+        List<Sale> sales = saleRepository.findAllByStatus(1);
+
+        // Fetch all payment details for the sales in a single query
+        List<PaymentDetails> paymentDetailsList = paymentDetailsRepository.findByInvoiceNumbersAndReceiptPaymentTypeAndSalePaymentType(
+                sales.stream().map(Sale::getInvoiceNumber).toList()
+        );
+
+        // Group payment details by sale ID
+        Map<String, Double> totalPaidAmountByInvoiceNum = paymentDetailsList.stream()
+                .collect(Collectors.groupingBy(
+                        pd -> pd.getPayment().getReferenceId(),
+                        Collectors.summingDouble(PaymentDetails::getAmount)
+                ));
+
+        // Map sales to SaleResponse
+        return sales.stream().map(sale -> {
+            Double totalPaidAmount = totalPaidAmountByInvoiceNum.getOrDefault(sale.getInvoiceNumber(), 0.0);
+            Double outstandingBalance = sale.getTotalAmount() - totalPaidAmount;
+
             SaleResponse saleResponse = new SaleResponse();
             saleResponse.setSaleId(sale.getSaleId());
             saleResponse.setCustomer(sale.getCustomer());
@@ -67,7 +101,8 @@ public class SaleServiceImpl implements ISaleService {
             saleResponse.setBillWiseDiscountTotalAmount(sale.getBillWiseDiscountTotalAmount());
             saleResponse.setLineWiseDiscountTotalAmount(sale.getLineWiseDiscountTotalAmount());
             saleResponse.setFullyPaid(sale.getFullyPaid());
-            saleResponse.setPaidAmount(sale.getPaidAmount());
+            saleResponse.setPaidAmount(totalPaidAmount);
+            saleResponse.setOutstandingBalance(outstandingBalance);
             saleResponse.setHold(sale.getHold());
             saleResponse.setModifiedBy(sale.getModifiedBy());
             saleResponse.setModifiedDate(sm.format(sale.getModifiedDate()));
@@ -90,6 +125,20 @@ public class SaleServiceImpl implements ISaleService {
         Map<String, Double> batchRetailPrices = batchRepository.findByBatchNumbers(batchNumbers).stream()
                 .collect(Collectors.toMap(Batch::getBatchNumber, Batch::getRetailPrice));
 
+        //add return details
+        List<SalesReturn> salesReturns = salesReturnRepository.findBySale_SaleId(sale.getSaleId());
+
+        // Deduct returned amounts
+        double totalReturnedAmount = salesReturns.stream()
+                .mapToDouble(SalesReturn::getRefundAmount)
+                .sum();
+
+
+        // Adjust the quantity for each SaleProduct
+        double quantityReturned = salesReturns.stream()
+                .mapToDouble(SalesReturn::getQuantityReturned)
+                .sum();
+
         // Map SaleProducts to SoldProductResponse
         return sale.getSaleProducts().stream().map(soldProduct -> {
             SoldProductResponse response = new SoldProductResponse();
@@ -102,6 +151,8 @@ public class SaleServiceImpl implements ISaleService {
             response.setDiscountPercentage(soldProduct.getDiscountPercentage());
             response.setDiscountAmount(soldProduct.getDiscountAmount());
             response.setDiscountedTotal(soldProduct.getDiscountedTotal());
+            response.setRefundedQty(quantityReturned);
+            response.setRefundedAmount(totalReturnedAmount);
             return response;
         }).toList();
     }
@@ -155,8 +206,6 @@ public class SaleServiceImpl implements ISaleService {
     }
 
 
-
-
     @Override
     public void deleteHoldSale(Integer saleId) {
         try {
@@ -194,102 +243,6 @@ public class SaleServiceImpl implements ISaleService {
     }
 
 
-//    @Override
-//    @Transactional
-//    public SaleResponse createSale(SaleRequest saleRequest) {
-//        try {
-//            // Retrieve the currently authenticated user's username
-//            String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
-//
-//            Sale saveSale = new Sale();
-//            saveSale.setCustomer(customerMapper.toCustomer(saleRequest.getCustomer()));
-//            saveSale.setUser(userMapper.toUser(saleRequest.getUser()));
-//            saveSale.setInvoiceNumber(saleRequest.getInvoiceNumber());
-//            saveSale.setSaleDate(saleRequest.getOrderDate());
-//            saveSale.setSubTotal(saleRequest.getSubTotal());
-//            saveSale.setPaymentMethod(saleRequest.getPaymentType());
-//            saveSale.setTotalAmount(saleRequest.getTotalAmount());
-//            saveSale.setLineWiseDiscountTotalAmount(saleRequest.getLineWiseDiscountTotalAmount());
-//            saveSale.setBillWiseDiscountPercentage(saleRequest.getBillWiseDiscountPercentage());
-//            saveSale.setBillWiseDiscountTotalAmount(saleRequest.getBillWiseDiscountTotalAmount());
-//            saveSale.setPaidAmount(saleRequest.getPaidAmount());
-//            saveSale.setHold(saleRequest.isHold());
-//            saveSale.setFullyPaid(saleRequest.isFullyPaid());
-//            saveSale.setStatus(1);
-//            saveSale.fillNew(currentUser);
-//
-//
-//            List<SaleProduct> saleProductList = saleRequest.getSoldProducts().stream().map(soldProduct -> {
-//                if (soldProduct.getProduct().getProductId() != null) {
-//                    Product byProductIdAndSku = productRepository.findByProductIdAndSku(soldProduct.getProduct().getProductId(), soldProduct.getProduct().getSku());
-//
-//                    if (byProductIdAndSku == null) {
-//                        throw new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND);
-//                    }
-//                    // Find and update inventory by SKU and batch number
-//                    Inventory inventory = inventoryRepository.findBySkuAndBatchNumber(byProductIdAndSku.getSku(), soldProduct.getProduct().getBatchNo())
-//                            .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.INVENTORY_NOT_FOUND));
-//
-//                    if (!saleRequest.isHold()) {
-//                        if (inventory.getQty() > 0) {
-//                            inventory.setQty(inventory.getQty() - soldProduct.getProduct().getRemainingQty());
-//                            inventoryRepository.save(inventory);
-//                        } else {
-//                            throw new ServiceException("Quantity is not enough");
-//                        }
-//                    }
-//
-//
-//                    SaleProduct saleProduct = new SaleProduct();
-//                    saleProduct.setSale(saveSale);
-//                    saleProduct.setProduct(byProductIdAndSku);
-//                    saleProduct.setQuantity(soldProduct.getQuantity());
-//                    saleProduct.setDiscountAmount(soldProduct.getDiscountAmount());
-//                    saleProduct.setDiscountPercentage(soldProduct.getDiscountPercentage());
-//                    saleProduct.setDiscountedTotal(soldProduct.getDiscountedTotal());
-//                    saleProduct.setBatchNo(soldProduct.getProduct().getBatchNo());
-//                    return saleProduct;
-//                } else {
-//                    throw new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND);
-//                }
-//            }).toList();
-//
-//            // Set SaleProducts in the Sale object
-//            saveSale.setSaleProducts(saleProductList);
-//            // Save the Sale along with SaleProducts in one go
-//            Sale savedOrder = saleRepository.save(saveSale);
-//
-//            SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy");
-//            SaleResponse saleResponse = new SaleResponse();
-//            saleResponse.setSaleId(savedOrder.getSaleId());
-//            saleResponse.setCustomer(savedOrder.getCustomer());
-//            saleResponse.setUser(savedOrder.getUser());
-//            saleResponse.setSaleDate(sm.format(savedOrder.getSaleDate()));
-//            saleResponse.setSubTotal(savedOrder.getSubTotal());
-//            saleResponse.setPaymentMethod(savedOrder.getPaymentMethod());
-//            saleResponse.setTotalAmount(savedOrder.getTotalAmount());
-//            saleResponse.setInvoiceNumber(savedOrder.getInvoiceNumber());
-//            List<SoldProductResponse> soldProductResponse = savedOrder.getSaleProducts().stream().map(soldProduct -> {
-//                SoldProductResponse response = new SoldProductResponse();
-//                response.setSaleProductId(soldProduct.getSaleProductId());
-//                response.setProduct(soldProduct.getProduct());
-//                response.setSale(soldProduct.getSale());
-//                response.setBatchNo(soldProduct.getBatchNo());
-//                response.setQuantity(soldProduct.getQuantity());
-//                response.setDiscountPercentage(soldProduct.getDiscountPercentage());
-//                response.setDiscountAmount(soldProduct.getDiscountAmount());
-//                response.setDiscountedTotal(soldProduct.getDiscountedTotal());
-//                return response;
-//            }).toList();
-//            saleResponse.setSoldProducts(soldProductResponse);
-//            saleResponse.setStatusCode(SaleConstants.STATUS_201);
-//            saleResponse.setDesc(SaleConstants.MESSAGE_201);
-//            return saleResponse;
-//        } catch (Exception e) {
-//            throw new ServiceException("Saving Unsuccessful", e);
-//        }
-//    }
-
     @Transactional
     public SaleResponse createSale(SaleRequest saleRequest) {
         try {
@@ -303,6 +256,15 @@ public class SaleServiceImpl implements ISaleService {
 
             // Set SaleProducts and save the Sale
             sale.setSaleProducts(saleProducts);
+
+            // Process and save payment details
+            Payment payment = createPaymentEntity(saleRequest, sale, currentUser);
+            paymentRepository.save(payment);
+
+            // Save payment details
+            PaymentDetails paymentDetailsList = createPaymentDetailsEntities(saleRequest, payment);
+            paymentDetailsRepository.save(paymentDetailsList);
+
             Sale savedSale = saleRepository.save(sale);
 
             // Map the saved Sale to SaleResponse
@@ -310,6 +272,37 @@ public class SaleServiceImpl implements ISaleService {
         } catch (Exception e) {
             throw new ServiceException("Saving Unsuccessful", e);
         }
+    }
+
+    private Payment createPaymentEntity(SaleRequest saleRequest, Sale sale, String currentUser) {
+        Payment payment = new Payment();
+        payment.setPaymentType(PaymentType.RECEIPT);
+        payment.setReferenceId(sale.getInvoiceNumber());
+        payment.setReferenceType(ReferenceType.SALE);
+        payment.setCustomer(sale.getCustomer());
+        payment.setPaymentDate(new Date());
+        payment.setTotalAmount(saleRequest.getTotalAmount());
+        payment.setRemarks("Payment for INV ID: " + sale.getInvoiceNumber());
+        payment.fillNew(currentUser);
+        return payment;
+    }
+
+    private PaymentDetails createPaymentDetailsEntities(SaleRequest saleRequest, Payment payment) {
+        PaymentDetails paymentDetails = new PaymentDetails();
+        paymentDetails.setPayment(payment);
+        paymentDetails.setPaymentMethod(saleRequest.getPaymentType());
+        paymentDetails.setAmount(saleRequest.getPaidAmount());
+        paymentDetails.setChequeNo(saleRequest.getChequeNumber());
+        paymentDetails.setBankName(saleRequest.getBankName());
+        paymentDetails.setChequeDate(saleRequest.getChequeDate());
+        paymentDetails.setPaymentDate(new Date());
+        if (saleRequest.getPaymentType().equalsIgnoreCase("CHEQUE")) {
+            paymentDetails.setPaymentStatus(PaymentStatus.PENDING);
+        } else {
+            paymentDetails.setPaymentStatus(PaymentStatus.CLEARED);
+        }
+
+        return paymentDetails;
     }
 
     private Sale createSaleEntity(SaleRequest saleRequest, String currentUser) {
@@ -376,7 +369,7 @@ public class SaleServiceImpl implements ISaleService {
     }
 
     private SaleResponse mapToSaleResponse(Sale savedSale) {
-        SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy");
+        SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         SaleResponse saleResponse = new SaleResponse();
         saleResponse.setSaleId(savedSale.getSaleId());
         saleResponse.setCustomer(savedSale.getCustomer());
@@ -387,6 +380,9 @@ public class SaleServiceImpl implements ISaleService {
         saleResponse.setTotalAmount(savedSale.getTotalAmount());
         saleResponse.setInvoiceNumber(savedSale.getInvoiceNumber());
         saleResponse.setSoldProducts(savedSale.getSaleProducts().stream().map(this::mapToSoldProductResponse).toList());
+        saleResponse.setPaidAmount(savedSale.getPaidAmount());
+        saleResponse.setFullyPaid(savedSale.getFullyPaid());
+        saleResponse.setPaymentMethod(savedSale.getPaymentMethod());
         saleResponse.setStatusCode(SaleConstants.STATUS_201);
         saleResponse.setDesc(SaleConstants.MESSAGE_201);
         return saleResponse;
@@ -453,4 +449,133 @@ public class SaleServiceImpl implements ISaleService {
         }).toList();
     }
 
+
+    @Override
+    public SaleResponse getSaleByInvoiceNumber(String invoiceNumber) {
+        // Fetch the sale by invoice number
+        Sale sale = saleRepository.findByInvoiceNumber(invoiceNumber)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.SALE_NOT_FOUND));
+
+        // Map the adjusted sale to SaleResponse
+        SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        SaleResponse saleResponse = new SaleResponse();
+        saleResponse.setSaleId(sale.getSaleId());
+        saleResponse.setCustomer(sale.getCustomer());
+        saleResponse.setSaleDate(sm.format(sale.getSaleDate()));
+        saleResponse.setSubTotal(sale.getSubTotal());
+        saleResponse.setPaymentMethod(sale.getPaymentMethod());
+        saleResponse.setTotalAmount(sale.getTotalAmount());
+        saleResponse.setInvoiceNumber(sale.getInvoiceNumber());
+        saleResponse.setSoldProducts(sale.getSaleProducts().stream().map(saleProduct -> {
+            SoldProductResponse response = new SoldProductResponse();
+            response.setSaleProductId(saleProduct.getSaleProductId());
+            response.setProduct(saleProduct.getProduct());
+            response.setSale(saleProduct.getSale());
+            response.setBatchNo(saleProduct.getBatchNo());
+            response.setQuantity(saleProduct.getQuantity());
+            response.setDiscountPercentage(saleProduct.getDiscountPercentage());
+            response.setDiscountAmount(saleProduct.getDiscountAmount());
+            response.setDiscountedTotal(saleProduct.getDiscountedTotal());
+            return response;
+        }).toList());
+        saleResponse.setPaidAmount(sale.getPaidAmount());
+        saleResponse.setFullyPaid(sale.getFullyPaid());
+        saleResponse.setPaymentMethod(sale.getPaymentMethod());
+        saleResponse.setStatusCode(SaleConstants.STATUS_201);
+        saleResponse.setDesc(SaleConstants.MESSAGE_201);
+        return saleResponse;
+    }
+
+    @Override
+    @Transactional
+    public void processSalesReturn(SalesReturnRequest salesReturnRequest) {
+        // Fetch the sale by ID
+        Sale sale = saleRepository.findById(salesReturnRequest.getSaleId())
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.SALE_NOT_FOUND));
+
+        // Process each return item
+        salesReturnRequest.getReturns().forEach(returnItem -> {
+            // Validate if the product is part of the sale
+            SaleProduct saleProduct = sale.getSaleProducts().stream()
+                    .filter(sp -> sp.getProduct().getProductId().equals(returnItem.getProductId()))
+                    .findFirst()
+                    .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND));
+
+            // Validate the return quantity
+            if (returnItem.getQuantityToReturn() > saleProduct.getQuantity()) {
+                throw new IllegalArgumentException("Return quantity exceeds sold quantity");
+            }
+
+            // Fetch the batch by product and batch number
+            Batch batch = batchRepository.findByBatchNumberAndSku(saleProduct.getBatchNo(), saleProduct.getProduct().getSku())
+                    .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.BATCH_NOT_FOUND));
+
+            // Update inventory quantity
+            if (returnItem.getCondition().equals("Good")) {
+                batch.setQty(batch.getQty() + returnItem.getQuantityToReturn());
+            }
+            batchRepository.save(batch);
+
+            // Save return details
+            SalesReturn salesReturn = new SalesReturn();
+            salesReturn.setSale(sale);
+            salesReturn.setCustomerName(salesReturnRequest.getCustomerName());
+            salesReturn.setCustomerId(salesReturnRequest.getCustomerId());
+            salesReturn.setInvoiceNumber(salesReturnRequest.getInvoiceNumber());
+            salesReturn.setProduct(saleProduct.getProduct());
+            salesReturn.setQuantityReturned(returnItem.getQuantityToReturn());
+            salesReturn.setCondition(returnItem.getCondition());
+            salesReturn.setReason(returnItem.getReason());
+            salesReturn.setRefundAmount(returnItem.getRefundAmount());
+            salesReturn.setReturnDate(new Date());
+            salesReturn.setBatchNumber(returnItem.getBatchNumber());
+            salesReturnRepository.save(salesReturn);
+        });
+    }
+
+    @Override
+    public List<SalesReturnResponse> getAllSalesReturns() {
+        return salesReturnRepository.findAll().stream().map(salesReturn -> {
+            SalesReturnResponse response = salesReturnMapper.toSalesReturnResponse(salesReturn);
+            SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+            response.setReturnDate(sm.format(salesReturn.getReturnDate()));
+            return response;
+        }).toList();
+    }
+
+    @Override
+    public List<PaymentDetails> getPaymentDetailsByInvoice(String invoiceNumber) {
+        // Fetch the payment by invoice number
+        Payment payment = paymentRepository.findByReferenceIdAndReceiptPaymentTypeAndSaleReferenceType(invoiceNumber)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PAYMENT_NOT_FOUND));
+
+        // Fetch and return the associated payment details
+        return paymentDetailsRepository.findByPayment(payment);
+    }
+
+    @Override
+    @Transactional
+    public PaymentDetailsResponse createPaymentDetails(PaymentDetailsRequest paymentDetailsRequest) {
+        // Fetch the associated Payment entity
+        Payment payment = paymentRepository.findById(paymentDetailsRequest.getPaymentId())
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PAYMENT_NOT_FOUND));
+
+        // Create and populate the PaymentDetails entity
+        PaymentDetails paymentDetails = new PaymentDetails();
+        paymentDetails.setPayment(payment);
+        paymentDetails.setPaymentMethod(paymentDetailsRequest.getMethod());
+        paymentDetails.setAmount(paymentDetailsRequest.getAmount());
+        paymentDetails.setChequeNo(paymentDetailsRequest.getChequeNo());
+        paymentDetails.setBankName(paymentDetailsRequest.getBankName());
+        paymentDetails.setChequeDate(paymentDetailsRequest.getChequeDate());
+        paymentDetails.setPaymentDate(new Date());
+        if (paymentDetailsRequest.getMethod().equalsIgnoreCase("CHEQUE")) {
+            paymentDetails.setPaymentStatus(PaymentStatus.PENDING);
+        } else {
+            paymentDetails.setPaymentStatus(PaymentStatus.CLEARED);
+        }
+
+        // Save the PaymentDetails entity
+        return paymentDetailsMapper.toPaymentDetailsResponse(paymentDetailsRepository.save(paymentDetails));
+    }
 }
