@@ -1,29 +1,43 @@
 package com.example.smartPos.services.impl;
 
 import com.example.smartPos.controllers.requests.SupplierRequest;
+import com.example.smartPos.controllers.requests.TransactionDetails;
+import com.example.smartPos.controllers.responses.SupplierOutstandingResponse;
+import com.example.smartPos.controllers.responses.SupplierPaymentDetailsResponse;
 import com.example.smartPos.controllers.responses.SupplierResponse;
 import com.example.smartPos.exception.AlreadyExistsException;
 import com.example.smartPos.exception.ResourceNotFoundException;
+import com.example.smartPos.repositories.PaymentDetailsRepository;
+import com.example.smartPos.repositories.PurchaseRepository;
+import com.example.smartPos.repositories.PurchaseReturnRepository;
 import com.example.smartPos.repositories.SupplierRepository;
-import com.example.smartPos.repositories.model.Customer;
-import com.example.smartPos.repositories.model.Supplier;
+import com.example.smartPos.repositories.model.*;
 import com.example.smartPos.services.ISupplierService;
-import com.example.smartPos.util.CustomerConstants;
 import com.example.smartPos.util.ErrorCodes;
 import com.example.smartPos.util.SupplierConstants;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class SupplierServiceImpl implements ISupplierService {
 
-    final SupplierRepository supplierRepository;
+    private final SupplierRepository supplierRepository;
 
-    public SupplierServiceImpl(SupplierRepository supplierRepository) {
+    private final PurchaseRepository purchaseRepository;
+
+    private final PurchaseReturnRepository purchaseReturnRepository;
+
+    private final PaymentDetailsRepository paymentDetailsRepository;
+
+    public SupplierServiceImpl(SupplierRepository supplierRepository, PurchaseRepository purchaseRepository, PurchaseReturnRepository purchaseReturnRepository, PaymentDetailsRepository paymentDetailsRepository) {
         this.supplierRepository = supplierRepository;
+        this.purchaseRepository = purchaseRepository;
+        this.purchaseReturnRepository = purchaseReturnRepository;
+        this.paymentDetailsRepository = paymentDetailsRepository;
     }
 
 
@@ -149,5 +163,219 @@ public class SupplierServiceImpl implements ISupplierService {
             supplier.fillUpdated(currentUser);
             supplierRepository.save(supplier);
         }
+    }
+
+    @Override
+    public List<SupplierResponse> getAllSupplierDetailsWithSummary() {
+        List<Supplier> suppliers = supplierRepository.findAll();
+
+        // Step 2: Fetch all sales with suppliers
+        List<Purchase> allPurchases = purchaseRepository.findAllWithSupplier();
+        Map<Integer, List<Purchase>> purchaseBySupplier = allPurchases.stream()
+                .collect(Collectors.groupingBy(Purchase::getSupplierId));
+
+        // Step 3: Fetch all returns
+        List<PurchaseReturn> allReturns = purchaseReturnRepository.findAllWithSupplier();
+        Map<Integer, Double> returnsBySupplier = allReturns.stream()
+                .collect(Collectors.groupingBy(PurchaseReturn::getSupplierId,
+                        Collectors.summingDouble(PurchaseReturn::getRefundAmount)));
+
+        // Step 4: Fetch all payments with invoices
+        List<PaymentDetails> allPayments = paymentDetailsRepository.findAllByPaymentPaymentTypeAndPurchaseReferenceType();
+        Map<String, Double> paymentsByPurchaseId = allPayments.stream()
+                .filter(pd -> pd.getPayment() != null && pd.getPayment().getReferenceId() != null)
+                .collect(Collectors.groupingBy(pd -> pd.getPayment().getReferenceId(),
+                        Collectors.summingDouble(PaymentDetails::getAmount)));
+
+        // Step 5: Map customers to response
+        return suppliers.stream().map(supplier -> {
+            List<Purchase> supplierPurchases = purchaseBySupplier.getOrDefault(supplier.getSupId(), Collections.emptyList());
+
+            double totalPurchases = supplierPurchases.stream()
+                    .mapToDouble(Purchase::getTotalCost)
+                    .sum();
+
+            double totalReturns = returnsBySupplier.getOrDefault(supplier.getSupId(), 0.0);
+
+            double totalPaid = supplierPurchases.stream()
+                    .mapToDouble(purchase -> paymentsByPurchaseId.getOrDefault(purchase.getPurchaseId().toString(), 0.0))
+                    .sum();
+
+            double outstanding = totalPurchases - totalReturns - totalPaid;
+
+            SupplierResponse response = new SupplierResponse();
+            response.setSupId(supplier.getSupId());
+            response.setName(supplier.getName());
+            response.setPhone(supplier.getPhone());
+            response.setAddress(supplier.getAddress());
+            response.setEmail(supplier.getEmail());
+            response.setTotalPurchases(totalPurchases);
+            response.setTotalReturns(totalReturns);
+            response.setTotalPayments(totalPaid);
+            response.setTotalOutstanding(outstanding);
+
+            return response;
+        }).toList();
+    }
+
+    @Override
+    public SupplierPaymentDetailsResponse getSupplierDetailsWithSummary(Integer supId) {
+        // Fetch customer details
+        Supplier supplier = supplierRepository.findById(supId).orElseThrow(
+                () -> new ResourceNotFoundException(ErrorCodes.SUPPLIER_NOT_FOUND)
+        );
+
+        // Fetch sales, returns, and payment details
+        List<Purchase> purchases = purchaseRepository.findAllPurchasesWithSupplier(supplier.getSupId());
+        List<PurchaseReturn> purchaseReturns = purchaseReturnRepository.findBySupplierId(supId);
+        List<PaymentDetails> paymentDetails = paymentDetailsRepository.findAllByPaymentPaymentTypeAndPurchaseReferenceType();
+
+        // Group payments by invoice number
+        Map<String, Double> paymentsByPurchaseId = paymentDetails.stream()
+                .filter(pd -> pd.getPayment() != null && pd.getPayment().getReferenceId() != null)
+                .collect(Collectors.groupingBy(pd -> pd.getPayment().getReferenceId(),
+                        Collectors.summingDouble(PaymentDetails::getAmount)));
+
+        // Calculate totals
+        double totalPurchases = purchases.stream().mapToDouble(Purchase::getTotalCost).sum();
+        double totalReturns = purchaseReturns.stream().mapToDouble(PurchaseReturn::getRefundAmount).sum();
+        double totalPaidAmount = purchases.stream()
+                .mapToDouble(purchase -> paymentsByPurchaseId.getOrDefault(purchase.getPurchaseId().toString(), 0.0))
+                .sum();
+        double netSales = totalPurchases - totalReturns;
+        double totalOutstanding = netSales - totalPaidAmount;
+
+        // Prepare transaction details
+        List<TransactionDetails> transactionDetails = prepareTransactionDetails(paymentDetails, purchaseReturns, supId);
+
+        // Prepare response
+        return buildSupplierResponse(supplier, totalPurchases, totalReturns, totalPaidAmount, totalOutstanding, transactionDetails);
+    }
+
+
+    private List<TransactionDetails> prepareTransactionDetails(List<PaymentDetails> paymentDetails, List<PurchaseReturn> purchaseReturns, Integer supplierId) {
+        // Filter payment details for the specific supplier
+        List<PaymentDetails> supplierPayments = paymentDetails.stream()
+                .filter(payment -> payment.getPayment().getSupplier().getSupId().equals(supplierId))
+                .toList();
+
+        // Filter sales returns for the specific customer
+        List<PurchaseReturn> supplierPurchasesReturns = purchaseReturns.stream()
+                .filter(purchaseReturn -> purchaseReturn.getSupplierId().equals(supplierId))
+                .toList();
+
+        // Map sale transactions
+        List<TransactionDetails> purchaseTransactions = supplierPayments.stream()
+                .collect(Collectors.groupingBy(payment -> payment.getPayment().getReferenceId()))
+                .entrySet()
+                .stream()
+                .map(entry -> {
+                    String referenceId = entry.getKey();
+                    List<PaymentDetails> payments = entry.getValue();
+
+                    // Calculate total sale amount and cumulative payments
+                    double totalPurchaseAmount = payments.get(0).getPayment().getTotalAmount();
+                    double cumulativePayments = payments.stream().mapToDouble(PaymentDetails::getAmount).sum();
+
+                    TransactionDetails details = new TransactionDetails();
+                    details.setDate(payments.get(0).getPayment().getPaymentDate());
+                    details.setType("Purchase");
+                    details.setInvoiceNo(payments.get(0).getPayment().getRemarks());
+                    details.setDebit(totalPurchaseAmount);
+                    details.setCredit(0);
+                    details.setBalance(totalPurchaseAmount - cumulativePayments);
+                    return details;
+                }).toList();
+
+        // Map payment transactions
+        List<TransactionDetails> paymentTransactions = supplierPayments.stream().map(payment -> {
+            TransactionDetails details = new TransactionDetails();
+            details.setDate(payment.getPaymentDate());
+            details.setType("Payment");
+            details.setInvoiceNo(payment.getPayment().getRemarks());
+            details.setDebit(0);
+            details.setCredit(payment.getAmount());
+            details.setBalance(0); // Temporary, will calculate later
+            details.setPaymentMethod(payment.getPaymentMethod());
+            details.setChequeNo(payment.getChequeNo());
+            details.setChequeDate(payment.getChequeDate());
+            details.setPaymentStatus(payment.getPaymentStatus().name());
+            return details;
+        }).collect(Collectors.toList());
+
+        // Map return transactions
+        List<TransactionDetails> returnTransactions = supplierPurchasesReturns.stream().map(purchaseReturn -> {
+            TransactionDetails details = new TransactionDetails();
+            details.setDate(purchaseReturn.getReturnDate());
+            details.setType("Return");
+            details.setInvoiceNo(purchaseReturn.getInvoiceNumber());
+            details.setDebit(0);
+            details.setCredit(purchaseReturn.getRefundAmount());
+            details.setBalance(0); // Temporary, will calculate later
+            return details;
+        }).toList();
+
+        // Combine all transactions
+        paymentTransactions.addAll(returnTransactions);
+        paymentTransactions.addAll(purchaseTransactions);
+
+//        // Sort by date and type
+        List<TransactionDetails> sortedTransactions = paymentTransactions.stream()
+                .sorted(Comparator.comparing(TransactionDetails::getDate)) // Secondary sort by type
+                .collect(Collectors.toList());
+
+        // Calculate running balance
+        double runningBalance = 0.0;
+        for (TransactionDetails transaction : sortedTransactions) {
+            runningBalance += transaction.getCredit() - transaction.getDebit();
+            transaction.setBalance(runningBalance);
+        }
+
+        return sortedTransactions;
+    }
+
+    // Helper method to build the customer response
+    private SupplierPaymentDetailsResponse buildSupplierResponse(Supplier supplier, double totalSales, double totalReturns, double totalPaidAmount, double totalOutstanding, List<TransactionDetails> transactionDetails) {
+        SupplierPaymentDetailsResponse response = new SupplierPaymentDetailsResponse();
+        response.setSupplierId(supplier.getSupId());
+        response.setSupplierName(supplier.getName());
+        response.setTotalPurchases(totalSales);
+        response.setTotalReturns(totalReturns);
+        response.setOutstanding(totalOutstanding);
+        response.setTotalPayments(totalPaidAmount);
+        response.setTransactionDetails(transactionDetails);
+        return response;
+    }
+
+    @Override
+    public List<SupplierOutstandingResponse> getSupplierOutstanding(Integer supplierId) {
+        // Fetch all purchases for the supplier
+        List<Purchase> purchases = purchaseRepository.findAllPurchasesWithSupplier(supplierId);
+
+        // Fetch all payment details for the supplier's purchases in a single query
+        List<PaymentDetails> paymentDetails = paymentDetailsRepository.findByInvoiceNumbersAndPaymentPaymentTypeAndPurchasePaymentType(
+                purchases.stream().map(purchase -> purchase.getPurchaseId().toString()).toList()
+        );
+
+        // Group payment details by purchaseId
+        Map<String, Double> paymentsByPurchaseId = paymentDetails.stream()
+                .collect(Collectors.groupingBy(
+                        pd -> pd.getPayment().getReferenceId(),
+                        Collectors.summingDouble(PaymentDetails::getAmount)
+                ));
+
+        // Map purchases to responses
+        return purchases.stream().map(purchase -> {
+            double paidAmount = paymentsByPurchaseId.getOrDefault(purchase.getPurchaseId().toString(), 0.0);
+            double outstanding = purchase.getTotalCost() - paidAmount;
+
+            SupplierOutstandingResponse response = new SupplierOutstandingResponse();
+            response.setInvoiceNumber(purchase.getInvoiceNumber());
+            response.setPurchaseDate(purchase.getInvoiceDate());
+            response.setTotalAmount(purchase.getTotalCost());
+            response.setPaidAmount(paidAmount);
+            response.setOutstanding(outstanding);
+            return response;
+        }).collect(Collectors.toList());
     }
 }

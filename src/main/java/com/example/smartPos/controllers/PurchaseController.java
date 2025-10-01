@@ -2,10 +2,12 @@ package com.example.smartPos.controllers;
 
 import com.example.smartPos.controllers.requests.*;
 import com.example.smartPos.controllers.responses.*;
+import com.example.smartPos.repositories.model.PaymentDetails;
 import com.example.smartPos.services.IProductService;
 import com.example.smartPos.services.IPurchaseService;
 import com.example.smartPos.util.ResponseCreator;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -72,4 +74,15 @@ public class PurchaseController {
         return ResponseEntity.ok(responses);
     }
 
+    @GetMapping(path = "/api/getPaymentDetailsByPurchaseId/{purchaseId}")
+    public ResponseEntity<List<PaymentDetails>> getPaymentDetailsByPurchaseId(@PathVariable Integer purchaseId) {
+        List<PaymentDetails> paymentDetails = purchaseService.getPaymentDetailsByPurchaseId(purchaseId);
+        return ResponseEntity.ok(paymentDetails);
+    }
+
+    @PostMapping(path = "/api/createPaymentDetails")
+    public ResponseEntity<PaymentDetailsResponse> createPaymentDetails(@RequestBody PaymentDetailsRequest paymentDetailsRequest) {
+        PaymentDetailsResponse paymentDetailsResponse = purchaseService.createPaymentDetails(paymentDetailsRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(paymentDetailsResponse);
+    }
 }

@@ -1,6 +1,5 @@
 package com.example.smartPos.controllers.requests;
 
-import com.example.smartPos.repositories.model.Product;
 import lombok.Data;
 
 import java.util.Date;
@@ -28,7 +27,11 @@ public class PurchaseRequest {
 
     private String paymentType;
 
-    private String chequeNo;
+    private String chequeNumber;
+
+    private String bankName;
+
+    private String chequeDate;
 
     private List<ProductRequest> products;
 
@@ -168,11 +171,27 @@ public class PurchaseRequest {
         this.paymentType = paymentType;
     }
 
-    public String getChequeNo() {
-        return chequeNo;
+    public String getChequeNumber() {
+        return chequeNumber;
     }
 
-    public void setChequeNo(String chequeNo) {
-        this.chequeNo = chequeNo;
+    public void setChequeNumber(String chequeNumber) {
+        this.chequeNumber = chequeNumber;
+    }
+
+    public String getBankName() {
+        return bankName;
+    }
+
+    public void setBankName(String bankName) {
+        this.bankName = bankName;
+    }
+
+    public String getChequeDate() {
+        return chequeDate;
+    }
+
+    public void setChequeDate(String chequeDate) {
+        this.chequeDate = chequeDate;
     }
 }

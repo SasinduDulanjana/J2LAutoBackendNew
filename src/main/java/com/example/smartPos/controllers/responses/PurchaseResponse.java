@@ -42,6 +42,8 @@ public class PurchaseResponse extends CommonResponse {
 
     private String chequeNo;
 
+    private Double outstandingAmount;
+
     private String addBy;
 
     private String modifiedBy;
@@ -185,5 +187,13 @@ public class PurchaseResponse extends CommonResponse {
 
     public void setChequeNo(String chequeNo) {
         this.chequeNo = chequeNo;
+    }
+
+    public Double getOutstandingAmount() {
+        return outstandingAmount;
+    }
+
+    public void setOutstandingAmount(Double outstandingAmount) {
+        this.outstandingAmount = outstandingAmount;
     }
 }

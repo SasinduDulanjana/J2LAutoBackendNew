@@ -41,6 +41,27 @@ public class PaymentDetails {
     @Temporal(TemporalType.TIMESTAMP)
     private Date paymentDate;
 
+    private String addBy;
+
+    private String modifiedBy;
+
+    private Date addedDate;
+
+    private Date modifiedDate;
+
+    public void fillNew(String userId){
+        this.addBy = userId;
+        this.addedDate = new Date();
+        this.modifiedBy = userId;
+        this.modifiedDate = new Date();
+    }
+
+    public void fillUpdated(String userId){
+        this.modifiedBy = userId;
+        this.modifiedDate = new Date();
+    }
+
+
     // Getters and Setters
     public Integer getDetailId() {
         return detailId;

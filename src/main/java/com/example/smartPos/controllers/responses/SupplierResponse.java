@@ -9,6 +9,12 @@ public class SupplierResponse extends CommonResponse {
 
     private Integer status;
 
+    private double totalPurchases;
+    private double totalReturns;
+    private double totalOutstanding;
+
+    private double totalPayments;
+
 
     public Integer getSupId() {
         return supId;
@@ -56,5 +62,37 @@ public class SupplierResponse extends CommonResponse {
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public double getTotalPurchases() {
+        return totalPurchases;
+    }
+
+    public void setTotalPurchases(double totalPurchases) {
+        this.totalPurchases = totalPurchases;
+    }
+
+    public double getTotalReturns() {
+        return totalReturns;
+    }
+
+    public void setTotalReturns(double totalReturns) {
+        this.totalReturns = totalReturns;
+    }
+
+    public double getTotalOutstanding() {
+        return totalOutstanding;
+    }
+
+    public void setTotalOutstanding(double totalOutstanding) {
+        this.totalOutstanding = totalOutstanding;
+    }
+
+    public double getTotalPayments() {
+        return totalPayments;
+    }
+
+    public void setTotalPayments(double totalPayments) {
+        this.totalPayments = totalPayments;
     }
 }

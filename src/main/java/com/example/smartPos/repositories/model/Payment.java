@@ -25,11 +25,11 @@ public class Payment {
     @Column(name = "reference_type", nullable = false)
     private ReferenceType referenceType; // SALE or PURCHASE
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "custId", referencedColumnName = "custId", foreignKey = @ForeignKey(name = "fk_customer"))
     private Customer customer;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supId", referencedColumnName = "supId", foreignKey = @ForeignKey(name = "fk_supplier"))
     private Supplier supplier;
 

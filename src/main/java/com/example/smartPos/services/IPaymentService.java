@@ -1,16 +1,12 @@
 package com.example.smartPos.services;
 
-import com.example.smartPos.controllers.requests.CustomerRequest;
-import com.example.smartPos.controllers.responses.CustomerResponse;
+import com.example.smartPos.controllers.responses.ChequeDetailsResponse;
+import com.example.smartPos.repositories.model.PaymentDetails;
 
 import java.util.List;
 
 public interface IPaymentService {
-    List<CustomerResponse> getAllCustomers();
+    List<ChequeDetailsResponse> getAllChequeDetails();
 
-    CustomerResponse getCustomerById(Integer customerId);
-
-    void createCustomer(CustomerRequest customerRequest);
-
-    void updateCustomer(CustomerRequest customerRequest);
+    void updateChequeStatus(String chequeId, String status);
 }

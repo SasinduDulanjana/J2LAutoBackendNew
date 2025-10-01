@@ -3,9 +3,7 @@ package com.example.smartPos.controllers;
 import com.example.smartPos.controllers.requests.CustomerRequest;
 import com.example.smartPos.controllers.requests.SaleRequest;
 import com.example.smartPos.controllers.requests.TransactionDetails;
-import com.example.smartPos.controllers.responses.CommonResponse;
-import com.example.smartPos.controllers.responses.CustomerPaymentDetailsResponse;
-import com.example.smartPos.controllers.responses.CustomerResponse;
+import com.example.smartPos.controllers.responses.*;
 import com.example.smartPos.repositories.model.Customer;
 import com.example.smartPos.services.ICustomerService;
 import com.example.smartPos.util.ResponseCreator;
@@ -93,5 +91,10 @@ public class CustomerController {
     @GetMapping("/api/getAllCustomerDetailsWithSummary")
     public List<CustomerResponse> getAllCustomerDetailsWithSummary() {
         return customerService.getAllCustomerDetailsWithSummary();
+    }
+
+    @GetMapping("/api/getCustomerOutstanding/{customerId}")
+    public List<CustomerOutstandingResponse> getCustomerOutstanding(@PathVariable Integer customerId) {
+        return customerService.getCustomerOutstanding(customerId);
     }
 }

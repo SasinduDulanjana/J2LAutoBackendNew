@@ -10,6 +10,17 @@ import java.util.Optional;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Integer> {
-    @Query("SELECT p FROM Payment p WHERE p.referenceId = :referenceId AND p.paymentType = 'RECEIPT' AND p.referenceType = 'SALE'")
+    @Query("SELECT p FROM Payment p " +
+            "JOIN FETCH p.customer c " +
+            "WHERE p.referenceId = :referenceId " +
+            "AND p.paymentType = 'RECEIPT' " +
+            "AND p.referenceType = 'SALE'")
     Optional<Payment> findByReferenceIdAndReceiptPaymentTypeAndSaleReferenceType(@Param("referenceId") String referenceId);
+
+    @Query("SELECT p FROM Payment p " +
+            "JOIN FETCH p.supplier s " +
+            "WHERE p.referenceId = :referenceId " +
+            "AND p.paymentType = 'PAYMENT' " +
+            "AND p.referenceType = 'PURCHASE'")
+    Optional<Payment> findByReferenceIdAndPaymentPaymentTypeAndPurchaseReferenceType(@Param("referenceId") String referenceId);
 }

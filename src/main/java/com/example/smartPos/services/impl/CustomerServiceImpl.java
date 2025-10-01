@@ -2,10 +2,7 @@ package com.example.smartPos.services.impl;
 
 import com.example.smartPos.controllers.requests.CustomerRequest;
 import com.example.smartPos.controllers.requests.TransactionDetails;
-import com.example.smartPos.controllers.responses.CustomerPaymentDetailsResponse;
-import com.example.smartPos.controllers.responses.CustomerResponse;
-import com.example.smartPos.controllers.responses.PaymentDetailsResponse;
-import com.example.smartPos.controllers.responses.PaymentResponse;
+import com.example.smartPos.controllers.responses.*;
 import com.example.smartPos.exception.AlreadyExistsException;
 import com.example.smartPos.exception.ResourceNotFoundException;
 import com.example.smartPos.repositories.CustomerRepository;
@@ -19,6 +16,7 @@ import com.example.smartPos.util.ErrorCodes;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -412,5 +410,37 @@ public class CustomerServiceImpl implements ICustomerService {
         }).toList();
     }
 
+    @Override
+    public List<CustomerOutstandingResponse> getCustomerOutstanding(Integer customerId) {
+        // Fetch all purchases for the supplier
+        List<Sale> sales = saleRepository.findAllSalesWithCustomer(customerId);
+
+        // Fetch all payment details for the supplier's purchases in a single query
+        List<PaymentDetails> paymentDetails = paymentDetailsRepository.findByInvoiceNumbersAndReceiptPaymentTypeAndSalePaymentType(
+                sales.stream().map(Sale::getInvoiceNumber).toList()
+        );
+
+        // Group payment details by purchaseId
+        Map<String, Double> paymentsByPurchaseId = paymentDetails.stream()
+                .collect(Collectors.groupingBy(
+                        pd -> pd.getPayment().getReferenceId(),
+                        Collectors.summingDouble(PaymentDetails::getAmount)
+                ));
+
+        // Map purchases to responses
+        return sales.stream().map(sale -> {
+            double paidAmount = paymentsByPurchaseId.getOrDefault(sale.getInvoiceNumber(), 0.0);
+            double outstanding = sale.getTotalAmount() - paidAmount;
+
+            CustomerOutstandingResponse response = new CustomerOutstandingResponse();
+            response.setInvoiceNumber(sale.getInvoiceNumber());
+            SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy");
+            response.setSaleDate(sm.format(sale.getSaleDate()));
+            response.setTotalAmount(sale.getTotalAmount());
+            response.setPaidAmount(paidAmount);
+            response.setOutstanding(outstanding);
+            return response;
+        }).collect(Collectors.toList());
+    }
 
 }

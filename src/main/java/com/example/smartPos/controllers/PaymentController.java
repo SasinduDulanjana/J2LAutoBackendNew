@@ -1,8 +1,11 @@
 package com.example.smartPos.controllers;
 
 import com.example.smartPos.controllers.requests.CustomerRequest;
+import com.example.smartPos.controllers.responses.ChequeDetailsResponse;
 import com.example.smartPos.controllers.responses.CustomerResponse;
+import com.example.smartPos.repositories.model.PaymentDetails;
 import com.example.smartPos.services.ICustomerService;
+import com.example.smartPos.services.IPaymentService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,31 +15,19 @@ import java.util.List;
 @RequestMapping("/payments")
 public class PaymentController {
 
-    ICustomerService customerService;
-    public PaymentController(ICustomerService customerService) {
-        this.customerService = customerService;
+    IPaymentService paymentService;
+    public PaymentController(IPaymentService paymentService) {
+        this.paymentService = paymentService;
     }
 
-    @GetMapping(path = "/api/getAllCustomers")
-    public List<CustomerResponse> getAllCustomers() {
-        List<CustomerResponse> customerResponse = customerService.getAllCustomers();
-        return customerResponse;
+
+    @GetMapping("/api/getAllChequeDetails")
+    public List<ChequeDetailsResponse> getAllChequeDetails() {
+        return paymentService.getAllChequeDetails();
     }
 
-//    @GetMapping(path = "/api/getCustomerById")
-//    public CustomerResponse getCustomerById(Integer customerId) {
-//        CustomerResponse customerResponse = customerService.getCustomerById(customerId);
-//        return customerResponse;
-//    }
-
-    @PostMapping(path = "/api/createCustomer")
-    public void createCustomer(@RequestBody CustomerRequest customerRequest) {
-        customerService.createCustomer(customerRequest);
+    @PutMapping("/api/updateChequeStatus/{chequeNo}/{status}")
+    public void updateChequeStatus(@PathVariable String chequeNo, @PathVariable String status) {
+        paymentService.updateChequeStatus(chequeNo, status);
     }
-
-    @PostMapping(path = "/api/updateCustomer")
-    public void updateCustomer(@RequestBody CustomerRequest customerRequest) {
-        customerService.updateCustomer(customerRequest);
-    }
-
 }

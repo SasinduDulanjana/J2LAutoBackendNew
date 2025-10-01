@@ -41,7 +41,7 @@ public class Purchase {
 
     private Boolean isFullyPaid;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinTable(
             name = "PURCHASE_PRODUCT",
             joinColumns = @JoinColumn(name = "PURCHASE_ID"),

@@ -4,13 +4,13 @@ import com.example.smartPos.controllers.requests.*;
 import com.example.smartPos.controllers.responses.*;
 import com.example.smartPos.exception.AlreadyExistsException;
 import com.example.smartPos.exception.ResourceNotFoundException;
+import com.example.smartPos.mapper.PaymentDetailsMapper;
 import com.example.smartPos.mapper.PurchaseMapper;
 import com.example.smartPos.mapper.PurchaseReturnMapper;
 import com.example.smartPos.repositories.*;
 import com.example.smartPos.repositories.model.*;
 import com.example.smartPos.services.IPurchaseService;
-import com.example.smartPos.util.ErrorCodes;
-import com.example.smartPos.util.ProductConstants;
+import com.example.smartPos.util.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class PurchaseServiceImpl implements IPurchaseService {
@@ -37,7 +39,13 @@ public class PurchaseServiceImpl implements IPurchaseService {
 
     private final PurchaseReturnMapper purchaseReturnMapper;
 
-    public PurchaseServiceImpl(PurchaseRepository purchaseRepository, ProductRepository productRepository, SupplierRepository supplierRepository, BatchRepository batchRepository, ProductBatchRepository productBatchRepository, PurchaseReturnRepository purchaseReturnRepository, PurchaseMapper purchaseMapper, PurchaseReturnMapper purchaseReturnMapper) {
+    private final PaymentRepository paymentRepository;
+
+    private final PaymentDetailsRepository paymentDetailsRepository;
+
+    private final PaymentDetailsMapper paymentDetailsMapper;
+
+    public PurchaseServiceImpl(PurchaseRepository purchaseRepository, ProductRepository productRepository, SupplierRepository supplierRepository, BatchRepository batchRepository, ProductBatchRepository productBatchRepository, PurchaseReturnRepository purchaseReturnRepository, PurchaseMapper purchaseMapper, PurchaseReturnMapper purchaseReturnMapper, PaymentRepository paymentRepository, PaymentDetailsRepository paymentDetailsRepository, PaymentDetailsMapper paymentDetailsMapper) {
         this.purchaseRepository = purchaseRepository;
         this.productRepository = productRepository;
         this.supplierRepository = supplierRepository;
@@ -46,37 +54,89 @@ public class PurchaseServiceImpl implements IPurchaseService {
         this.purchaseReturnRepository = purchaseReturnRepository;
         this.purchaseMapper = purchaseMapper;
         this.purchaseReturnMapper = purchaseReturnMapper;
+        this.paymentRepository = paymentRepository;
+        this.paymentDetailsRepository = paymentDetailsRepository;
+        this.paymentDetailsMapper = paymentDetailsMapper;
     }
+
+//    @Override
+//    public List<PurchaseResponse> getAllPurchases() {
+//
+//        List<Purchase> purchaseList = purchaseRepository.findAll();
+//
+//        // Fetch all payment details for the sales in a single query
+//        List<PaymentDetails> paymentDetailsList = paymentDetailsRepository.findByInvoiceNumbersAndPaymentPaymentTypeAndPurchasePaymentType(
+//                purchaseList.stream().map(purchase -> purchase.getPurchaseId().toString()).toList()
+//        );
+//
+//        // Group payment details by sale ID
+//        Map<String, Double> totalPaidAmountByPurchaseId = paymentDetailsList.stream()
+//                .collect(Collectors.groupingBy(
+//                        pd -> pd.getPayment().getReferenceId(),
+//                        Collectors.summingDouble(PaymentDetails::getAmount)
+//                ));
+//
+//
+//        return purchaseList.stream().map(purchase -> {
+//            Double totalPaidAmount = totalPaidAmountByPurchaseId.getOrDefault(purchase.getPurchaseId().toString(), 0.0);
+//            Double outstandingBalance = purchase.getTotalCost() - totalPaidAmount;
+//
+//            PurchaseResponse purchResp = new PurchaseResponse();
+//            purchResp.setPurchaseId(purchase.getPurchaseId());
+//            purchResp.setSupplierId(purchase.getSupplierId());
+//            purchResp.setPurchaseName(purchase.getPurchaseName());
+//            purchResp.setInvoiceNumber(purchase.getInvoiceNumber());
+//            purchResp.setDeliveryTime(purchase.getDeliveryTime());
+//            purchResp.setInvoiceDate(purchase.getInvoiceDate());
+//            purchResp.setConnectionStatus(purchase.getConnectionStatus());
+//            purchResp.setPaymentStatus(purchase.getPaymentStatus());
+//            purchResp.setProductType(purchase.getProductType());
+//            purchResp.setTotalCost(purchase.getTotalCost());
+//            purchResp.setPaidAmount(purchase.getPaidAmount());
+//            purchResp.setOutstandingAmount(outstandingBalance);
+//            return purchResp;
+//        }).toList();
+//    }
 
     @Override
     public List<PurchaseResponse> getAllPurchases() {
+        List<Purchase> purchaseList = purchaseRepository.findAll();
 
-        return purchaseRepository.findAll().stream().map(purchase -> {
-            PurchaseResponse purchResp = new PurchaseResponse();
-            purchResp.setPurchaseId(purchase.getPurchaseId());
-            purchResp.setSupplierId(purchase.getSupplierId());
-            purchResp.setPurchaseName(purchase.getPurchaseName());
-            purchResp.setInvoiceNumber(purchase.getInvoiceNumber());
-            purchResp.setDeliveryTime(purchase.getDeliveryTime());
-            purchResp.setInvoiceDate(purchase.getInvoiceDate());
-            purchResp.setConnectionStatus(purchase.getConnectionStatus());
-            purchResp.setPaymentStatus(purchase.getPaymentStatus());
-            purchResp.setProductType(purchase.getProductType());
-            purchResp.setTotalCost(purchase.getTotalCost());
-            purchResp.setPaidAmount(purchase.getPaidAmount());
-            purchResp.setProducts(purchase.getProducts().stream().map(product -> {
-                ProductResponse productResponse = new ProductResponse();
-                productResponse.setProductId(product.getProductId());
-                productResponse.setSku(product.getSku());
-                productResponse.setProductName(product.getProductName());
-//                productResponse.setSalePrice(product.getSalePrice());
-//                productResponse.setWholeSalePrice(product.getWholeSalePrice());
-                productResponse.setLowQty(product.getLowQty());
-                productResponse.setBatchNo(product.getBatchNo());
-                return productResponse;
-            }).toList());
-            return purchResp;
-        }).toList();
+        // Fetch all payment details for the purchases in a single query
+        Map<Integer, Double> totalPaidAmountByPurchaseId = paymentDetailsRepository
+                .findByInvoiceNumbersAndPaymentPaymentTypeAndPurchasePaymentType(
+                        purchaseList.stream().map(purchase -> purchase.getPurchaseId().toString()).toList()
+                )
+                .stream()
+                .collect(Collectors.groupingBy(
+                        pd -> Integer.parseInt(pd.getPayment().getReferenceId()),
+                        Collectors.summingDouble(PaymentDetails::getAmount)
+                ));
+
+        // Map purchases to responses
+        return purchaseList.stream()
+                .map(purchase -> mapToPurchaseResponse(purchase, totalPaidAmountByPurchaseId))
+                .toList();
+    }
+
+    private PurchaseResponse mapToPurchaseResponse(Purchase purchase, Map<Integer, Double> totalPaidAmountByPurchaseId) {
+        double totalPaidAmount = totalPaidAmountByPurchaseId.getOrDefault(purchase.getPurchaseId(), 0.0);
+        double outstandingBalance = purchase.getTotalCost() - totalPaidAmount;
+
+        PurchaseResponse response = new PurchaseResponse();
+        response.setPurchaseId(purchase.getPurchaseId());
+        response.setSupplierId(purchase.getSupplierId());
+        response.setPurchaseName(purchase.getPurchaseName());
+        response.setInvoiceNumber(purchase.getInvoiceNumber());
+        response.setDeliveryTime(purchase.getDeliveryTime());
+        response.setInvoiceDate(purchase.getInvoiceDate());
+        response.setConnectionStatus(purchase.getConnectionStatus());
+        response.setPaymentStatus(purchase.getPaymentStatus());
+        response.setProductType(purchase.getProductType());
+        response.setTotalCost(purchase.getTotalCost());
+        response.setPaidAmount(totalPaidAmount);
+        response.setOutstandingAmount(outstandingBalance);
+        return response;
     }
 
     @Override
@@ -174,6 +234,8 @@ public class PurchaseServiceImpl implements IPurchaseService {
     @Override
     @Transactional
     public PurchaseResponse createPurchase(PurchaseRequest purchaseRequest) {
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+
         Optional<Purchase> purchaseByInvNum = purchaseRepository.findByInvoiceNumber(purchaseRequest.getInvoiceNumber());
         if (purchaseByInvNum.isPresent()) {
             throw new AlreadyExistsException(ErrorCodes.ALREADY_EXISTS_INVOICE_NUMBER);
@@ -184,7 +246,15 @@ public class PurchaseServiceImpl implements IPurchaseService {
             throw new ResourceNotFoundException(ErrorCodes.SUPPLIER_NOT_FOUND);
         }
 
-        Purchase savedPurchase = getSavedPurchase(purchaseRequest);
+        Purchase savedPurchase = getSavedPurchase(purchaseRequest, currentUser);
+
+        // Create and save payment
+        Payment payment = createPaymentEntity(purchaseRequest, savedPurchase, currentUser);
+        paymentRepository.save(payment);
+
+        // Create and save payment details
+        PaymentDetails paymentDetails = createPaymentDetailsEntities(purchaseRequest, payment, currentUser);
+        paymentDetailsRepository.save(paymentDetails);
 
         PurchaseResponse purchaseResponse = new PurchaseResponse();
         purchaseResponse.setPurchaseId(savedPurchase.getPurchaseId());
@@ -200,10 +270,44 @@ public class PurchaseServiceImpl implements IPurchaseService {
         return purchaseResponse;
     }
 
+    private Payment createPaymentEntity(PurchaseRequest purchaseRequest, Purchase savedPurchase, String currentUser) {
+        Payment payment = new Payment();
+        payment.setReferenceId(savedPurchase.getPurchaseId().toString());
+        payment.setPaymentDate(new Date());
+        Supplier supplier = supplierRepository.findById(savedPurchase.getSupplierId())
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.SUPPLIER_NOT_FOUND));
+        payment.setSupplier(supplier);
+        payment.setTotalAmount(purchaseRequest.getTotalCost());
+        payment.setPaymentType(PaymentType.PAYMENT);
+        payment.setReferenceType(ReferenceType.PURCHASE);
+        payment.setRemarks(savedPurchase.getInvoiceNumber());
+        payment.fillNew(currentUser);
+        return payment;
+    }
+
+    private PaymentDetails createPaymentDetailsEntities(PurchaseRequest purchaseRequest, Payment payment, String currentUser) {
+        PaymentDetails paymentDetails = new PaymentDetails();
+        paymentDetails.setPayment(payment);
+        paymentDetails.setPaymentMethod(purchaseRequest.getPaymentType());
+        paymentDetails.setAmount(purchaseRequest.getPaidAmount());
+        paymentDetails.setChequeNo(purchaseRequest.getChequeNumber());
+        paymentDetails.setBankName(purchaseRequest.getBankName());
+        paymentDetails.setChequeDate(purchaseRequest.getChequeDate());
+        paymentDetails.setPaymentDate(new Date());
+        if (purchaseRequest.getPaymentType().equalsIgnoreCase("CHEQUE")) {
+            paymentDetails.setPaymentStatus(PaymentStatus.PENDING);
+        } else {
+            paymentDetails.setPaymentStatus(PaymentStatus.CLEARED);
+        }
+        paymentDetails.fillNew(currentUser);
+
+        return paymentDetails;
+    }
+
 
     @Transactional
-    private Purchase getSavedPurchase(PurchaseRequest purchaseRequest) {
-        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+    private Purchase getSavedPurchase(PurchaseRequest purchaseRequest, String currentUser) {
+
 
         // Create and populate the Purchase object
         Purchase purchase = createPurchaseEntity(purchaseRequest, currentUser);
@@ -237,7 +341,7 @@ public class PurchaseServiceImpl implements IPurchaseService {
         purchase.setPaidAmount(purchaseRequest.getPaidAmount());
         purchase.setFullyPaid(purchaseRequest.getFullyPaid());
         purchase.setPaymentType(purchaseRequest.getPaymentType());
-        purchase.setChequeNo(purchaseRequest.getChequeNo());
+        purchase.setChequeNo(purchaseRequest.getChequeNumber());
         return purchase;
     }
 
@@ -366,12 +470,12 @@ public class PurchaseServiceImpl implements IPurchaseService {
 
     @Override
     public ProductBatchResponse fetchProductBatchDetails(ProductBatchRequest request) {
-        ProductBatch productBatch = productBatchRepository.findByPurchaseIdAndProduct_ProductId(request.getPurchaseId(), request.getProductId());
+        // Fetch ProductBatch and validate
+        ProductBatch productBatch = Optional.ofNullable(
+                productBatchRepository.findByPurchaseIdAndProduct_ProductId(request.getPurchaseId(), request.getProductId())
+        ).orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PRODUCT_BATCH_NOT_FOUND));
 
-        if (productBatch == null) {
-            throw new ResourceNotFoundException(ErrorCodes.PRODUCT_BATCH_NOT_FOUND);
-        }
-
+        // Fetch Batch and validate
         Batch batch = batchRepository.findById(productBatch.getBatch().getBatchId()).orElseThrow(
                 () -> new ResourceNotFoundException(ErrorCodes.BATCH_NOT_FOUND)
         );
@@ -458,6 +562,7 @@ public class PurchaseServiceImpl implements IPurchaseService {
             PurchaseReturn purchaseReturn = new PurchaseReturn();
             purchaseReturn.setPurchase(purchase);
             purchaseReturn.setSupplierName(purchaseReturnRequest.getSupplierName());
+            purchaseReturn.setSupplierId(purchase.getSupplierId());
             purchaseReturn.setInvoiceNumber(purchaseReturnRequest.getInvoiceNumber());
             purchaseReturn.setProduct(productBatch.getProduct());
             purchaseReturn.setQuantityReturned(returnItem.getQuantityToReturn());
@@ -482,5 +587,41 @@ public class PurchaseServiceImpl implements IPurchaseService {
             response.setReturnDate(sm.format(purchaseReturn.getReturnDate()));
             return response;
         }).toList();
+    }
+
+    @Override
+    public List<PaymentDetails> getPaymentDetailsByPurchaseId(Integer purchaseId) {
+        // Fetch the payment by invoice number
+        Payment payment = paymentRepository.findByReferenceIdAndPaymentPaymentTypeAndPurchaseReferenceType(purchaseId.toString())
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PAYMENT_NOT_FOUND));
+
+        // Fetch and return the associated payment details
+        return paymentDetailsRepository.findByPayment(payment);
+    }
+
+    @Override
+    @Transactional
+    public PaymentDetailsResponse createPaymentDetails(PaymentDetailsRequest paymentDetailsRequest) {
+        // Fetch the associated Payment entity
+        Payment payment = paymentRepository.findById(paymentDetailsRequest.getPaymentId())
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PAYMENT_NOT_FOUND));
+
+        // Create and populate the PaymentDetails entity
+        PaymentDetails paymentDetails = new PaymentDetails();
+        paymentDetails.setPayment(payment);
+        paymentDetails.setPaymentMethod(paymentDetailsRequest.getMethod());
+        paymentDetails.setAmount(paymentDetailsRequest.getAmount());
+        paymentDetails.setChequeNo(paymentDetailsRequest.getChequeNo());
+        paymentDetails.setBankName(paymentDetailsRequest.getBankName());
+        paymentDetails.setChequeDate(paymentDetailsRequest.getChequeDate());
+        paymentDetails.setPaymentDate(new Date());
+        if (paymentDetailsRequest.getMethod().equalsIgnoreCase("CHEQUE")) {
+            paymentDetails.setPaymentStatus(PaymentStatus.PENDING);
+        } else {
+            paymentDetails.setPaymentStatus(PaymentStatus.CLEARED);
+        }
+
+        // Save the PaymentDetails entity
+        return paymentDetailsMapper.toPaymentDetailsResponse(paymentDetailsRepository.save(paymentDetails));
     }
 }

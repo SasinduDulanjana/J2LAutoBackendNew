@@ -1,12 +1,16 @@
 package com.example.smartPos.services;
 
+import com.example.smartPos.controllers.requests.PaymentDetailsRequest;
 import com.example.smartPos.controllers.requests.ProductBatchRequest;
 import com.example.smartPos.controllers.requests.PurchaseRequest;
 import com.example.smartPos.controllers.requests.PurchaseReturnRequest;
+import com.example.smartPos.controllers.responses.PaymentDetailsResponse;
 import com.example.smartPos.controllers.responses.ProductBatchResponse;
 import com.example.smartPos.controllers.responses.PurchaseResponse;
 import com.example.smartPos.controllers.responses.PurchaseReturnResponse;
+import com.example.smartPos.repositories.model.PaymentDetails;
 import com.example.smartPos.repositories.model.Purchase;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Date;
 import java.util.List;
@@ -14,6 +18,8 @@ import java.util.Optional;
 
 public interface IPurchaseService {
     List<PurchaseResponse> getAllPurchases();
+
+    // Repository method using a custom query
     List<PurchaseResponse> getAllByPurchaseName(String purchaseName);
 
     List<PurchaseResponse> getAllBySupplierId(Integer supplierId);
@@ -36,4 +42,8 @@ public interface IPurchaseService {
     PurchaseReturnResponse processPurchaseReturn(PurchaseReturnRequest purchaseReturnRequest);
 
     List<PurchaseReturnResponse> getAllPurchaseReturns();
+
+    List<PaymentDetails> getPaymentDetailsByPurchaseId(Integer purchaseId);
+
+    PaymentDetailsResponse createPaymentDetails(PaymentDetailsRequest paymentDetailsRequest);
 }

@@ -29,6 +29,8 @@ public class PurchaseReturn {
 
     private String supplierName;
 
+    private Integer supplierId;
+
     private Integer refundAmount;
 
     private String itemCondition;
@@ -123,5 +125,13 @@ public class PurchaseReturn {
 
     public void setBatchNumber(String batchNumber) {
         this.batchNumber = batchNumber;
+    }
+
+    public Integer getSupplierId() {
+        return supplierId;
+    }
+
+    public void setSupplierId(Integer supplierId) {
+        this.supplierId = supplierId;
     }
 }

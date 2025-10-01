@@ -2,6 +2,7 @@ package com.example.smartPos.services;
 
 import com.example.smartPos.controllers.requests.CustomerRequest;
 import com.example.smartPos.controllers.requests.TransactionDetails;
+import com.example.smartPos.controllers.responses.CustomerOutstandingResponse;
 import com.example.smartPos.controllers.responses.CustomerPaymentDetailsResponse;
 import com.example.smartPos.controllers.responses.CustomerResponse;
 import com.example.smartPos.repositories.model.Customer;
@@ -32,4 +33,6 @@ public interface ICustomerService {
     CustomerPaymentDetailsResponse getCustomerDetailsWithSummary(Integer custId);
 
     List<CustomerResponse> getAllCustomerDetailsWithSummary();
+
+    List<CustomerOutstandingResponse> getCustomerOutstanding(Integer customerId);
 }

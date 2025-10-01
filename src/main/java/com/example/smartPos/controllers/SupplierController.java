@@ -2,8 +2,7 @@ package com.example.smartPos.controllers;
 
 import com.example.smartPos.controllers.requests.CustomerRequest;
 import com.example.smartPos.controllers.requests.SupplierRequest;
-import com.example.smartPos.controllers.responses.CommonResponse;
-import com.example.smartPos.controllers.responses.SupplierResponse;
+import com.example.smartPos.controllers.responses.*;
 import com.example.smartPos.services.ISupplierService;
 import com.example.smartPos.util.ResponseCreator;
 import org.springframework.http.ResponseEntity;
@@ -61,4 +60,20 @@ public class SupplierController {
         supplierService.deletSupplier(request.getSupId());
         System.out.println("OK");
     }
+
+    @GetMapping("/api/getAllSupplierDetailsWithSummary")
+    public List<SupplierResponse> getAllSupplierDetailsWithSummary() {
+        return supplierService.getAllSupplierDetailsWithSummary();
+    }
+
+    @GetMapping("/api/getSupplierWithOutstanding/{supId}")
+    public SupplierPaymentDetailsResponse getSupplierWithOutstanding(@PathVariable Integer supId) {
+        return supplierService.getSupplierDetailsWithSummary(supId);
+    }
+
+    @GetMapping("/api/getSupplierOutstanding/{supplierId}")
+    public List<SupplierOutstandingResponse> getSupplierOutstanding(@PathVariable Integer supplierId) {
+        return supplierService.getSupplierOutstanding(supplierId);
+    }
+
 }

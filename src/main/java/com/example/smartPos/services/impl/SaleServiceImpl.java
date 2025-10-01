@@ -262,7 +262,7 @@ public class SaleServiceImpl implements ISaleService {
             paymentRepository.save(payment);
 
             // Save payment details
-            PaymentDetails paymentDetailsList = createPaymentDetailsEntities(saleRequest, payment);
+            PaymentDetails paymentDetailsList = createPaymentDetailsEntities(saleRequest, payment, currentUser);
             paymentDetailsRepository.save(paymentDetailsList);
 
             Sale savedSale = saleRepository.save(sale);
@@ -287,7 +287,7 @@ public class SaleServiceImpl implements ISaleService {
         return payment;
     }
 
-    private PaymentDetails createPaymentDetailsEntities(SaleRequest saleRequest, Payment payment) {
+    private PaymentDetails createPaymentDetailsEntities(SaleRequest saleRequest, Payment payment, String currentUser) {
         PaymentDetails paymentDetails = new PaymentDetails();
         paymentDetails.setPayment(payment);
         paymentDetails.setPaymentMethod(saleRequest.getPaymentType());
@@ -301,6 +301,7 @@ public class SaleServiceImpl implements ISaleService {
         } else {
             paymentDetails.setPaymentStatus(PaymentStatus.CLEARED);
         }
+        paymentDetails.fillNew(currentUser);
 
         return paymentDetails;
     }

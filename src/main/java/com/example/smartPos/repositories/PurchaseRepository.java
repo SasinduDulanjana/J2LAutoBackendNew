@@ -1,6 +1,8 @@
 package com.example.smartPos.repositories;
 
+import com.example.smartPos.controllers.responses.PurchaseResponse;
 import com.example.smartPos.repositories.model.Purchase;
+import com.example.smartPos.repositories.model.Sale;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -36,4 +38,10 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Integer> {
 
     @Query("SELECT DATE_FORMAT(p.addedDate, '%Y-%m') AS month, COALESCE(SUM(p.totalCost), 0) AS purchases FROM Purchase p WHERE p.status = 1 GROUP BY DATE_FORMAT(p.addedDate, '%Y-%m') ORDER BY month")
     List<Object[]> findMonthlyPurchases();
+
+    @Query("SELECT p FROM Purchase p WHERE p.supplierId IN (SELECT s.supId FROM Supplier s)")
+    List<Purchase> findAllWithSupplier();
+
+    @Query("SELECT p FROM Purchase p WHERE p.supplierId = :supId")
+    List<Purchase> findAllPurchasesWithSupplier(@Param("supId") Integer supId);
 }
