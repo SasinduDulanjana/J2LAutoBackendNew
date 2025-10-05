@@ -28,6 +28,8 @@ public class SoldProductResponse {
 
     private Double refundedQty;
 
+    private String productDeliveryStatus;
+
     public Integer getSaleProductId() {
         return saleProductId;
     }
@@ -114,5 +116,13 @@ public class SoldProductResponse {
 
     public void setRefundedQty(Double refundedQty) {
         this.refundedQty = refundedQty;
+    }
+
+    public String getProductDeliveryStatus() {
+        return productDeliveryStatus;
+    }
+
+    public void setProductDeliveryStatus(String productDeliveryStatus) {
+        this.productDeliveryStatus = productDeliveryStatus;
     }
 }

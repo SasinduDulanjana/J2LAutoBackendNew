@@ -47,4 +47,14 @@ public interface PaymentDetailsRepository extends JpaRepository<PaymentDetails, 
             "JOIN FETCH pd.payment p " +
             "WHERE pd.chequeNo = :chequeNo")
     Optional<PaymentDetails> findByChequeNo(@Param("chequeNo") String chequeNo);
+
+    @Query("SELECT COALESCE(SUM(pd.payment.totalAmount - pd.amount), 0) " +
+            "FROM PaymentDetails pd " +
+            "WHERE pd.payment.referenceType = 'SALE' AND pd.payment.paymentType = 'RECEIPT'")
+    Double findSaleOutstanding();
+
+    @Query("SELECT COALESCE(SUM(pd.payment.totalAmount - pd.amount), 0) " +
+            "FROM PaymentDetails pd " +
+            "WHERE pd.payment.referenceType = 'PURCHASE' AND pd.payment.paymentType = 'PAYMENT'")
+    Double findPurchaseOutstanding();
 }

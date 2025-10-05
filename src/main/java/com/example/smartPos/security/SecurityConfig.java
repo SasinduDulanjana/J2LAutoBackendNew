@@ -48,7 +48,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(registry -> {
-                    registry.requestMatchers("/users/**").permitAll(); // Allows access to /users/** without authentication
+                    registry.requestMatchers("/users/**",
+                            "/sale/api/fetchSaleProductsOfCustomerView/**",
+                            "/sale/api/updateProductStatus").permitAll(); // Allows access to /users/** without authentication
                     registry.anyRequest().authenticated();
                 })
 

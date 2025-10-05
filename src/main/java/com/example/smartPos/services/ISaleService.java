@@ -1,12 +1,10 @@
 package com.example.smartPos.services;
 
 import com.example.smartPos.controllers.requests.PaymentDetailsRequest;
+import com.example.smartPos.controllers.requests.ProductStatusUpdateRequest;
 import com.example.smartPos.controllers.requests.SaleRequest;
 import com.example.smartPos.controllers.requests.SalesReturnRequest;
-import com.example.smartPos.controllers.responses.PaymentDetailsResponse;
-import com.example.smartPos.controllers.responses.SaleResponse;
-import com.example.smartPos.controllers.responses.SalesReturnResponse;
-import com.example.smartPos.controllers.responses.SoldProductResponse;
+import com.example.smartPos.controllers.responses.*;
 import com.example.smartPos.repositories.model.PaymentDetails;
 
 import java.util.Date;
@@ -44,4 +42,10 @@ public interface ISaleService {
     List<PaymentDetails> getPaymentDetailsByInvoice(String invoiceNumber);
 
     PaymentDetailsResponse createPaymentDetails(PaymentDetailsRequest paymentDetailsRequest);
+
+    void sendSaleDetailsSms(Integer saleId);
+
+    List<CustomerViewSaleResponse> fetchSaleProductsOfCustomerView(Integer saleId);
+
+    List<ProductStatusUpdateResponse> updateProductStatus(ProductStatusUpdateRequest request);
 }

@@ -53,4 +53,18 @@ public interface SaleRepository extends JpaRepository<Sale, Integer> {
 
     @Query("SELECT s FROM Sale s JOIN FETCH s.customer")
     List<Sale> findAllWithCustomer();
+
+    @Query("SELECT FUNCTION('DATE_FORMAT', s.saleDate, '%Y-%m') AS month, SUM(sp.quantity * b.unitCost) " +
+            "FROM Sale s " +
+            "JOIN s.saleProducts sp " +
+            "JOIN Batch b ON sp.batchNo = b.batchNumber " +
+            "GROUP BY FUNCTION('DATE_FORMAT', s.saleDate, '%Y-%m')")
+    List<Object[]> findMonthlyCOGS();
+
+    @Query("SELECT SUM(sp.quantity * b.unitCost) " +
+            "FROM Sale s " +
+            "JOIN s.saleProducts sp " +
+            "JOIN Batch b ON sp.batchNo = b.batchNumber " +
+            "WHERE s.status = 1") // Assuming '1' represents active sales
+    Double findTotalCOGS();
 }

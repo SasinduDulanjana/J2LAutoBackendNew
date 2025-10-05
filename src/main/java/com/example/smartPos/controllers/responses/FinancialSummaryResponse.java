@@ -14,6 +14,8 @@ public class FinancialSummaryResponse {
 
     private Double netProfit;
 
+    private Double totalCogs;
+
     public Double getTotalPurchases() {
         return totalPurchases;
     }
@@ -60,5 +62,13 @@ public class FinancialSummaryResponse {
 
     public void setNetProfit(Double netProfit) {
         this.netProfit = netProfit;
+    }
+
+    public Double getTotalCogs() {
+        return totalCogs;
+    }
+
+    public void setTotalCogs(Double totalCogs) {
+        this.totalCogs = totalCogs;
     }
 }

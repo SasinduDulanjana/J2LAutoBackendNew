@@ -1,9 +1,6 @@
 package com.example.smartPos.controllers;
 
-import com.example.smartPos.controllers.requests.PaymentDetailsRequest;
-import com.example.smartPos.controllers.requests.SaleRequest;
-import com.example.smartPos.controllers.requests.SalesReturnRequest;
-import com.example.smartPos.controllers.requests.TransactionDetails;
+import com.example.smartPos.controllers.requests.*;
 import com.example.smartPos.controllers.responses.*;
 import com.example.smartPos.repositories.model.PaymentDetails;
 import com.example.smartPos.services.ISaleService;
@@ -112,5 +109,35 @@ public class SaleController {
     public ResponseEntity<PaymentDetailsResponse> createPaymentDetails(@RequestBody PaymentDetailsRequest paymentDetailsRequest) {
         PaymentDetailsResponse paymentDetailsResponse = saleService.createPaymentDetails(paymentDetailsRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(paymentDetailsResponse);
+    }
+
+    @GetMapping("/api/saleDetails")
+    public ResponseEntity<List<SoldProductResponse>> getSaleDetails(@RequestParam String saleId) {
+        List<SoldProductResponse> soldProducts = saleService.getProductsForSale(Integer.parseInt(saleId));
+        return ResponseEntity.ok(soldProducts);
+    }
+
+    @PostMapping("/api/sendSaleDetailsSms/{saleId}")
+    public ResponseEntity<String> sendSaleDetailsSms(@PathVariable Integer saleId) {
+        try {
+            saleService.sendSaleDetailsSms(saleId);
+            return ResponseEntity.ok("SMS sent successfully.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
+        }
+    }
+
+    @GetMapping("/api/fetchSaleProductsOfCustomerView/{saleId}")
+    public ResponseEntity<List<CustomerViewSaleResponse>> fetchSaleProductsOfCustomerView(@PathVariable Integer saleId) {
+        List<CustomerViewSaleResponse> customerViewSaleResponseList = saleService.fetchSaleProductsOfCustomerView(saleId);
+        return ResponseEntity.ok(customerViewSaleResponseList);
+    }
+
+    @PostMapping(path = "/api/updateProductStatus")
+    public ResponseEntity<List<ProductStatusUpdateResponse>> updateProductStatus(@RequestBody ProductStatusUpdateRequest request) {
+        List<ProductStatusUpdateResponse> response = saleService.updateProductStatus(request);
+        return ResponseEntity.ok(response);
     }
 }

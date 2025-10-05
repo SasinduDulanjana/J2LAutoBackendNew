@@ -36,6 +36,10 @@ public class SaleProduct {
 
     @Column(name = "BATCH_NUMBER")
     private String batchNo;
+
+    @Column(name = "STATUS")
+    private String status;
+
     public Integer getSaleProductId() {
         return saleProductId;
     }
@@ -98,5 +102,13 @@ public class SaleProduct {
 
     public void setBatchNo(String batchNo) {
         this.batchNo = batchNo;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

@@ -122,7 +122,7 @@ public class PurchaseServiceImpl implements IPurchaseService {
     private PurchaseResponse mapToPurchaseResponse(Purchase purchase, Map<Integer, Double> totalPaidAmountByPurchaseId) {
         double totalPaidAmount = totalPaidAmountByPurchaseId.getOrDefault(purchase.getPurchaseId(), 0.0);
         double outstandingBalance = purchase.getTotalCost() - totalPaidAmount;
-
+//        SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         PurchaseResponse response = new PurchaseResponse();
         response.setPurchaseId(purchase.getPurchaseId());
         response.setSupplierId(purchase.getSupplierId());
@@ -326,12 +326,13 @@ public class PurchaseServiceImpl implements IPurchaseService {
     }
 
     private Purchase createPurchaseEntity(PurchaseRequest purchaseRequest, String currentUser) {
+        SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         Purchase purchase = new Purchase();
         purchase.setSupplierId(purchaseRequest.getSupId());
         purchase.setPurchaseName(purchaseRequest.getPurchaseName());
         purchase.setInvoiceNumber(purchaseRequest.getInvoiceNumber());
         purchase.setDeliveryTime(purchaseRequest.getDeliveryTime());
-        purchase.setInvoiceDate(purchaseRequest.getInvoiceDate());
+        purchase.setInvoiceDate(sm.format(new Date()));
         purchase.setConnectionStatus(purchaseRequest.getConnectionStatus());
         purchase.setPaymentStatus(purchaseRequest.getPaymentStatus());
         purchase.setProductType(purchaseRequest.getProductType());

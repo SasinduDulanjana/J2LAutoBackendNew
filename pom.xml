@@ -99,6 +99,11 @@
 <!--			<artifactId>mssql-jdbc</artifactId>-->
 <!--			<version>12.2.0.jre11</version> &lt;!&ndash; Use the appropriate version &ndash;&gt;-->
 <!--		</dependency>-->
+		<dependency>
+			<groupId>com.twilio.sdk</groupId>
+			<artifactId>twilio</artifactId>
+			<version>11.0.0</version>
+		</dependency>
 
 	</dependencies>
 

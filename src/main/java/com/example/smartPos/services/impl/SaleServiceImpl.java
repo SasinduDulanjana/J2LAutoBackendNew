@@ -1,13 +1,7 @@
 package com.example.smartPos.services.impl;
 
-import com.example.smartPos.controllers.requests.PaymentDetailsRequest;
-import com.example.smartPos.controllers.requests.SaleRequest;
-import com.example.smartPos.controllers.requests.SalesReturnRequest;
-import com.example.smartPos.controllers.requests.SoldProductRequest;
-import com.example.smartPos.controllers.responses.PaymentDetailsResponse;
-import com.example.smartPos.controllers.responses.SaleResponse;
-import com.example.smartPos.controllers.responses.SalesReturnResponse;
-import com.example.smartPos.controllers.responses.SoldProductResponse;
+import com.example.smartPos.controllers.requests.*;
+import com.example.smartPos.controllers.responses.*;
 import com.example.smartPos.exception.ResourceNotFoundException;
 import com.example.smartPos.mapper.CustomerMapper;
 import com.example.smartPos.mapper.PaymentDetailsMapper;
@@ -16,8 +10,10 @@ import com.example.smartPos.mapper.UserMapper;
 import com.example.smartPos.repositories.*;
 import com.example.smartPos.repositories.model.*;
 import com.example.smartPos.services.ISaleService;
+import com.example.smartPos.services.ISmsService;
 import com.example.smartPos.util.*;
 import org.hibernate.service.spi.ServiceException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,7 +48,12 @@ public class SaleServiceImpl implements ISaleService {
 
     private final PaymentDetailsMapper paymentDetailsMapper;
 
-    public SaleServiceImpl(SaleRepository saleRepository, ProductRepository productRepository, SalesReturnRepository salesReturnRepository, BatchRepository batchRepository, CustomerMapper customerMapper, UserMapper userMapper, SalesReturnMapper salesReturnMapper, PaymentRepository paymentRepository, PaymentDetailsRepository paymentDetailsRepository, PaymentDetailsMapper paymentDetailsMapper) {
+    private final ISmsService smsService;
+
+    @Value("${app.cors.allowed-origin}")
+    private String allowedOrigin;
+
+    public SaleServiceImpl(SaleRepository saleRepository, ProductRepository productRepository, SalesReturnRepository salesReturnRepository, BatchRepository batchRepository, CustomerMapper customerMapper, UserMapper userMapper, SalesReturnMapper salesReturnMapper, PaymentRepository paymentRepository, PaymentDetailsRepository paymentDetailsRepository, PaymentDetailsMapper paymentDetailsMapper, ISmsService smsService) {
         this.saleRepository = saleRepository;
         this.productRepository = productRepository;
         this.salesReturnRepository = salesReturnRepository;
@@ -63,11 +64,12 @@ public class SaleServiceImpl implements ISaleService {
         this.paymentRepository = paymentRepository;
         this.paymentDetailsRepository = paymentDetailsRepository;
         this.paymentDetailsMapper = paymentDetailsMapper;
+        this.smsService = smsService;
     }
 
     @Override
     public List<SaleResponse> getAllSales() {
-        SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy");
+        SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
         // Fetch all sales with status 1
         List<Sale> sales = saleRepository.findAllByStatus(1);
@@ -153,6 +155,7 @@ public class SaleServiceImpl implements ISaleService {
             response.setDiscountedTotal(soldProduct.getDiscountedTotal());
             response.setRefundedQty(quantityReturned);
             response.setRefundedAmount(totalReturnedAmount);
+            response.setProductDeliveryStatus(soldProduct.getStatus());
             return response;
         }).toList();
     }
@@ -366,6 +369,7 @@ public class SaleServiceImpl implements ISaleService {
         saleProduct.setDiscountPercentage(soldProduct.getDiscountPercentage());
         saleProduct.setDiscountedTotal(soldProduct.getDiscountedTotal());
         saleProduct.setBatchNo(soldProduct.getProduct().getBatchNo());
+        saleProduct.setStatus("PENDING");
         return saleProduct;
     }
 
@@ -578,5 +582,68 @@ public class SaleServiceImpl implements ISaleService {
 
         // Save the PaymentDetails entity
         return paymentDetailsMapper.toPaymentDetailsResponse(paymentDetailsRepository.save(paymentDetails));
+    }
+
+
+    @Override
+    public void sendSaleDetailsSms(Integer saleId) {
+        // Fetch sale details from the database
+        Sale sale = saleRepository.findById(saleId)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.SALE_NOT_FOUND));
+
+        // Generate a link for the customer to view the sale details
+        String baseUrl = allowedOrigin + "/#/public/sale/"; // Replace with your actual domain
+        String saleDetailsLink = baseUrl + saleId;
+
+        // Build SMS content
+        String smsContent = "Thank you for your purchase! View your sale details here: " + saleDetailsLink;
+
+        // Send SMS using an SMS service (e.g., Twilio)
+        String customerPhoneNumber = sale.getCustomer().getPhone();
+        smsService.sendSms(customerPhoneNumber, smsContent);
+    }
+
+    @Override
+    public List<CustomerViewSaleResponse> fetchSaleProductsOfCustomerView(Integer saleId) {
+        Sale sale = saleRepository.findSaleWithProductsById(saleId)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.SALE_NOT_FOUND));
+
+        // Map SaleProducts to CustomerViewSaleResponse
+        return sale.getSaleProducts().stream().map(soldProduct -> {
+            CustomerViewSaleResponse response = new CustomerViewSaleResponse();
+            response.setProduct(soldProduct.getProduct().getProductName());
+            response.setQty(soldProduct.getQuantity());
+            response.setStatus(soldProduct.getStatus());
+            response.setProductId(soldProduct.getProduct().getProductId());
+            response.setBatchNo(soldProduct.getBatchNo());
+            return response;
+        }).toList();
+    }
+
+    @Override
+    public List<ProductStatusUpdateResponse> updateProductStatus(ProductStatusUpdateRequest request) {
+        Sale sale = saleRepository.findSaleWithProductsById(request.getSaleId())
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.SALE_NOT_FOUND));
+
+        // Find the matching SaleProduct
+        SaleProduct saleProduct = sale.getSaleProducts().stream()
+                .filter(sp -> sp.getProduct().getProductId().equals(request.getProductId()) && sp.getBatchNo().equals(request.getBatchNo()))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND));
+
+        // Update the status
+        saleProduct.setStatus(request.getStatus());
+
+        // Save the updated SaleProduct
+        Sale savedSale = saleRepository.save(sale);
+
+        return savedSale.getSaleProducts().stream().map(soldProduct -> {
+            ProductStatusUpdateResponse response = new ProductStatusUpdateResponse();
+            response.setSaleId(soldProduct.getSale().getSaleId());
+            response.setProductId(soldProduct.getProduct().getProductId());
+            response.setBatchNo(soldProduct.getBatchNo());
+            response.setStatus(soldProduct.getStatus());
+            return response;
+        }).toList();
     }
 }

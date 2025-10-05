@@ -7,6 +7,7 @@ import com.example.smartPos.services.IPaymentService;
 import com.example.smartPos.util.PaymentStatus;
 import com.example.smartPos.util.PaymentType;
 import com.example.smartPos.util.ReferenceType;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -45,10 +46,13 @@ public class PaymentServiceImpl implements IPaymentService {
 
     @Override
     public void updateChequeStatus(String chequeNo, String status) {
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+
         PaymentDetails paymentDetails = paymentDetailsRepository.findByChequeNo(chequeNo)
                 .orElseThrow(() -> new IllegalArgumentException("Cheque not found with ID: " + chequeNo));
 
         paymentDetails.setPaymentStatus(PaymentStatus.valueOf(status.toUpperCase()));
+        paymentDetails.fillUpdated(currentUser);
         paymentDetailsRepository.save(paymentDetails);
     }
 }
