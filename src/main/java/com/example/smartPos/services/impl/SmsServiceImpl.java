@@ -1,25 +1,47 @@
 package com.example.smartPos.services.impl;
-
 import com.example.smartPos.services.ISmsService;
-import com.twilio.rest.api.v2010.account.Message;
-import com.twilio.type.PhoneNumber;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import com.twilio.Twilio;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class SmsServiceImpl implements ISmsService {
-
-    // Find your Account SID and Auth Token at twilio.com/console
-    // and set the environment variables. See http://twil.io/secure
-    public static final String ACCOUNT_SID = "ACa47a9477ccb9f84d16f5ab8d70e2af9d";
-    public static final String AUTH_TOKEN = "a7e21a428a895cdd94fc67ce073c3d5e";
+    private static final String API_URL = "https://app.text.lk/api/http/sms/send";
+    public static final String API_TOKEN = "1785|UTswRgPLVQI6jgJr1EpFbCcriVkxbHEmSPScPBTL0853b06f";
     @Override
     public void sendSms(String phoneNumber, String message) {
 
-         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
-         Message.creator(new PhoneNumber(phoneNumber), new PhoneNumber("+15645294861"), message).create();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/json");
+        headers.set("Accept", "application/json");
 
 
-        System.out.println("Sending SMS to " + phoneNumber + ": " + message);
+         // Remove '+' from the phone number
+        String sanitizedPhoneNumber = phoneNumber.replace("+", "");
+        // Create request body
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("api_token", API_TOKEN);
+        requestBody.put("recipient", sanitizedPhoneNumber);
+        requestBody.put("sender_id", "TextLKDemo");
+        requestBody.put("type", "plain");
+        requestBody.put("message", message);
+
+        // Create HTTP entity
+        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+
+        // Initialize RestTemplate
+        RestTemplate restTemplate = new RestTemplate();
+        // Make POST request
+        ResponseEntity<String> response = restTemplate.exchange(API_URL, HttpMethod.POST, requestEntity, String.class);
+
+        // Log response
+        System.out.println("Response: " + response.getBody());
+
     }
 }
