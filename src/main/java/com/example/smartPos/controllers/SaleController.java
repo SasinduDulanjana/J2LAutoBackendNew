@@ -140,4 +140,10 @@ public class SaleController {
         List<ProductStatusUpdateResponse> response = saleService.updateProductStatus(request);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/api/fetchPaymentByInvoiceNumber/{invoiceNumber}")
+    public ResponseEntity<PaymentResponse> fetchPaymentByInvoiceNumber(@PathVariable String invoiceNumber) {
+        PaymentResponse response = saleService.getPaymentByInvoice(invoiceNumber);
+        return ResponseEntity.ok(response);
+    }
 }

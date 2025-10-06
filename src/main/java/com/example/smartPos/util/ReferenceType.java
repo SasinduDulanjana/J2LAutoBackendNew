@@ -1,5 +1,5 @@
 package com.example.smartPos.util;
 
 public enum ReferenceType {
-    SALE, PURCHASE
+    SALE, PURCHASE, EXPENSE, INCOME
 }

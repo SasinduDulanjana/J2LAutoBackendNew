@@ -1,9 +1,9 @@
-package com.example.smartPos.controllers.responses;
+package com.example.smartPos.controllers.requests;
 
 import lombok.Data;
 
 @Data
-public class VehicleResponse extends CommonResponse {
+public class VehicleRequest {
     private Integer id;
 
     private String name;

@@ -1,6 +1,7 @@
 package com.example.smartPos.services.impl;
 
 import com.example.smartPos.controllers.requests.ProductRequest;
+import com.example.smartPos.controllers.requests.VehicleRequest;
 import com.example.smartPos.controllers.responses.BatchDetailsResponse;
 import com.example.smartPos.controllers.responses.BatchDetails;
 import com.example.smartPos.controllers.responses.ProductResponse;
@@ -505,5 +506,22 @@ public class ProductServiceImpl implements IProductService {
     @Override
     public List<VehicleResponse> availableVehicles() {
         return vehicleRepository.findAll().stream().map(vehicleMapper::toVehicleResponse).toList();
+    }
+
+    @Override
+    public VehicleResponse createVehicle(VehicleRequest request) {
+        Optional<Vehicle> vehicleByMakeAndModel = vehicleRepository.findByMakeAndModel(request.getMake(), request.getModel());
+        if (vehicleByMakeAndModel.isPresent()) {
+            throw new AlreadyExistsException(ErrorCodes.ALREADY_EXISTS_VEHICLE);
+        }
+
+        Vehicle vehicle = new Vehicle();
+        vehicle.setName(request.getName());
+        vehicle.setMake(request.getMake());
+        vehicle.setModel(request.getModel());
+        vehicle.setYear(request.getYear());
+
+        Vehicle savedVehicle = vehicleRepository.save(vehicle);
+        return vehicleMapper.toVehicleResponse(savedVehicle);
     }
 }

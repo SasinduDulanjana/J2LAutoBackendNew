@@ -57,4 +57,14 @@ public interface PaymentDetailsRepository extends JpaRepository<PaymentDetails, 
             "FROM PaymentDetails pd " +
             "WHERE pd.payment.referenceType = 'PURCHASE' AND pd.payment.paymentType = 'PAYMENT'")
     Double findPurchaseOutstanding();
+
+    @Query("SELECT SUM(pd.amount) FROM PaymentDetails pd WHERE pd.payment.referenceType = 'EXPENSE' AND pd.payment.paymentType = 'PAYMENT'")
+    Double findTotalExpenses();
+
+    @Query("SELECT FUNCTION('DATE_FORMAT', pd.payment.paymentDate, '%Y-%m') AS month, SUM(pd.amount) " +
+            "FROM PaymentDetails pd " +
+            "WHERE pd.payment.paymentType = 'PAYMENT' " +
+            "AND pd.payment.referenceType = 'EXPENSE' " +
+            "GROUP BY FUNCTION('DATE_FORMAT', pd.payment.paymentDate, '%Y-%m')")
+    List<Object[]> findMonthlyExpenses();
 }

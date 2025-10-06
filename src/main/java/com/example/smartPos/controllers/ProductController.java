@@ -2,6 +2,7 @@ package com.example.smartPos.controllers;
 
 import com.example.smartPos.controllers.requests.ProductRequest;
 import com.example.smartPos.controllers.requests.SupplierRequest;
+import com.example.smartPos.controllers.requests.VehicleRequest;
 import com.example.smartPos.controllers.responses.BatchDetailsResponse;
 import com.example.smartPos.controllers.responses.CommonResponse;
 import com.example.smartPos.controllers.responses.ProductResponse;
@@ -99,5 +100,10 @@ public class ProductController {
     @GetMapping(path = "/api/vehicles")
     public List<VehicleResponse> getAvailableQuantity() {
         return productService.availableVehicles();
+    }
+
+    @PostMapping(path = "/api/createVehicle")
+    public ResponseEntity<VehicleResponse> createVehicle(@RequestBody VehicleRequest request) {
+        return ResponseCreator.success(productService.createVehicle(request));
     }
 }

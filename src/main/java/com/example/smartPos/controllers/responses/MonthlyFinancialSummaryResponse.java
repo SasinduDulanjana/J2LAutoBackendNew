@@ -5,16 +5,18 @@ import lombok.Data;
 @Data
 public class MonthlyFinancialSummaryResponse {
 
-    public MonthlyFinancialSummaryResponse(String month, Double revenue, Double cogs, Double netProfit) {
+    public MonthlyFinancialSummaryResponse(String month, Double revenue, Double cogs, Double netProfit, Double expenses) {
         this.month = month;
         this.sales = revenue;
         this.cogs = cogs;
         this.netProfit = netProfit;
+        this.expenses = expenses;
     }
 
     private String month;
     private Double sales;
 
+    private Double expenses;
     private Double cogs;
     private Double netProfit;
 
@@ -48,5 +50,13 @@ public class MonthlyFinancialSummaryResponse {
     }
     public void setCogs(Double cogs) {
         this.cogs = cogs;
+    }
+
+    public Double getExpenses() {
+        return expenses;
+    }
+
+    public void setExpenses(Double expenses) {
+        this.expenses = expenses;
     }
 }

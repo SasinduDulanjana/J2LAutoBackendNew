@@ -48,4 +48,6 @@ public interface ISaleService {
     List<CustomerViewSaleResponse> fetchSaleProductsOfCustomerView(Integer saleId);
 
     List<ProductStatusUpdateResponse> updateProductStatus(ProductStatusUpdateRequest request);
+
+    PaymentResponse getPaymentByInvoice(String invoiceNumber);
 }

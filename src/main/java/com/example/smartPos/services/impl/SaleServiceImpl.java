@@ -3,10 +3,7 @@ package com.example.smartPos.services.impl;
 import com.example.smartPos.controllers.requests.*;
 import com.example.smartPos.controllers.responses.*;
 import com.example.smartPos.exception.ResourceNotFoundException;
-import com.example.smartPos.mapper.CustomerMapper;
-import com.example.smartPos.mapper.PaymentDetailsMapper;
-import com.example.smartPos.mapper.SalesReturnMapper;
-import com.example.smartPos.mapper.UserMapper;
+import com.example.smartPos.mapper.*;
 import com.example.smartPos.repositories.*;
 import com.example.smartPos.repositories.model.*;
 import com.example.smartPos.services.ISaleService;
@@ -50,10 +47,12 @@ public class SaleServiceImpl implements ISaleService {
 
     private final ISmsService smsService;
 
+    private final PaymentMapper paymentMapper;
+
     @Value("${app.cors.allowed-origin}")
     private String allowedOrigin;
 
-    public SaleServiceImpl(SaleRepository saleRepository, ProductRepository productRepository, SalesReturnRepository salesReturnRepository, BatchRepository batchRepository, CustomerMapper customerMapper, UserMapper userMapper, SalesReturnMapper salesReturnMapper, PaymentRepository paymentRepository, PaymentDetailsRepository paymentDetailsRepository, PaymentDetailsMapper paymentDetailsMapper, ISmsService smsService) {
+    public SaleServiceImpl(SaleRepository saleRepository, ProductRepository productRepository, SalesReturnRepository salesReturnRepository, BatchRepository batchRepository, CustomerMapper customerMapper, UserMapper userMapper, SalesReturnMapper salesReturnMapper, PaymentRepository paymentRepository, PaymentDetailsRepository paymentDetailsRepository, PaymentDetailsMapper paymentDetailsMapper, ISmsService smsService, PaymentMapper paymentMapper) {
         this.saleRepository = saleRepository;
         this.productRepository = productRepository;
         this.salesReturnRepository = salesReturnRepository;
@@ -65,6 +64,7 @@ public class SaleServiceImpl implements ISaleService {
         this.paymentDetailsRepository = paymentDetailsRepository;
         this.paymentDetailsMapper = paymentDetailsMapper;
         this.smsService = smsService;
+        this.paymentMapper = paymentMapper;
     }
 
     @Override
@@ -266,7 +266,9 @@ public class SaleServiceImpl implements ISaleService {
 
             // Save payment details
             PaymentDetails paymentDetailsList = createPaymentDetailsEntities(saleRequest, payment, currentUser);
-            paymentDetailsRepository.save(paymentDetailsList);
+            if (paymentDetailsList != null) {
+                paymentDetailsRepository.save(paymentDetailsList);
+            }
 
             Sale savedSale = saleRepository.save(sale);
 
@@ -291,6 +293,11 @@ public class SaleServiceImpl implements ISaleService {
     }
 
     private PaymentDetails createPaymentDetailsEntities(SaleRequest saleRequest, Payment payment, String currentUser) {
+        // Check if the paid amount is 0, and skip saving if true
+        if (saleRequest.getPaidAmount() == 0) {
+            return null;
+        }
+
         PaymentDetails paymentDetails = new PaymentDetails();
         paymentDetails.setPayment(payment);
         paymentDetails.setPaymentMethod(saleRequest.getPaymentType());
@@ -565,6 +572,10 @@ public class SaleServiceImpl implements ISaleService {
         Payment payment = paymentRepository.findById(paymentDetailsRequest.getPaymentId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PAYMENT_NOT_FOUND));
 
+        if (paymentDetailsRequest.getAmount() == 0) {
+            return null;
+        }
+
         // Create and populate the PaymentDetails entity
         PaymentDetails paymentDetails = new PaymentDetails();
         paymentDetails.setPayment(payment);
@@ -579,6 +590,7 @@ public class SaleServiceImpl implements ISaleService {
         } else {
             paymentDetails.setPaymentStatus(PaymentStatus.CLEARED);
         }
+        paymentDetails.fillNew(SecurityContextHolder.getContext().getAuthentication().getName());
 
         // Save the PaymentDetails entity
         return paymentDetailsMapper.toPaymentDetailsResponse(paymentDetailsRepository.save(paymentDetails));
@@ -645,5 +657,17 @@ public class SaleServiceImpl implements ISaleService {
             response.setStatus(soldProduct.getStatus());
             return response;
         }).toList();
+    }
+
+    @Override
+    public PaymentResponse getPaymentByInvoice(String invoiceNumber) {
+        // Fetch the payment by invoice number
+        Payment payment = paymentRepository.findByReferenceIdAndReceiptPaymentTypeAndSaleReferenceType(invoiceNumber)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PAYMENT_NOT_FOUND));
+
+        // Fetch and return the associated payment details
+        PaymentResponse paymentResponse = new PaymentResponse();
+        paymentResponse.setPaymentId(payment.getPaymentId());
+        return paymentResponse;
     }
 }

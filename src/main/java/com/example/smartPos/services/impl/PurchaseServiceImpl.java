@@ -254,7 +254,10 @@ public class PurchaseServiceImpl implements IPurchaseService {
 
         // Create and save payment details
         PaymentDetails paymentDetails = createPaymentDetailsEntities(purchaseRequest, payment, currentUser);
-        paymentDetailsRepository.save(paymentDetails);
+        if (paymentDetails != null){
+            paymentDetailsRepository.save(paymentDetails);
+        }
+
 
         PurchaseResponse purchaseResponse = new PurchaseResponse();
         purchaseResponse.setPurchaseId(savedPurchase.getPurchaseId());
@@ -286,6 +289,11 @@ public class PurchaseServiceImpl implements IPurchaseService {
     }
 
     private PaymentDetails createPaymentDetailsEntities(PurchaseRequest purchaseRequest, Payment payment, String currentUser) {
+        // Check if the paid amount is 0, and skip saving if true
+        if (purchaseRequest.getPaidAmount() == 0) {
+            return null;
+        }
+
         PaymentDetails paymentDetails = new PaymentDetails();
         paymentDetails.setPayment(payment);
         paymentDetails.setPaymentMethod(purchaseRequest.getPaymentType());
@@ -425,17 +433,19 @@ public class PurchaseServiceImpl implements IPurchaseService {
         purchaseResponse.setPaymentStatus(purchase.getPaymentStatus());
         purchaseResponse.setProductType(purchase.getProductType());
         purchaseResponse.setStatus(purchase.getStatus());
-        purchaseResponse.setProducts(purchase.getProducts().stream().map(product -> {
-            ProductResponse productResponse = new ProductResponse();
-            productResponse.setProductId(product.getProductId());
-            productResponse.setProductName(product.getProductName());
-            productResponse.setSku(product.getSku());
-//            productResponse.setSalePrice(product.getSalePrice());
-//            productResponse.setWholeSalePrice(product.getWholeSalePrice());
-            productResponse.setLowQty(product.getLowQty());
-            productResponse.setBatchNo(product.getBatchNo());
-            return productResponse;
-        }).toList());
+//        purchaseResponse.setProducts(purchase.getProducts().stream().map(product -> {
+//            ProductResponse productResponse = new ProductResponse();
+//            productResponse.setProductId(product.getProductId());
+//            productResponse.setProductName(product.getProductName());
+//            productResponse.setSku(product.getSku());
+////            productResponse.setSalePrice(product.getSalePrice());
+////            productResponse.setWholeSalePrice(product.getWholeSalePrice());
+//            productResponse.setLowQty(product.getLowQty());
+//            productResponse.setBatchNo(product.getBatchNo());
+//            return productResponse;
+//        }).toList());
+        purchaseResponse.setTotalCost(purchase.getTotalCost());
+        purchaseResponse.setPaidAmount(purchase.getPaidAmount());
         return purchaseResponse;
     }
 
@@ -607,6 +617,11 @@ public class PurchaseServiceImpl implements IPurchaseService {
         Payment payment = paymentRepository.findById(paymentDetailsRequest.getPaymentId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PAYMENT_NOT_FOUND));
 
+        // Check if the payment amount is 0, and skip saving if true
+        if (paymentDetailsRequest.getAmount() == 0) {
+            return null;
+        }
+
         // Create and populate the PaymentDetails entity
         PaymentDetails paymentDetails = new PaymentDetails();
         paymentDetails.setPayment(payment);
@@ -621,8 +636,21 @@ public class PurchaseServiceImpl implements IPurchaseService {
         } else {
             paymentDetails.setPaymentStatus(PaymentStatus.CLEARED);
         }
+        paymentDetails.fillNew(SecurityContextHolder.getContext().getAuthentication().getName());
 
         // Save the PaymentDetails entity
         return paymentDetailsMapper.toPaymentDetailsResponse(paymentDetailsRepository.save(paymentDetails));
+    }
+
+    @Override
+    public PaymentResponse fetchPaymentByPurchaseId(String invoiceNumber) {
+        // Fetch the payment by invoice number
+        Payment payment = paymentRepository.findByReferenceIdAndPaymentPaymentTypeAndPurchaseReferenceType(invoiceNumber)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PAYMENT_NOT_FOUND));
+
+        // Fetch and return the associated payment details
+        PaymentResponse paymentResponse = new PaymentResponse();
+        paymentResponse.setPaymentId(payment.getPaymentId());
+        return paymentResponse;
     }
 }

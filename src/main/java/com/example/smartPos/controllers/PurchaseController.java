@@ -85,4 +85,10 @@ public class PurchaseController {
         PaymentDetailsResponse paymentDetailsResponse = purchaseService.createPaymentDetails(paymentDetailsRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(paymentDetailsResponse);
     }
+
+    @GetMapping("/api/fetchPaymentByPurchaseId/{purchaseId}")
+    public ResponseEntity<PaymentResponse> fetchPaymentByPurchaseId(@PathVariable String purchaseId) {
+        PaymentResponse response = purchaseService.fetchPaymentByPurchaseId(purchaseId);
+        return ResponseEntity.ok(response);
+    }
 }

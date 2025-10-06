@@ -1,8 +1,10 @@
 package com.example.smartPos.controllers;
 
 import com.example.smartPos.controllers.requests.CustomerRequest;
+import com.example.smartPos.controllers.requests.ExpenseRequest;
 import com.example.smartPos.controllers.responses.ChequeDetailsResponse;
 import com.example.smartPos.controllers.responses.CustomerResponse;
+import com.example.smartPos.controllers.responses.ExpenseResponse;
 import com.example.smartPos.repositories.model.PaymentDetails;
 import com.example.smartPos.services.ICustomerService;
 import com.example.smartPos.services.IPaymentService;
@@ -30,4 +32,15 @@ public class PaymentController {
     public void updateChequeStatus(@PathVariable String chequeNo, @PathVariable String status) {
         paymentService.updateChequeStatus(chequeNo, status);
     }
+
+    @PostMapping("/api/saveExpense")
+    public ExpenseResponse saveExpense(@RequestBody ExpenseRequest request) {
+        return paymentService.createExpense(request);
+    }
+
+    @GetMapping("/api/getAllExpenses")
+    public List<ExpenseResponse> getAllExpenses() {
+        return paymentService.getAllExpenses();
+    }
+
 }

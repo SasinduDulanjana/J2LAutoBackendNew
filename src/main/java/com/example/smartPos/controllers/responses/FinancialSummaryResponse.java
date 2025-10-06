@@ -9,6 +9,8 @@ public class FinancialSummaryResponse {
     private Double totalPurchases;
     private Double totalSales;
     private Double totalDiscounts;
+
+    private Double totalExpenses;
     private Double dueAmountToPay;
     private Double dueAmountToReceive;
 
@@ -70,5 +72,13 @@ public class FinancialSummaryResponse {
 
     public void setTotalCogs(Double totalCogs) {
         this.totalCogs = totalCogs;
+    }
+
+    public Double getTotalExpenses() {
+        return totalExpenses;
+    }
+
+    public void setTotalExpenses(Double totalExpenses) {
+        this.totalExpenses = totalExpenses;
     }
 }

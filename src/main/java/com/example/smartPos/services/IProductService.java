@@ -1,6 +1,7 @@
 package com.example.smartPos.services;
 
 import com.example.smartPos.controllers.requests.ProductRequest;
+import com.example.smartPos.controllers.requests.VehicleRequest;
 import com.example.smartPos.controllers.responses.BatchDetailsResponse;
 import com.example.smartPos.controllers.responses.ProductResponse;
 import com.example.smartPos.controllers.responses.VehicleResponse;
@@ -37,4 +38,6 @@ public interface IProductService {
     void deleteProduct(Integer prodId);
 
     List<VehicleResponse> availableVehicles();
+
+    VehicleResponse createVehicle(VehicleRequest request);
 }

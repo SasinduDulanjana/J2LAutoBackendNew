@@ -43,7 +43,9 @@ public enum ErrorCodes {
 
     BATCH_NOT_FOUND("61", "Batch doesn't exist"),
 
-    PAYMENT_NOT_FOUND("62", "Payment doesn't exist");
+    PAYMENT_NOT_FOUND("62", "Payment doesn't exist"),
+
+    ALREADY_EXISTS_VEHICLE("63", "Already Exists Vehicle");
 
 
     public final String code;

@@ -20,6 +20,7 @@ public class FinancialSummaryServiceImpl implements IFinancialSummaryService {
 
     private final PaymentDetailsRepository paymentDetailsRepository;
 
+
     public FinancialSummaryServiceImpl(PurchaseRepository purchaseRepository, SaleRepository saleRepository, PaymentDetailsRepository paymentDetailsRepository) {
         this.purchaseRepository = purchaseRepository;
         this.saleRepository = saleRepository;
@@ -34,14 +35,16 @@ public class FinancialSummaryServiceImpl implements IFinancialSummaryService {
         // Example calculations (replace with actual database queries)
         Double totalCogs = saleRepository.findTotalCOGS();
         Double totalSales = saleRepository.findTotalSalesAmountForActiveSales();
+        Double totalExpenses = paymentDetailsRepository.findTotalExpenses();
 
         response.setTotalPurchases(purchaseRepository.findTotalTotalCostForActivePurchases()); // Fetch total purchases from the database
         response.setTotalSales(totalSales);    // Fetch total sales from the database
         response.setTotalDiscounts(saleRepository.findTotalDiscountsForActiveSales()); // Fetch total discounts from the database
         response.setTotalCogs(totalCogs); // Fetch total COGS from the database
+        response.setTotalExpenses(totalExpenses); // Fetch total expenses from the database
         response.setDueAmountToPay(paymentDetailsRepository.findPurchaseOutstanding()); // Fetch due amount to pay from the database
         response.setDueAmountToReceive(paymentDetailsRepository.findSaleOutstanding()); // Fetch due amount to receive from the database
-        response.setNetProfit(totalSales - totalCogs);
+        response.setNetProfit(totalSales - totalCogs - totalExpenses);
         return response;
     }
 
@@ -50,6 +53,7 @@ public class FinancialSummaryServiceImpl implements IFinancialSummaryService {
         List<Object[]> revenueData = saleRepository.findMonthlyRevenue();
 //        List<Object[]> purchaseData = purchaseRepository.findMonthlyPurchases();
         List<Object[]> cogsData = saleRepository.findMonthlyCOGS();
+        List<Object[]> expenseData = paymentDetailsRepository.findMonthlyExpenses();
 
 
         Map<String, Double> revenueMap = revenueData.stream()
@@ -61,19 +65,24 @@ public class FinancialSummaryServiceImpl implements IFinancialSummaryService {
         Map<String, Double> cogsMap = cogsData.stream()
                 .collect(Collectors.toMap(row -> (String) row[0], row -> (Double) row[1]));
 
+        Map<String, Double> expenseMap = expenseData.stream()
+                .collect(Collectors.toMap(row -> (String) row[0], row -> (Double) row[1]));
+
         Set<String> months = new HashSet<>();
         months.addAll(revenueMap.keySet());
 //        months.addAll(purchaseMap.keySet());
         months.addAll(cogsMap.keySet());
+        months.addAll(expenseMap.keySet());
 
         List<MonthlyFinancialSummaryResponse> summaries = new ArrayList<>();
         for (String month : months) {
             double revenue = revenueMap.getOrDefault(month, 0.0);
 //            double purchases = purchaseMap.getOrDefault(month, 0.0);
             double cogs = cogsMap.getOrDefault(month, 0.0);
-            double netProfit = revenue - cogs;
+            double expenses = expenseMap.getOrDefault(month, 0.0);
+            double netProfit = revenue - cogs - expenses;
 
-            summaries.add(new MonthlyFinancialSummaryResponse(month, revenue, cogs, netProfit));
+            summaries.add(new MonthlyFinancialSummaryResponse(month, revenue, cogs, netProfit, expenses));
         }
 
         return summaries;
