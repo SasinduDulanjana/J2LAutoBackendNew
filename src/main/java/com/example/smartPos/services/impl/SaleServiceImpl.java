@@ -124,8 +124,8 @@ public class SaleServiceImpl implements ISaleService {
                 .toList();
 
         // Fetch all batches in a single query and map batchNo to retailPrice
-        Map<String, Double> batchRetailPrices = batchRepository.findByBatchNumbers(batchNumbers).stream()
-                .collect(Collectors.toMap(Batch::getBatchNumber, Batch::getRetailPrice));
+//        Map<String, Double> batchRetailPrices = batchRepository.findByBatchNumbers(batchNumbers).stream()
+//                .collect(Collectors.toMap(Batch::getBatchNumber, Batch::getRetailPrice));
 
         //add return details
         List<SalesReturn> salesReturns = salesReturnRepository.findBySale_SaleId(sale.getSaleId());
@@ -148,7 +148,7 @@ public class SaleServiceImpl implements ISaleService {
             response.setProduct(soldProduct.getProduct());
             response.setSale(soldProduct.getSale());
             response.setBatchNo(soldProduct.getBatchNo());
-            response.setRetailPrice(batchRetailPrices.getOrDefault(soldProduct.getBatchNo(), null));
+            response.setRetailPrice(soldProduct.getRetailPrice());
             response.setQuantity(soldProduct.getQuantity());
             response.setDiscountPercentage(soldProduct.getDiscountPercentage());
             response.setDiscountAmount(soldProduct.getDiscountAmount());
@@ -377,6 +377,7 @@ public class SaleServiceImpl implements ISaleService {
         saleProduct.setDiscountedTotal(soldProduct.getDiscountedTotal());
         saleProduct.setBatchNo(soldProduct.getProduct().getBatchNo());
         saleProduct.setStatus("PENDING");
+        saleProduct.setRetailPrice(soldProduct.getRetailPrice());
         return saleProduct;
     }
 

@@ -422,6 +422,12 @@ public class PurchaseServiceImpl implements IPurchaseService {
         Purchase purchase = purchaseRepository.findByIdWithProducts(purchaseId)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PURCHASE_NOT_FOUND));
 
+        // Map products to ProductResponse
+        List<ProductResponse> productResponses = purchase.getProducts().stream()
+                .map(this::mapToProductResponse)
+                .toList();
+
+        // Create and populate PurchaseResponse
         PurchaseResponse purchaseResponse = new PurchaseResponse();
         purchaseResponse.setPurchaseId(purchase.getPurchaseId());
         purchaseResponse.setSupplierId(purchase.getSupplierId());
@@ -433,20 +439,22 @@ public class PurchaseServiceImpl implements IPurchaseService {
         purchaseResponse.setPaymentStatus(purchase.getPaymentStatus());
         purchaseResponse.setProductType(purchase.getProductType());
         purchaseResponse.setStatus(purchase.getStatus());
-//        purchaseResponse.setProducts(purchase.getProducts().stream().map(product -> {
-//            ProductResponse productResponse = new ProductResponse();
-//            productResponse.setProductId(product.getProductId());
-//            productResponse.setProductName(product.getProductName());
-//            productResponse.setSku(product.getSku());
-////            productResponse.setSalePrice(product.getSalePrice());
-////            productResponse.setWholeSalePrice(product.getWholeSalePrice());
-//            productResponse.setLowQty(product.getLowQty());
-//            productResponse.setBatchNo(product.getBatchNo());
-//            return productResponse;
-//        }).toList());
+        purchaseResponse.setProducts(productResponses);
         purchaseResponse.setTotalCost(purchase.getTotalCost());
         purchaseResponse.setPaidAmount(purchase.getPaidAmount());
+
         return purchaseResponse;
+    }
+
+    // Helper method to map Product to ProductResponse
+    private ProductResponse mapToProductResponse(Product product) {
+        ProductResponse productResponse = new ProductResponse();
+        productResponse.setProductId(product.getProductId());
+        productResponse.setProductName(product.getProductName());
+        productResponse.setSku(product.getSku());
+        productResponse.setLowQty(product.getLowQty());
+        productResponse.setBatchNo(product.getBatchNo());
+        return productResponse;
     }
 
     @Override

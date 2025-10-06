@@ -40,6 +40,9 @@ public class SaleProduct {
     @Column(name = "STATUS")
     private String status;
 
+    @Column(name = "RETAIL_PRICE")
+    private Double retailPrice;
+
     public Integer getSaleProductId() {
         return saleProductId;
     }
@@ -110,5 +113,13 @@ public class SaleProduct {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Double getRetailPrice() {
+        return retailPrice;
+    }
+
+    public void setRetailPrice(Double retailPrice) {
+        this.retailPrice = retailPrice;
     }
 }

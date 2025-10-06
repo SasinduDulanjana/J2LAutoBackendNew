@@ -22,6 +22,8 @@ public class SoldProductRequest {
 
     private String batchNo;
 
+    private Double retailPrice;
+
     public Integer getSaleProductId() {
         return saleProductId;
     }
@@ -84,5 +86,13 @@ public class SoldProductRequest {
 
     public void setBatchNo(String batchNo) {
         this.batchNo = batchNo;
+    }
+
+    public Double getRetailPrice() {
+        return retailPrice;
+    }
+
+    public void setRetailPrice(Double retailPrice) {
+        this.retailPrice = retailPrice;
     }
 }
