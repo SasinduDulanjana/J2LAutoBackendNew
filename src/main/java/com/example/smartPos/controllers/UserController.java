@@ -60,7 +60,7 @@ public class UserController {
         return userService.getUser(id);
     }
 
-    @Cacheable(value = "users", key = "#username")
+//    @Cacheable(value = "users", key = "#username")
     @GetMapping("/getUserByName/{username}")
     public UserResponse getUserByUsername(@PathVariable String username) {
         return userService.getUserByUsername(username);
