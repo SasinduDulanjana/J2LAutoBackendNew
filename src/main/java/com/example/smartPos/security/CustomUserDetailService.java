@@ -26,7 +26,7 @@ public class CustomUserDetailService implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
-    @Cacheable(value = "users", key = "#username")
+//    @Cacheable(value = "users", key = "#username")
     public UserDetails loadUserByUsername(String username) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNameNotFoundException(ErrorCodes.USER_NAME_NOT_FOUND));
         return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), mapRolesToAuthorities(user.getRoles()));
