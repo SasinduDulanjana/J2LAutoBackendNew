@@ -5,6 +5,7 @@ import com.example.smartPos.repositories.UserRepository;
 import com.example.smartPos.repositories.model.Role;
 import com.example.smartPos.repositories.model.User;
 import com.example.smartPos.util.ErrorCodes;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,6 +26,7 @@ public class CustomUserDetailService implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
+    @Cacheable(value = "users", key = "#username")
     public UserDetails loadUserByUsername(String username) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNameNotFoundException(ErrorCodes.USER_NAME_NOT_FOUND));
         return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), mapRolesToAuthorities(user.getRoles()));
