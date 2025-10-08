@@ -1,5 +1,6 @@
 package com.example.smartPos.controllers.requests;
 
+import com.example.smartPos.repositories.model.Vehicle;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -43,6 +44,10 @@ public class SaleRequest {
     private String bankName;
 
     private String chequeDate;
+
+    public Vehicle vehicle;
+
+    public String vehicleNumber;
 
     public Integer getOrderId() {
         return orderId;
@@ -214,5 +219,21 @@ public class SaleRequest {
 
     public void setChequeDate(String chequeDate) {
         this.chequeDate = chequeDate;
+    }
+
+    public Vehicle getVehicle() {
+        return vehicle;
+    }
+
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
+    }
+
+    public String getVehicleNumber() {
+        return vehicleNumber;
+    }
+
+    public void setVehicleNumber(String vehicleNumber) {
+        this.vehicleNumber = vehicleNumber;
     }
 }

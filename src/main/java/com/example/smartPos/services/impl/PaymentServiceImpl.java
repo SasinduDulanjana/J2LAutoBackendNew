@@ -52,6 +52,8 @@ public class PaymentServiceImpl implements IPaymentService {
             } else if(chequeDetail.getPayment().getPaymentType().equals(PaymentType.PAYMENT) && chequeDetail.getPayment().getReferenceType().equals(ReferenceType.PURCHASE)) {
                 chequeDetailsResponse.setType("ISSUED");
                 chequeDetailsResponse.setCustomerOrSupplierName(chequeDetail.getPayment().getSupplier().getName());
+            } else if(chequeDetail.getPayment().getPaymentType().equals(PaymentType.PAYMENT) && chequeDetail.getPayment().getReferenceType().equals(ReferenceType.EXPENSE)) {
+                chequeDetailsResponse.setType("ISSUED");
             }
             chequeDetailsResponse.setAmount(chequeDetail.getAmount());
             SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy");
@@ -109,7 +111,7 @@ public class PaymentServiceImpl implements IPaymentService {
         paymentDetails.setBankName(request.getBankName());
         paymentDetails.setChequeNo(request.getChequeNumber());
         paymentDetails.setChequeDate(request.getChequeDate());
-        if (request.getPaymentMethod().equals("CHEQUE")) {
+        if (request.getPaymentMethod().equalsIgnoreCase("CHEQUE")) {
             paymentDetails.setPaymentStatus(PaymentStatus.PENDING);
         } else {
             paymentDetails.setPaymentStatus(PaymentStatus.CLEARED);

@@ -108,6 +108,8 @@ public class SaleServiceImpl implements ISaleService {
             saleResponse.setHold(sale.getHold());
             saleResponse.setModifiedBy(sale.getModifiedBy());
             saleResponse.setModifiedDate(sm.format(sale.getModifiedDate()));
+            saleResponse.setVehicle(sale.getVehicle());
+            saleResponse.setVehicleNumber(sale.getVehicleNumber());
             return saleResponse;
         }).toList();
     }
@@ -331,6 +333,8 @@ public class SaleServiceImpl implements ISaleService {
         sale.setPaidAmount(saleRequest.getPaidAmount());
         sale.setHold(saleRequest.isHold());
         sale.setFullyPaid(saleRequest.isFullyPaid());
+        sale.setVehicle(saleRequest.getVehicle());
+        sale.setVehicleNumber(saleRequest.getVehicleNumber());
         sale.setStatus(1);
         sale.fillNew(currentUser);
         return sale;
@@ -624,7 +628,8 @@ public class SaleServiceImpl implements ISaleService {
         // Map SaleProducts to CustomerViewSaleResponse
         return sale.getSaleProducts().stream().map(soldProduct -> {
             CustomerViewSaleResponse response = new CustomerViewSaleResponse();
-            response.setProduct(soldProduct.getProduct().getProductName());
+            response.setProductName(soldProduct.getProduct().getProductName());
+            response.setVehicle(soldProduct.getProduct().getVehicle());
             response.setQty(soldProduct.getQuantity());
             response.setStatus(soldProduct.getStatus());
             response.setProductId(soldProduct.getProduct().getProductId());

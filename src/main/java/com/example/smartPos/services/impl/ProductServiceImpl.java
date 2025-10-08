@@ -78,7 +78,8 @@ public class ProductServiceImpl implements IProductService {
             prodResp.setStatus(product.getStatus());
             prodResp.setPartNumber(product.getPartNumber());
             prodResp.setBrandName(product.getBrandName());
-            prodResp.setVehicleList(new ArrayList<>(product.getVehicles()));
+//            prodResp.setVehicleList(new ArrayList<>(product.getVehicles()));
+            prodResp.setVehicle(product.getVehicle());
             return prodResp;
         }).toList();
     }
@@ -128,6 +129,7 @@ public class ProductServiceImpl implements IProductService {
         prodResp.setImgUrl(product.getImgUrl());
         prodResp.setBatchNo(product.getBatchNo());
         prodResp.setStatus(product.getStatus());
+        prodResp.setVehicle(product.getVehicle());
         return prodResp;
     }
 
@@ -203,7 +205,7 @@ public class ProductServiceImpl implements IProductService {
         );
         ProductResponse prodResp = new ProductResponse();
         prodResp.setProductId(product.getProductId());
-        prodResp.setCategory(categoryMapper.toCategoryResponse(product.getCategory()));
+//        prodResp.setCategory(categoryMapper.toCategoryResponse(product.getCategory()));
         prodResp.setProductName(product.getProductName());
         prodResp.setBarCodeAvailable(product.getBarCodeAvailable());
         prodResp.setBarCode(product.getBarcode());
@@ -223,7 +225,8 @@ public class ProductServiceImpl implements IProductService {
         prodResp.setStatus(product.getStatus());
         prodResp.setBrandName(product.getBrandName());
         prodResp.setPartNumber(product.getPartNumber());
-        prodResp.setVehicleList(new ArrayList<>(product.getVehicles()));
+        prodResp.setVehicle(product.getVehicle());
+//        prodResp.setVehicleList(new ArrayList<>(product.getVehicles()));
         return prodResp;
     }
 
@@ -318,7 +321,7 @@ public class ProductServiceImpl implements IProductService {
             throw new AlreadyExistsException(ErrorCodes.ALREADY_EXISTS_SKU);
         }
 
-        Optional<Product> productByName = productRepository.findByProductName(productRequest.getProductName());
+        Optional<Product> productByName = productRepository.findByProductNameAndVehicle(productRequest.getProductName(), productRequest.getVehicle().getMake(), productRequest.getVehicle().getModel(), productRequest.getVehicle().getYear());
         if (productByName.isPresent()) {
             throw new AlreadyExistsException(ErrorCodes.ALREADY_EXISTS_PRODUCT);
         }
@@ -339,14 +342,14 @@ public class ProductServiceImpl implements IProductService {
         String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
 
         // Fetch the Category object using catId
-        Integer catId = productRequest.getCatId();
-        Category category = categoryRepository.findById(catId)
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.CATEGORY_NOT_FOUND));
+//        Integer catId = productRequest.getCatId();
+//        Category category = categoryRepository.findById(catId)
+//                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.CATEGORY_NOT_FOUND));
 
 
         Product saveProduct = new Product();
-        saveProduct.setCategory(category);
-        saveProduct.setVehicles(new HashSet<>(productRequest.getVehicleList()));
+//        saveProduct.setCategory(category);
+        saveProduct.setVehicle(productRequest.getVehicle());
         saveProduct.setBrandName(productRequest.getBrandName());
         saveProduct.setPartNumber(productRequest.getPartNumber());
         saveProduct.setProductName(productRequest.getProductName());
@@ -379,15 +382,15 @@ public class ProductServiceImpl implements IProductService {
         String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
 
         // Fetch the Category object using catId
-        Integer catId = productRequest.getCatId();
-        Category category = categoryRepository.findById(catId)
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.CATEGORY_NOT_FOUND));
+//        Integer catId = productRequest.getCatId();
+//        Category category = categoryRepository.findById(catId)
+//                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.CATEGORY_NOT_FOUND));
 
         if (productRequest.getProductId() != null) {
             Product product = productRepository.findById(productRequest.getProductId()).orElseThrow(
                     () -> new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND)
             );
-            product.setCategory(category);
+//            product.setCategory(category);
             product.setProductName(productRequest.getProductName());
             product.setBarCodeAvailable(productRequest.getBarCodeAvailable());
             product.setBarcode(productRequest.getBarCode());
@@ -406,7 +409,8 @@ public class ProductServiceImpl implements IProductService {
             product.setBatchNo(productRequest.getBatchNo());
             product.setBrandName(productRequest.getBrandName());
             product.setPartNumber(productRequest.getPartNumber());
-            product.setVehicles(new HashSet<>(productRequest.getVehicleList()));
+//            product.setVehicles(new HashSet<>(productRequest.getVehicleList()));
+            product.setVehicle(productRequest.getVehicle());
             product.fillUpdated(currentUser);
             Product updateProduct = productRepository.save(product);
 
@@ -510,7 +514,7 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     public VehicleResponse createVehicle(VehicleRequest request) {
-        Optional<Vehicle> vehicleByMakeAndModel = vehicleRepository.findByMakeAndModel(request.getMake(), request.getModel());
+        Optional<Vehicle> vehicleByMakeAndModel = vehicleRepository.findByMakeAndModelAndYear(request.getMake(), request.getModel(), request.getYear());
         if (vehicleByMakeAndModel.isPresent()) {
             throw new AlreadyExistsException(ErrorCodes.ALREADY_EXISTS_VEHICLE);
         }

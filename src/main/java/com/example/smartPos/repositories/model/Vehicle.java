@@ -22,8 +22,8 @@ public class Vehicle {
 
     private Integer year;
 
-    @ManyToMany(mappedBy = "vehicles")
-    private Set<Product> products = new HashSet<>();
+//    @ManyToMany(mappedBy = "vehicles")
+//    private Set<Product> products = new HashSet<>();
 
     public Integer getId() {
         return id;

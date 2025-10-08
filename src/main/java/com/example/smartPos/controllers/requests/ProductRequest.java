@@ -58,7 +58,8 @@ public class ProductRequest {
 
     private String partNumber;
 
-    private List<Vehicle> vehicleList;
+    private Vehicle vehicle;
+//    private List<Vehicle> vehicleList;
 
     private String addBy;
     private String modifiedBy;
@@ -265,11 +266,20 @@ public class ProductRequest {
         this.partNumber = partNumber;
     }
 
-    public List<Vehicle> getVehicleList() {
-        return vehicleList;
+//    public List<Vehicle> getVehicleList() {
+//        return vehicleList;
+//    }
+//
+//    public void setVehicleList(List<Vehicle> vehicleList) {
+//        this.vehicleList = vehicleList;
+//    }
+
+
+    public Vehicle getVehicle() {
+        return vehicle;
     }
 
-    public void setVehicleList(List<Vehicle> vehicleList) {
-        this.vehicleList = vehicleList;
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
     }
 }

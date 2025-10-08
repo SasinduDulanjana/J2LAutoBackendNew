@@ -1,11 +1,14 @@
 package com.example.smartPos.controllers.responses;
 
+import com.example.smartPos.repositories.model.Vehicle;
 import lombok.Data;
 
 @Data
 public class CustomerViewSaleResponse {
 
-    private String product;
+    private String productName;
+
+    private Vehicle vehicle;
 
     private Integer qty;
 
@@ -15,12 +18,20 @@ public class CustomerViewSaleResponse {
 
     private Integer productId;
 
-    public String getProduct() {
-        return product;
+    public String getProductName() {
+        return productName;
     }
 
-    public void setProduct(String product) {
-        this.product = product;
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public Vehicle getVehicle() {
+        return vehicle;
+    }
+
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
     }
 
     public Integer getQty() {

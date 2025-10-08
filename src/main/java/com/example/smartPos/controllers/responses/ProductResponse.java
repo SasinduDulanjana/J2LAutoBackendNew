@@ -56,7 +56,9 @@ public class ProductResponse extends CommonResponse {
 
     private String partNumber;
 
-    private List<Vehicle> vehicleList;
+//    private List<Vehicle> vehicleList;
+
+    private Vehicle vehicle;
 
     private String addBy;
 
@@ -258,11 +260,20 @@ public class ProductResponse extends CommonResponse {
         this.partNumber = partNumber;
     }
 
-    public List<Vehicle> getVehicleList() {
-        return vehicleList;
+//    public List<Vehicle> getVehicleList() {
+//        return vehicleList;
+//    }
+//
+//    public void setVehicleList(List<Vehicle> vehicleList) {
+//        this.vehicleList = vehicleList;
+//    }
+
+
+    public Vehicle getVehicle() {
+        return vehicle;
     }
 
-    public void setVehicleList(List<Vehicle> vehicleList) {
-        this.vehicleList = vehicleList;
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
     }
 }

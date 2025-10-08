@@ -451,6 +451,7 @@ public class PurchaseServiceImpl implements IPurchaseService {
         ProductResponse productResponse = new ProductResponse();
         productResponse.setProductId(product.getProductId());
         productResponse.setProductName(product.getProductName());
+        productResponse.setVehicle(product.getVehicle());
         productResponse.setSku(product.getSku());
         productResponse.setLowQty(product.getLowQty());
         productResponse.setBatchNo(product.getBatchNo());

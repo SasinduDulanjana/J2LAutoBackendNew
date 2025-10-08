@@ -10,5 +10,5 @@ import java.util.Optional;
 @Repository
 public interface VehicleRepository extends JpaRepository<Vehicle, Integer> {
 
-    Optional<Vehicle> findByMakeAndModel(String make, String model);
+    Optional<Vehicle> findByMakeAndModelAndYear(String make, String model, Integer year);
 }

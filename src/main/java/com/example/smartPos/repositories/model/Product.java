@@ -82,14 +82,17 @@ public class Product {
 //    @Temporal(TemporalType.TIMESTAMP)
     private Date modifiedDate;
 
+    @ManyToOne
+    @JoinColumn(name = "vehicle_id", referencedColumnName = "id")
+    private Vehicle vehicle;
 
-    @ManyToMany
-    @JoinTable(
-            name = "vehicles_of_product",
-            joinColumns = @JoinColumn(name = "product_id"),
-            inverseJoinColumns = @JoinColumn(name = "vehicle_id")
-    )
-    private Set<Vehicle> vehicles = new HashSet<>();
+//    @ManyToMany
+//    @JoinTable(
+//            name = "vehicles_of_product",
+//            joinColumns = @JoinColumn(name = "product_id"),
+//            inverseJoinColumns = @JoinColumn(name = "vehicle_id")
+//    )
+//    private Set<Vehicle> vehicles = new HashSet<>();
 
     public void fillNew(String userId){
         this.addBy = userId;
@@ -264,13 +267,13 @@ public class Product {
         this.remainingQty = remainingQty;
     }
 
-    public Set<Vehicle> getVehicles() {
-        return vehicles;
-    }
-
-    public void setVehicles(Set<Vehicle> vehicles) {
-        this.vehicles = vehicles;
-    }
+//    public Set<Vehicle> getVehicles() {
+//        return vehicles;
+//    }
+//
+//    public void setVehicles(Set<Vehicle> vehicles) {
+//        this.vehicles = vehicles;
+//    }
 
     public String getBrandName() {
         return brandName;
@@ -286,5 +289,13 @@ public class Product {
 
     public void setPartNumber(String partNumber) {
         this.partNumber = partNumber;
+    }
+
+    public Vehicle getVehicle() {
+        return vehicle;
+    }
+
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
     }
 }

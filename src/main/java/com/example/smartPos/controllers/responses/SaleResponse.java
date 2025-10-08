@@ -2,6 +2,7 @@ package com.example.smartPos.controllers.responses;
 
 import com.example.smartPos.repositories.model.Customer;
 import com.example.smartPos.repositories.model.User;
+import com.example.smartPos.repositories.model.Vehicle;
 import lombok.Data;
 
 import java.util.Date;
@@ -51,6 +52,9 @@ public class SaleResponse extends CommonResponse {
 
     private Double outstandingBalance;
 
+    private Vehicle vehicle;
+
+    private String vehicleNumber;
     public Boolean getFullyPaid() {
         return isFullyPaid;
     }
@@ -217,5 +221,21 @@ public class SaleResponse extends CommonResponse {
 
     public void setOutstandingBalance(Double outstandingBalance) {
         this.outstandingBalance = outstandingBalance;
+    }
+
+    public Vehicle getVehicle() {
+        return vehicle;
+    }
+
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
+    }
+
+    public String getVehicleNumber() {
+        return vehicleNumber;
+    }
+
+    public void setVehicleNumber(String vehicleNumber) {
+        this.vehicleNumber = vehicleNumber;
     }
 }

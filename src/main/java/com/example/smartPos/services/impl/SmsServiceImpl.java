@@ -28,7 +28,7 @@ public class SmsServiceImpl implements ISmsService {
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("api_token", API_TOKEN);
         requestBody.put("recipient", sanitizedPhoneNumber);
-        requestBody.put("sender_id", "TextLKDemo");
+        requestBody.put("sender_id", "TRUE_ENTE");
         requestBody.put("type", "plain");
         requestBody.put("message", message);
 
