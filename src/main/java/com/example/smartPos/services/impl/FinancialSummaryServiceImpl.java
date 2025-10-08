@@ -32,19 +32,27 @@ public class FinancialSummaryServiceImpl implements IFinancialSummaryService {
     public FinancialSummaryResponse getFinancialSummary() {
         FinancialSummaryResponse response = new FinancialSummaryResponse();
 
-        // Example calculations (replace with actual database queries)
-        Double totalCogs = saleRepository.findTotalCOGS();
-        Double totalSales = saleRepository.findTotalSalesAmountForActiveSales();
-        Double totalExpenses = paymentDetailsRepository.findTotalExpenses();
+        // Fetch data safely (defaulting to 0.0 if null)
+        Double totalCogs = Optional.ofNullable(saleRepository.findTotalCOGS()).orElse(0.0);
+        Double totalSales = Optional.ofNullable(saleRepository.findTotalSalesAmountForActiveSales()).orElse(0.0);
+        Double totalExpenses = Optional.ofNullable(paymentDetailsRepository.findTotalExpenses()).orElse(0.0);
+        Double totalPurchases = Optional.ofNullable(purchaseRepository.findTotalTotalCostForActivePurchases()).orElse(0.0);
+        Double totalDiscounts = Optional.ofNullable(saleRepository.findTotalDiscountsForActiveSales()).orElse(0.0);
+        Double dueAmountToPay = Optional.ofNullable(paymentDetailsRepository.findPurchaseOutstanding()).orElse(0.0);
+        Double dueAmountToReceive = Optional.ofNullable(paymentDetailsRepository.findSaleOutstanding()).orElse(0.0);
 
-        response.setTotalPurchases(purchaseRepository.findTotalTotalCostForActivePurchases()); // Fetch total purchases from the database
-        response.setTotalSales(totalSales);    // Fetch total sales from the database
-        response.setTotalDiscounts(saleRepository.findTotalDiscountsForActiveSales()); // Fetch total discounts from the database
-        response.setTotalCogs(totalCogs); // Fetch total COGS from the database
-        response.setTotalExpenses(totalExpenses); // Fetch total expenses from the database
-        response.setDueAmountToPay(paymentDetailsRepository.findPurchaseOutstanding()); // Fetch due amount to pay from the database
-        response.setDueAmountToReceive(paymentDetailsRepository.findSaleOutstanding()); // Fetch due amount to receive from the database
-        response.setNetProfit(totalSales - totalCogs - totalExpenses);
+        // Calculate safely
+        double netProfit = totalSales - totalCogs - totalExpenses;
+
+        // Build response
+        response.setTotalPurchases(totalPurchases);
+        response.setTotalSales(totalSales);
+        response.setTotalDiscounts(totalDiscounts);
+        response.setTotalCogs(totalCogs);
+        response.setTotalExpenses(totalExpenses);
+        response.setDueAmountToPay(dueAmountToPay);
+        response.setDueAmountToReceive(dueAmountToReceive);
+        response.setNetProfit(netProfit);
         return response;
     }
 
