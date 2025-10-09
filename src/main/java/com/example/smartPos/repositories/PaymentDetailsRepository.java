@@ -48,15 +48,28 @@ public interface PaymentDetailsRepository extends JpaRepository<PaymentDetails, 
             "WHERE pd.chequeNo = :chequeNo")
     Optional<PaymentDetails> findByChequeNo(@Param("chequeNo") String chequeNo);
 
-    @Query("SELECT COALESCE(SUM(pd.payment.totalAmount - pd.amount), 0) " +
-            "FROM PaymentDetails pd " +
-            "WHERE pd.payment.referenceType = 'SALE' AND pd.payment.paymentType = 'RECEIPT'")
-    Double findSaleOutstanding();
+//    @Query("SELECT COALESCE(SUM(pd.payment.totalAmount - pd.amount), 0) " +
+//            "FROM PaymentDetails pd " +
+//            "WHERE pd.payment.referenceType = 'SALE' AND pd.payment.paymentType = 'RECEIPT'")
+//    Double findSaleOutstanding();
+//
+//    @Query("SELECT COALESCE(SUM(pd.payment.totalAmount - pd.amount), 0) " +
+//            "FROM PaymentDetails pd " +
+//            "WHERE pd.payment.referenceType = 'PURCHASE' AND pd.payment.paymentType = 'PAYMENT'")
+//    Double findPurchaseOutstanding();
 
-    @Query("SELECT COALESCE(SUM(pd.payment.totalAmount - pd.amount), 0) " +
+    @Query("SELECT COALESCE(SUM(pd.amount), 0) " +
             "FROM PaymentDetails pd " +
-            "WHERE pd.payment.referenceType = 'PURCHASE' AND pd.payment.paymentType = 'PAYMENT'")
-    Double findPurchaseOutstanding();
+            "WHERE pd.payment.referenceType = 'PURCHASE' " +
+            "AND pd.payment.paymentType = 'PAYMENT'")
+    Double findTotalPurchasePayments();
+
+    @Query("SELECT COALESCE(SUM(pd.amount), 0) " +
+            "FROM PaymentDetails pd " +
+            "WHERE pd.payment.referenceType = 'SALE' " +
+            "AND pd.payment.paymentType = 'RECEIPT'")
+    Double findTotalSalePayments();
+
 
     @Query("SELECT SUM(pd.amount) FROM PaymentDetails pd WHERE pd.payment.referenceType = 'EXPENSE' AND pd.payment.paymentType = 'PAYMENT'")
     Double findTotalExpenses();

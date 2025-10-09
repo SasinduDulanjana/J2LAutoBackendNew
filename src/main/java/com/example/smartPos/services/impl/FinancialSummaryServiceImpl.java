@@ -38,8 +38,10 @@ public class FinancialSummaryServiceImpl implements IFinancialSummaryService {
         Double totalExpenses = Optional.ofNullable(paymentDetailsRepository.findTotalExpenses()).orElse(0.0);
         Double totalPurchases = Optional.ofNullable(purchaseRepository.findTotalTotalCostForActivePurchases()).orElse(0.0);
         Double totalDiscounts = Optional.ofNullable(saleRepository.findTotalDiscountsForActiveSales()).orElse(0.0);
-        Double dueAmountToPay = Optional.ofNullable(paymentDetailsRepository.findPurchaseOutstanding()).orElse(0.0);
-        Double dueAmountToReceive = Optional.ofNullable(paymentDetailsRepository.findSaleOutstanding()).orElse(0.0);
+        Double totalPurchasePayments = paymentDetailsRepository.findTotalPurchasePayments();
+        Double dueAmountToPay = (totalPurchases) - (totalPurchasePayments != null ? totalPurchasePayments : 0);
+        Double totalSalePayments = paymentDetailsRepository.findTotalSalePayments();
+        Double dueAmountToReceive = (totalSales) - (totalSalePayments != null ? totalSalePayments : 0);
 
         // Calculate safely
         double netProfit = totalSales - totalCogs - totalExpenses;

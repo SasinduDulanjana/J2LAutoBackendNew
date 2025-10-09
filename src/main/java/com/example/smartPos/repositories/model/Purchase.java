@@ -198,4 +198,12 @@ public class Purchase {
     public void setChequeNo(String chequeNo) {
         this.chequeNo = chequeNo;
     }
+
+    public Date getAddedDate() {
+        return addedDate;
+    }
+
+    public void setAddedDate(Date addedDate) {
+        this.addedDate = addedDate;
+    }
 }

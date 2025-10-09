@@ -241,14 +241,94 @@ public class CustomerServiceImpl implements ICustomerService {
         double totalOutstanding = netSales - totalPaidAmount;
 
         // Prepare transaction details
-        List<TransactionDetails> transactionDetails = prepareTransactionDetails(paymentDetails, salesReturns, custId);
+        List<TransactionDetails> transactionDetails = prepareTransactionDetails(paymentDetails, salesReturns, sales, custId);
 
         // Prepare response
         return buildCustomerResponse(customer, totalSales, totalReturns, totalPaidAmount, totalOutstanding, transactionDetails);
     }
 
 
-    private List<TransactionDetails> prepareTransactionDetails(List<PaymentDetails> paymentDetails, List<SalesReturn> salesReturns, Integer customerId) {
+//    private List<TransactionDetails> prepareTransactionDetails(List<PaymentDetails> paymentDetails, List<SalesReturn> salesReturns, Integer customerId) {
+//        // Filter payment details for the specific customer
+//        List<PaymentDetails> customerPayments = paymentDetails.stream()
+//                .filter(payment -> payment.getPayment().getCustomer().getCustId().equals(customerId))
+//                .toList();
+//
+//        // Filter sales returns for the specific customer
+//        List<SalesReturn> customerSalesReturns = salesReturns.stream()
+//                .filter(salesReturn -> salesReturn.getCustomerId().equals(customerId))
+//                .toList();
+//
+//        // Map sale transactions
+//        List<TransactionDetails> saleTransactions = customerPayments.stream()
+//                .collect(Collectors.groupingBy(payment -> payment.getPayment().getReferenceId()))
+//                .entrySet()
+//                .stream()
+//                .map(entry -> {
+//                    String referenceId = entry.getKey();
+//                    List<PaymentDetails> payments = entry.getValue();
+//
+//                    // Calculate total sale amount and cumulative payments
+//                    double totalSaleAmount = payments.get(0).getPayment().getTotalAmount();
+//                    double cumulativePayments = payments.stream().mapToDouble(PaymentDetails::getAmount).sum();
+//
+//                    TransactionDetails details = new TransactionDetails();
+//                    details.setDate(payments.get(0).getPayment().getPaymentDate());
+//                    details.setType("Sale");
+//                    details.setInvoiceNo(referenceId);
+//                    details.setDebit(totalSaleAmount);
+//                    details.setCredit(0);
+//                    details.setBalance(totalSaleAmount - cumulativePayments);
+//                    return details;
+//                }).toList();
+//
+//        // Map payment transactions
+//        List<TransactionDetails> paymentTransactions = customerPayments.stream().map(payment -> {
+//            TransactionDetails details = new TransactionDetails();
+//            details.setDate(payment.getPaymentDate());
+//            details.setType("Payment");
+//            details.setInvoiceNo(payment.getPayment().getReferenceId());
+//            details.setDebit(0);
+//            details.setCredit(payment.getAmount());
+//            details.setBalance(0); // Temporary, will calculate later
+//            details.setPaymentMethod(payment.getPaymentMethod());
+//            details.setChequeNo(payment.getChequeNo());
+//            details.setChequeDate(payment.getChequeDate());
+//            details.setPaymentStatus(payment.getPaymentStatus().name());
+//            return details;
+//        }).collect(Collectors.toList());
+//
+//        // Map return transactions
+//        List<TransactionDetails> returnTransactions = customerSalesReturns.stream().map(salesReturn -> {
+//            TransactionDetails details = new TransactionDetails();
+//            details.setDate(salesReturn.getReturnDate());
+//            details.setType("Return");
+//            details.setInvoiceNo(salesReturn.getInvoiceNumber());
+//            details.setDebit(0);
+//            details.setCredit(salesReturn.getRefundAmount());
+//            details.setBalance(0); // Temporary, will calculate later
+//            return details;
+//        }).toList();
+//
+//        // Combine all transactions
+//        paymentTransactions.addAll(returnTransactions);
+//        paymentTransactions.addAll(saleTransactions);
+//
+////        // Sort by date and type
+//        List<TransactionDetails> sortedTransactions = paymentTransactions.stream()
+//                .sorted(Comparator.comparing(TransactionDetails::getDate)) // Secondary sort by type
+//                .collect(Collectors.toList());
+//
+//        // Calculate running balance
+//        double runningBalance = 0.0;
+//        for (TransactionDetails transaction : sortedTransactions) {
+//            runningBalance += transaction.getCredit() - transaction.getDebit();
+//            transaction.setBalance(runningBalance);
+//        }
+//        return sortedTransactions;
+//    }
+
+    private List<TransactionDetails> prepareTransactionDetails(List<PaymentDetails> paymentDetails, List<SalesReturn> salesReturns, List<Sale> sales, Integer customerId) {
         // Filter payment details for the specific customer
         List<PaymentDetails> customerPayments = paymentDetails.stream()
                 .filter(payment -> payment.getPayment().getCustomer().getCustId().equals(customerId))
@@ -259,23 +339,20 @@ public class CustomerServiceImpl implements ICustomerService {
                 .filter(salesReturn -> salesReturn.getCustomerId().equals(customerId))
                 .toList();
 
-        // Map sale transactions
-        List<TransactionDetails> saleTransactions = customerPayments.stream()
-                .collect(Collectors.groupingBy(payment -> payment.getPayment().getReferenceId()))
-                .entrySet()
-                .stream()
-                .map(entry -> {
-                    String referenceId = entry.getKey();
-                    List<PaymentDetails> payments = entry.getValue();
-
-                    // Calculate total sale amount and cumulative payments
-                    double totalSaleAmount = payments.get(0).getPayment().getTotalAmount();
-                    double cumulativePayments = payments.stream().mapToDouble(PaymentDetails::getAmount).sum();
+        // Map sale transactions (include sales even if no payments exist)
+        List<TransactionDetails> saleTransactions = sales.stream()
+                .filter(sale -> sale.getCustomer().getCustId().equals(customerId))
+                .map(sale -> {
+                    double totalSaleAmount = sale.getTotalAmount();
+                    double cumulativePayments = customerPayments.stream()
+                            .filter(payment -> payment.getPayment().getReferenceId().equals(sale.getInvoiceNumber()))
+                            .mapToDouble(PaymentDetails::getAmount)
+                            .sum();
 
                     TransactionDetails details = new TransactionDetails();
-                    details.setDate(payments.get(0).getPayment().getPaymentDate());
+                    details.setDate(sale.getSaleDate());
                     details.setType("Sale");
-                    details.setInvoiceNo(referenceId);
+                    details.setInvoiceNo(sale.getInvoiceNumber());
                     details.setDebit(totalSaleAmount);
                     details.setCredit(0);
                     details.setBalance(totalSaleAmount - cumulativePayments);
@@ -314,7 +391,7 @@ public class CustomerServiceImpl implements ICustomerService {
         paymentTransactions.addAll(returnTransactions);
         paymentTransactions.addAll(saleTransactions);
 
-//        // Sort by date and type
+        // Sort by date and type
         List<TransactionDetails> sortedTransactions = paymentTransactions.stream()
                 .sorted(Comparator.comparing(TransactionDetails::getDate)) // Secondary sort by type
                 .collect(Collectors.toList());
@@ -325,21 +402,6 @@ public class CustomerServiceImpl implements ICustomerService {
             runningBalance += transaction.getCredit() - transaction.getDebit();
             transaction.setBalance(runningBalance);
         }
-
-        // Sort by date (descending) and type
-//        List<TransactionDetails> sortedTransactions = paymentTransactions.stream()
-//                .sorted(Comparator.comparing(TransactionDetails::getDate).reversed() // Sort by date in descending order
-//                        .thenComparing(TransactionDetails::getType)) // Secondary sort by type
-//                .collect(Collectors.toList());
-//
-//// Calculate running balance
-//        double runningBalance = 0.0;
-//        for (int i = sortedTransactions.size() - 1; i >= 0; i--) { // Process in reverse order
-//            TransactionDetails transaction = sortedTransactions.get(i);
-//            runningBalance += transaction.getCredit() - transaction.getDebit();
-//            transaction.setBalance(runningBalance);
-//        }
-
         return sortedTransactions;
     }
 

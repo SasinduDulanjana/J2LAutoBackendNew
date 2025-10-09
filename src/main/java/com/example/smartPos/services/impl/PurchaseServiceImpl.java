@@ -431,6 +431,8 @@ public class PurchaseServiceImpl implements IPurchaseService {
         PurchaseResponse purchaseResponse = new PurchaseResponse();
         purchaseResponse.setPurchaseId(purchase.getPurchaseId());
         purchaseResponse.setSupplierId(purchase.getSupplierId());
+        Optional<Supplier> supplier = supplierRepository.findById(purchase.getSupplierId());
+        supplier.ifPresent(value -> purchaseResponse.setSupplierName(value.getName()));
         purchaseResponse.setPurchaseName(purchase.getPurchaseName());
         purchaseResponse.setInvoiceNumber(purchase.getInvoiceNumber());
         purchaseResponse.setDeliveryTime(purchase.getDeliveryTime());
