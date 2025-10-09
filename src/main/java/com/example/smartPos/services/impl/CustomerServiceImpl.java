@@ -359,6 +359,7 @@ public class CustomerServiceImpl implements ICustomerService {
                     return details;
                 }).toList();
 
+
         // Map payment transactions
         List<TransactionDetails> paymentTransactions = customerPayments.stream().map(payment -> {
             TransactionDetails details = new TransactionDetails();
