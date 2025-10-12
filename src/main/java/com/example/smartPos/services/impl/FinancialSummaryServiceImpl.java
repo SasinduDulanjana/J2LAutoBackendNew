@@ -2,6 +2,7 @@ package com.example.smartPos.services.impl;
 
 import com.example.smartPos.controllers.responses.FinancialSummaryResponse;
 import com.example.smartPos.controllers.responses.MonthlyFinancialSummaryResponse;
+import com.example.smartPos.repositories.ExpenseRepository;
 import com.example.smartPos.repositories.PaymentDetailsRepository;
 import com.example.smartPos.repositories.PurchaseRepository;
 import com.example.smartPos.repositories.SaleRepository;
@@ -20,11 +21,14 @@ public class FinancialSummaryServiceImpl implements IFinancialSummaryService {
 
     private final PaymentDetailsRepository paymentDetailsRepository;
 
+    private final ExpenseRepository expenseRepository;
 
-    public FinancialSummaryServiceImpl(PurchaseRepository purchaseRepository, SaleRepository saleRepository, PaymentDetailsRepository paymentDetailsRepository) {
+
+    public FinancialSummaryServiceImpl(PurchaseRepository purchaseRepository, SaleRepository saleRepository, PaymentDetailsRepository paymentDetailsRepository, ExpenseRepository expenseRepository) {
         this.purchaseRepository = purchaseRepository;
         this.saleRepository = saleRepository;
         this.paymentDetailsRepository = paymentDetailsRepository;
+        this.expenseRepository = expenseRepository;
     }
 
 
@@ -35,7 +39,7 @@ public class FinancialSummaryServiceImpl implements IFinancialSummaryService {
         // Fetch data safely (defaulting to 0.0 if null)
         Double totalCogs = Optional.ofNullable(saleRepository.findTotalCOGS()).orElse(0.0);
         Double totalSales = Optional.ofNullable(saleRepository.findTotalSalesAmountForActiveSales()).orElse(0.0);
-        Double totalExpenses = Optional.ofNullable(paymentDetailsRepository.findTotalExpenses()).orElse(0.0);
+        Double totalExpenses = Optional.ofNullable(expenseRepository.findTotalExpenses()).orElse(0.0);
         Double totalPurchases = Optional.ofNullable(purchaseRepository.findTotalTotalCostForActivePurchases()).orElse(0.0);
         Double totalDiscounts = Optional.ofNullable(saleRepository.findTotalDiscountsForActiveSales()).orElse(0.0);
         Double totalPurchasePayments = paymentDetailsRepository.findTotalPurchasePayments();
@@ -63,7 +67,7 @@ public class FinancialSummaryServiceImpl implements IFinancialSummaryService {
         List<Object[]> revenueData = saleRepository.findMonthlyRevenue();
 //        List<Object[]> purchaseData = purchaseRepository.findMonthlyPurchases();
         List<Object[]> cogsData = saleRepository.findMonthlyCOGS();
-        List<Object[]> expenseData = paymentDetailsRepository.findMonthlyExpenses();
+        List<Object[]> expenseData = expenseRepository.findMonthlyTotalExpenses();
 
 
         Map<String, Double> revenueMap = revenueData.stream()

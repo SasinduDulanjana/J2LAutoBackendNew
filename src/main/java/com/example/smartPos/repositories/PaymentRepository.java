@@ -23,4 +23,11 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
             "AND p.paymentType = 'PAYMENT' " +
             "AND p.referenceType = 'PURCHASE'")
     Optional<Payment> findByReferenceIdAndPaymentPaymentTypeAndPurchaseReferenceType(@Param("referenceId") String referenceId);
+
+    @Query("SELECT p FROM Payment p " +
+            "WHERE p.referenceId = :referenceId " +
+            "AND p.paymentType = 'PAYMENT' " +
+            "AND p.referenceType = 'EXPENSE'")
+    Optional<Payment> findByReferenceIdAndPaymentPaymentTypeAndExpensesReferenceType(@Param("referenceId") String referenceId);
+
 }

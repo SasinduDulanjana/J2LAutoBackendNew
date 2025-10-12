@@ -23,14 +23,6 @@ public class Expense {
 
     private String reference;
 
-    private String paymentMethod;
-
-    private String bankName;
-
-    private String chequeDate;
-
-    private String chequeNumber;
-
     private String addBy;
 
     private String modifiedBy;
@@ -98,37 +90,5 @@ public class Expense {
 
     public void setReference(String reference) {
         this.reference = reference;
-    }
-
-    public String getPaymentMethod() {
-        return paymentMethod;
-    }
-
-    public void setPaymentMethod(String paymentMethod) {
-        this.paymentMethod = paymentMethod;
-    }
-
-    public String getBankName() {
-        return bankName;
-    }
-
-    public void setBankName(String bankName) {
-        this.bankName = bankName;
-    }
-
-    public String getChequeDate() {
-        return chequeDate;
-    }
-
-    public void setChequeDate(String chequeDate) {
-        this.chequeDate = chequeDate;
-    }
-
-    public String getChequeNumber() {
-        return chequeNumber;
-    }
-
-    public void setChequeNumber(String chequeNumber) {
-        this.chequeNumber = chequeNumber;
     }
 }

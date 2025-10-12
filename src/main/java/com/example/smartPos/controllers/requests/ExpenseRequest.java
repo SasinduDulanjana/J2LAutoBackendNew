@@ -1,21 +1,18 @@
 package com.example.smartPos.controllers.requests;
 
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import lombok.Data;
-
-import java.util.Date;
 
 @Data
 public class ExpenseRequest {
 
+    private String expenseId;
     private String expenseType;
 
     private String description;
 
     private Double amount;
 
-    private String paymentMethod;
+    private String paymentType;
 
     private String bankName;
 
@@ -25,6 +22,15 @@ public class ExpenseRequest {
 
     private String reference;
 
+    private Double paidAmount;
+
+    public String getExpenseId() {
+        return expenseId;
+    }
+
+    public void setExpenseId(String expenseId) {
+        this.expenseId = expenseId;
+    }
 
     public String getExpenseType() {
         return expenseType;
@@ -50,12 +56,12 @@ public class ExpenseRequest {
         this.amount = amount;
     }
 
-    public String getPaymentMethod() {
-        return paymentMethod;
+    public String getPaymentType() {
+        return paymentType;
     }
 
-    public void setPaymentMethod(String paymentMethod) {
-        this.paymentMethod = paymentMethod;
+    public void setPaymentType(String paymentType) {
+        this.paymentType = paymentType;
     }
 
     public String getReference() {
@@ -88,5 +94,13 @@ public class ExpenseRequest {
 
     public void setChequeNumber(String chequeNumber) {
         this.chequeNumber = chequeNumber;
+    }
+
+    public Double getPaidAmount() {
+        return paidAmount;
+    }
+
+    public void setPaidAmount(Double paidAmount) {
+        this.paidAmount = paidAmount;
     }
 }

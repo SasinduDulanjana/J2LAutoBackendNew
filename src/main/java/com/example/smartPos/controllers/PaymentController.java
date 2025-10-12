@@ -1,6 +1,7 @@
 package com.example.smartPos.controllers;
 
 import com.example.smartPos.controllers.requests.CustomerRequest;
+import com.example.smartPos.controllers.requests.ExpensePaymentUpdateRequest;
 import com.example.smartPos.controllers.requests.ExpenseRequest;
 import com.example.smartPos.controllers.responses.ChequeDetailsResponse;
 import com.example.smartPos.controllers.responses.CustomerResponse;
@@ -38,9 +39,19 @@ public class PaymentController {
         return paymentService.createExpense(request);
     }
 
+    @PostMapping("/api/updateExpensePaymentAmount")
+    public ExpenseResponse updateExpensePaymentAmount(@RequestBody ExpensePaymentUpdateRequest request) {
+        return paymentService.updateExpensePaymentAmount(request);
+    }
+
     @GetMapping("/api/getAllExpenses")
     public List<ExpenseResponse> getAllExpenses() {
         return paymentService.getAllExpenses();
+    }
+
+    @GetMapping("/api/paymentDetailsOfExpenses/{expenseId}")
+    public List<PaymentDetails> paymentDetailsOfExpenses(@PathVariable Integer expenseId) {
+        return paymentService.paymentDetailsOfExpenses(expenseId);
     }
 
 }

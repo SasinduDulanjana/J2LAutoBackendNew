@@ -1,8 +1,10 @@
 package com.example.smartPos.services.impl;
 
+import com.example.smartPos.controllers.requests.ExpensePaymentUpdateRequest;
 import com.example.smartPos.controllers.requests.ExpenseRequest;
 import com.example.smartPos.controllers.responses.ChequeDetailsResponse;
 import com.example.smartPos.controllers.responses.ExpenseResponse;
+import com.example.smartPos.exception.ResourceNotFoundException;
 import com.example.smartPos.mapper.ExpenseMapper;
 import com.example.smartPos.repositories.ExpenseRepository;
 import com.example.smartPos.repositories.PaymentDetailsRepository;
@@ -11,9 +13,11 @@ import com.example.smartPos.repositories.model.Expense;
 import com.example.smartPos.repositories.model.Payment;
 import com.example.smartPos.repositories.model.PaymentDetails;
 import com.example.smartPos.services.IPaymentService;
+import com.example.smartPos.util.ErrorCodes;
 import com.example.smartPos.util.PaymentStatus;
 import com.example.smartPos.util.PaymentType;
 import com.example.smartPos.util.ReferenceType;
+import com.twilio.twiml.voice.Sim;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PaymentServiceImpl implements IPaymentService {
@@ -87,10 +92,6 @@ public class PaymentServiceImpl implements IPaymentService {
         expense.setDescription(request.getDescription());
         expense.setAmount(request.getAmount());
         expense.setReference(request.getReference());
-        expense.setPaymentMethod(request.getPaymentMethod());
-        expense.setBankName(request.getBankName());
-        expense.setChequeDate(request.getChequeDate());
-        expense.setChequeNumber(request.getChequeNumber());
         expense.fillNew(currentUser);
         Expense savedExpense = expenseRepository.save(expense);
 
@@ -103,39 +104,100 @@ public class PaymentServiceImpl implements IPaymentService {
         payment.setTotalAmount(request.getAmount());
         payment.fillNew(currentUser);
         Payment savedPayment = paymentRepository.save(payment);
-
-        PaymentDetails paymentDetails = new PaymentDetails();
-        paymentDetails.setPayment(savedPayment);
-        paymentDetails.setAmount(request.getAmount());
-        paymentDetails.setPaymentMethod(request.getPaymentMethod());
-        paymentDetails.setBankName(request.getBankName());
-        paymentDetails.setChequeNo(request.getChequeNumber());
-        paymentDetails.setChequeDate(request.getChequeDate());
-        if (request.getPaymentMethod().equalsIgnoreCase("CHEQUE")) {
-            paymentDetails.setPaymentStatus(PaymentStatus.PENDING);
-        } else {
-            paymentDetails.setPaymentStatus(PaymentStatus.CLEARED);
+        PaymentDetails savedPaymentDetails = null;
+        if (request.getPaidAmount() != null || request.getPaidAmount() > 0) {
+            PaymentDetails paymentDetails = new PaymentDetails();
+            paymentDetails.setPayment(savedPayment);
+            paymentDetails.setAmount(request.getPaidAmount());
+            paymentDetails.setPaymentMethod(request.getPaymentType());
+            paymentDetails.setBankName(request.getBankName());
+            paymentDetails.setChequeNo(request.getChequeNumber());
+            paymentDetails.setChequeDate(request.getChequeDate());
+            if (request.getPaymentType().equalsIgnoreCase("CHEQUE")) {
+                paymentDetails.setPaymentStatus(PaymentStatus.PENDING);
+            } else {
+                paymentDetails.setPaymentStatus(PaymentStatus.CLEARED);
+            }
+            paymentDetails.setPaymentDate(new Date());
+            paymentDetails.fillNew(currentUser);
+            savedPaymentDetails = paymentDetailsRepository.save(paymentDetails);
         }
-        paymentDetails.setPaymentDate(new Date());
-        paymentDetails.fillNew(currentUser);
-        PaymentDetails savedPaymentDetails = paymentDetailsRepository.save(paymentDetails);
 
         ExpenseResponse expenseResponse = new ExpenseResponse();
         expenseResponse.setId(savedExpense.getId());
         expenseResponse.setPaymentId(savedPayment.getPaymentId());
-        expenseResponse.setPaymentDetailId(savedPaymentDetails.getDetailId());
+        if (savedPaymentDetails != null) {
+            expenseResponse.setPaymentDetailId(savedPaymentDetails.getDetailId());
+        } else {
+            expenseResponse.setPaymentDetailId(null);
+        }
+        return expenseResponse;
+    }
+
+    @Override
+    @Transactional
+    public ExpenseResponse updateExpensePaymentAmount(ExpensePaymentUpdateRequest request) {
+
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Optional<Payment> payment = paymentRepository.findByReferenceIdAndPaymentPaymentTypeAndExpensesReferenceType(request.getExpenseId());
+        if (payment.isEmpty()) {
+            throw new ResourceNotFoundException(ErrorCodes.PAYMENT_NOT_FOUND);
+        }
+        PaymentDetails savedPaymentDetails = null;
+        if (request.getAmount() != null || request.getAmount() > 0) {
+            PaymentDetails paymentDetails = new PaymentDetails();
+            paymentDetails.setPayment(payment.get());
+            paymentDetails.setAmount(request.getAmount());
+            paymentDetails.setPaymentMethod(request.getPaymentMethod());
+            paymentDetails.setBankName(request.getBankName());
+            paymentDetails.setChequeNo(request.getChequeNo());
+            paymentDetails.setChequeDate(request.getChequeDate());
+            if (request.getPaymentMethod().equalsIgnoreCase("CHEQUE")) {
+                paymentDetails.setPaymentStatus(PaymentStatus.PENDING);
+            } else {
+                paymentDetails.setPaymentStatus(PaymentStatus.CLEARED);
+            }
+            paymentDetails.setPaymentDate(new Date());
+            paymentDetails.fillNew(currentUser);
+            savedPaymentDetails = paymentDetailsRepository.save(paymentDetails);
+        }
+
+        ExpenseResponse expenseResponse = new ExpenseResponse();
+        expenseResponse.setPaymentId(payment.get().getPaymentId());
+        if (savedPaymentDetails != null) {
+            expenseResponse.setPaymentDetailId(savedPaymentDetails.getDetailId());
+        } else {
+            expenseResponse.setPaymentDetailId(null);
+        }
         return expenseResponse;
     }
 
     @Override
     public List<ExpenseResponse> getAllExpenses() {
+        SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         return expenseRepository.findAll().stream().map(expense -> {
             ExpenseResponse response = expenseMapper.toExpenseResponse(expense);
-            response.setPaymentMethod(expense.getPaymentMethod());
-            response.setBankName(expense.getBankName());
-            response.setChequeDate(expense.getChequeDate());
-            response.setChequeNumber(expense.getChequeNumber());
+            response.setDate(sm.format(expense.getDate()));
+            // Fetch payment details based on the expense ID
+            Optional<Payment> payment = paymentRepository.findByReferenceIdAndPaymentPaymentTypeAndExpensesReferenceType(expense.getId().toString());
+            if (payment.isPresent()) {
+                // Set payment-related details in the response
+                response.setPaymentId(payment.get().getPaymentId());
+                response.setPaidAmount(paymentDetailsRepository.findTotalPaidAmountByPaymentId(payment.get().getPaymentId()));
+            } else {
+                response.setPaidAmount(0.0);
+            }
+
+            // Calculate due amount
+            response.setDueAmount(expense.getAmount() - response.getPaidAmount());
             return response;
         }).toList();
+    }
+
+    @Override
+    public List<PaymentDetails>  paymentDetailsOfExpenses(Integer expenseId) {
+        List<PaymentDetails> paymentDetailsList = expenseRepository.findPaymentDetailsByExpenseId(expenseId);
+        return paymentDetailsList;
     }
 }

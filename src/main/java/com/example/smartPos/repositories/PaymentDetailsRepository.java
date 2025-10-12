@@ -14,6 +14,9 @@ import java.util.Optional;
 public interface PaymentDetailsRepository extends JpaRepository<PaymentDetails, Integer> {
     List<PaymentDetails> findByPayment(Payment payment);
 
+    @Query("SELECT COALESCE(SUM(pd.amount), 0) FROM PaymentDetails pd WHERE pd.payment.paymentId = :paymentId")
+    Double findTotalPaidAmountByPaymentId(@Param("paymentId") Integer paymentId);
+
     @Query("SELECT pd FROM PaymentDetails pd " +
             "JOIN FETCH pd.payment p " +
             "WHERE p.referenceId IN :invoiceNumbers " +
@@ -71,13 +74,4 @@ public interface PaymentDetailsRepository extends JpaRepository<PaymentDetails, 
     Double findTotalSalePayments();
 
 
-    @Query("SELECT SUM(pd.amount) FROM PaymentDetails pd WHERE pd.payment.referenceType = 'EXPENSE' AND pd.payment.paymentType = 'PAYMENT'")
-    Double findTotalExpenses();
-
-    @Query("SELECT FUNCTION('DATE_FORMAT', pd.payment.paymentDate, '%Y-%m') AS month, SUM(pd.amount) " +
-            "FROM PaymentDetails pd " +
-            "WHERE pd.payment.paymentType = 'PAYMENT' " +
-            "AND pd.payment.referenceType = 'EXPENSE' " +
-            "GROUP BY FUNCTION('DATE_FORMAT', pd.payment.paymentDate, '%Y-%m')")
-    List<Object[]> findMonthlyExpenses();
 }

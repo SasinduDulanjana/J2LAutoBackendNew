@@ -14,7 +14,7 @@ public class ExpenseResponse {
 
     private Integer paymentDetailId;
 
-    private Date date;
+    private String date;
 
     private String expenseType;
 
@@ -24,13 +24,9 @@ public class ExpenseResponse {
 
     private String reference;
 
-    private String paymentMethod;
+    private Double paidAmount;
 
-    private String bankName;
-
-    private String chequeDate;
-
-    private String chequeNumber;
+    private Double dueAmount;
 
     public Integer getId() {
         return id;
@@ -56,11 +52,11 @@ public class ExpenseResponse {
         this.paymentDetailId = paymentDetailId;
     }
 
-    public Date getDate() {
+    public String getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(String date) {
         this.date = date;
     }
 
@@ -96,35 +92,20 @@ public class ExpenseResponse {
         this.reference = reference;
     }
 
-    public String getPaymentMethod() {
-        return paymentMethod;
+
+    public Double getPaidAmount() {
+        return paidAmount;
     }
 
-    public void setPaymentMethod(String paymentMethod) {
-        this.paymentMethod = paymentMethod;
+    public void setPaidAmount(Double paidAmount) {
+        this.paidAmount = paidAmount;
     }
 
-    public String getBankName() {
-        return bankName;
+    public Double getDueAmount() {
+        return dueAmount;
     }
 
-    public void setBankName(String bankName) {
-        this.bankName = bankName;
-    }
-
-    public String getChequeDate() {
-        return chequeDate;
-    }
-
-    public void setChequeDate(String chequeDate) {
-        this.chequeDate = chequeDate;
-    }
-
-    public String getChequeNumber() {
-        return chequeNumber;
-    }
-
-    public void setChequeNumber(String chequeNumber) {
-        this.chequeNumber = chequeNumber;
+    public void setDueAmount(Double dueAmount) {
+        this.dueAmount = dueAmount;
     }
 }
