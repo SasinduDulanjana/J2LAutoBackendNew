@@ -16,4 +16,12 @@ public interface PurchaseReturnRepository extends JpaRepository<PurchaseReturn, 
     List<PurchaseReturn> findAllWithSupplier();
 
     List<PurchaseReturn> findBySupplierId(Integer supplierId);
+
+    @Query("SELECT FUNCTION('DATE_FORMAT', p.returnDate, '%Y-%m') AS month, SUM(CAST(p.refundAmount AS double)) " +
+            "FROM PurchaseReturn p " +
+            "GROUP BY FUNCTION('DATE_FORMAT', p.returnDate, '%Y-%m')")
+    List<Object[]> findMonthlyPurchaseReturns();
+
+    @Query("SELECT SUM(CAST(p.refundAmount AS double)) FROM PurchaseReturn p")
+    Double findTotalPurchaseReturns();
 }

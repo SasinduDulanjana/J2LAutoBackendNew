@@ -440,6 +440,9 @@ public class SupplierServiceImpl implements ISupplierService {
                 purchases.stream().map(purchase -> purchase.getPurchaseId().toString()).toList()
         );
 
+        // Fetch all purchase returns for the supplier
+        List<PurchaseReturn> purchaseReturns = purchaseReturnRepository.findBySupplierId(supplierId);
+
         // Group payment details by purchaseId
         Map<String, Double> paymentsByPurchaseId = paymentDetails.stream()
                 .collect(Collectors.groupingBy(
@@ -447,16 +450,25 @@ public class SupplierServiceImpl implements ISupplierService {
                         Collectors.summingDouble(PaymentDetails::getAmount)
                 ));
 
+        // Group purchase returns by purchaseId and calculate total refund amounts
+        Map<Integer, Double> refundsByPurchaseId = purchaseReturns.stream()
+                .collect(Collectors.groupingBy(
+                        purchaseReturn -> purchaseReturn.getPurchase().getPurchaseId(),
+                        Collectors.summingDouble(PurchaseReturn::getRefundAmount)
+                ));
+
         // Map purchases to responses
         return purchases.stream().map(purchase -> {
             double paidAmount = paymentsByPurchaseId.getOrDefault(purchase.getPurchaseId().toString(), 0.0);
-            double outstanding = purchase.getTotalCost() - paidAmount;
+            double refundAmount = refundsByPurchaseId.getOrDefault(purchase.getPurchaseId(), 0.0);
+            double outstanding = purchase.getTotalCost() - paidAmount - refundAmount;
 
             SupplierOutstandingResponse response = new SupplierOutstandingResponse();
             response.setInvoiceNumber(purchase.getInvoiceNumber());
             response.setPurchaseDate(purchase.getInvoiceDate());
             response.setTotalAmount(purchase.getTotalCost());
             response.setPaidAmount(paidAmount);
+            response.setRefundAmount(refundAmount); // Add refund amount to the response
             response.setOutstanding(outstanding);
             return response;
         }).collect(Collectors.toList());

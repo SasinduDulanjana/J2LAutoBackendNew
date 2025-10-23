@@ -7,6 +7,10 @@ public class CustomerOutstandingResponse {
     private double paidAmount;
     private double outstanding;
 
+    private Double refundAmount;
+
+    private String vehicleNumber;
+
     // Getters and Setters
     public String getInvoiceNumber() {
         return invoiceNumber;
@@ -46,5 +50,21 @@ public class CustomerOutstandingResponse {
 
     public void setOutstanding(double outstanding) {
         this.outstanding = outstanding;
+    }
+
+    public String getVehicleNumber() {
+        return vehicleNumber;
+    }
+
+    public void setVehicleNumber(String vehicleNumber) {
+        this.vehicleNumber = vehicleNumber;
+    }
+
+    public Double getRefundAmount() {
+        return refundAmount;
+    }
+
+    public void setRefundAmount(Double refundAmount) {
+        this.refundAmount = refundAmount;
     }
 }

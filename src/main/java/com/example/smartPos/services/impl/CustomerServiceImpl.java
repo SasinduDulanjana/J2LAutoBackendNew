@@ -248,86 +248,6 @@ public class CustomerServiceImpl implements ICustomerService {
     }
 
 
-//    private List<TransactionDetails> prepareTransactionDetails(List<PaymentDetails> paymentDetails, List<SalesReturn> salesReturns, Integer customerId) {
-//        // Filter payment details for the specific customer
-//        List<PaymentDetails> customerPayments = paymentDetails.stream()
-//                .filter(payment -> payment.getPayment().getCustomer().getCustId().equals(customerId))
-//                .toList();
-//
-//        // Filter sales returns for the specific customer
-//        List<SalesReturn> customerSalesReturns = salesReturns.stream()
-//                .filter(salesReturn -> salesReturn.getCustomerId().equals(customerId))
-//                .toList();
-//
-//        // Map sale transactions
-//        List<TransactionDetails> saleTransactions = customerPayments.stream()
-//                .collect(Collectors.groupingBy(payment -> payment.getPayment().getReferenceId()))
-//                .entrySet()
-//                .stream()
-//                .map(entry -> {
-//                    String referenceId = entry.getKey();
-//                    List<PaymentDetails> payments = entry.getValue();
-//
-//                    // Calculate total sale amount and cumulative payments
-//                    double totalSaleAmount = payments.get(0).getPayment().getTotalAmount();
-//                    double cumulativePayments = payments.stream().mapToDouble(PaymentDetails::getAmount).sum();
-//
-//                    TransactionDetails details = new TransactionDetails();
-//                    details.setDate(payments.get(0).getPayment().getPaymentDate());
-//                    details.setType("Sale");
-//                    details.setInvoiceNo(referenceId);
-//                    details.setDebit(totalSaleAmount);
-//                    details.setCredit(0);
-//                    details.setBalance(totalSaleAmount - cumulativePayments);
-//                    return details;
-//                }).toList();
-//
-//        // Map payment transactions
-//        List<TransactionDetails> paymentTransactions = customerPayments.stream().map(payment -> {
-//            TransactionDetails details = new TransactionDetails();
-//            details.setDate(payment.getPaymentDate());
-//            details.setType("Payment");
-//            details.setInvoiceNo(payment.getPayment().getReferenceId());
-//            details.setDebit(0);
-//            details.setCredit(payment.getAmount());
-//            details.setBalance(0); // Temporary, will calculate later
-//            details.setPaymentMethod(payment.getPaymentMethod());
-//            details.setChequeNo(payment.getChequeNo());
-//            details.setChequeDate(payment.getChequeDate());
-//            details.setPaymentStatus(payment.getPaymentStatus().name());
-//            return details;
-//        }).collect(Collectors.toList());
-//
-//        // Map return transactions
-//        List<TransactionDetails> returnTransactions = customerSalesReturns.stream().map(salesReturn -> {
-//            TransactionDetails details = new TransactionDetails();
-//            details.setDate(salesReturn.getReturnDate());
-//            details.setType("Return");
-//            details.setInvoiceNo(salesReturn.getInvoiceNumber());
-//            details.setDebit(0);
-//            details.setCredit(salesReturn.getRefundAmount());
-//            details.setBalance(0); // Temporary, will calculate later
-//            return details;
-//        }).toList();
-//
-//        // Combine all transactions
-//        paymentTransactions.addAll(returnTransactions);
-//        paymentTransactions.addAll(saleTransactions);
-//
-////        // Sort by date and type
-//        List<TransactionDetails> sortedTransactions = paymentTransactions.stream()
-//                .sorted(Comparator.comparing(TransactionDetails::getDate)) // Secondary sort by type
-//                .collect(Collectors.toList());
-//
-//        // Calculate running balance
-//        double runningBalance = 0.0;
-//        for (TransactionDetails transaction : sortedTransactions) {
-//            runningBalance += transaction.getCredit() - transaction.getDebit();
-//            transaction.setBalance(runningBalance);
-//        }
-//        return sortedTransactions;
-//    }
-
     private List<TransactionDetails> prepareTransactionDetails(List<PaymentDetails> paymentDetails, List<SalesReturn> salesReturns, List<Sale> sales, Integer customerId) {
         // Filter payment details for the specific customer
         List<PaymentDetails> customerPayments = paymentDetails.stream()
@@ -483,6 +403,9 @@ public class CustomerServiceImpl implements ICustomerService {
                 sales.stream().map(Sale::getInvoiceNumber).toList()
         );
 
+        // Fetch all sale returns for the customer
+        List<SalesReturn> salesReturns = salesReturnRepository.findByCustomerId(customerId);
+
         // Group payment details by purchaseId
         Map<String, Double> paymentsByPurchaseId = paymentDetails.stream()
                 .collect(Collectors.groupingBy(
@@ -490,10 +413,18 @@ public class CustomerServiceImpl implements ICustomerService {
                         Collectors.summingDouble(PaymentDetails::getAmount)
                 ));
 
+        // Group sale returns by customer and calculate total refund amounts
+        Map<Integer, Double> refundsBySaleId = salesReturns.stream()
+                .collect(Collectors.groupingBy(
+                        saleReturn -> saleReturn.getSale().getSaleId(),
+                        Collectors.summingDouble(SalesReturn::getRefundAmount)
+                ));
+
         // Map purchases to responses
         return sales.stream().map(sale -> {
             double paidAmount = paymentsByPurchaseId.getOrDefault(sale.getInvoiceNumber(), 0.0);
-            double outstanding = sale.getTotalAmount() - paidAmount;
+            double refundAmount = refundsBySaleId.getOrDefault(sale.getSaleId(), 0.0);
+            double outstanding = sale.getTotalAmount() - paidAmount - refundAmount;
 
             CustomerOutstandingResponse response = new CustomerOutstandingResponse();
             response.setInvoiceNumber(sale.getInvoiceNumber());
@@ -501,7 +432,9 @@ public class CustomerServiceImpl implements ICustomerService {
             response.setSaleDate(sm.format(sale.getSaleDate()));
             response.setTotalAmount(sale.getTotalAmount());
             response.setPaidAmount(paidAmount);
+            response.setRefundAmount(refundAmount);
             response.setOutstanding(outstanding);
+            response.setVehicleNumber(sale.getVehicleNumber());
             return response;
         }).collect(Collectors.toList());
     }

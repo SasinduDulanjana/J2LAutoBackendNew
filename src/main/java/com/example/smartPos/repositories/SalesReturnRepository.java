@@ -16,4 +16,12 @@ public interface SalesReturnRepository extends JpaRepository<SalesReturn, Intege
 
     @Query("SELECT sr FROM SalesReturn sr")
     List<SalesReturn> findAllWithCustomer();
+
+    @Query("SELECT FUNCTION('DATE_FORMAT', s.returnDate, '%Y-%m') AS month, SUM(CAST(s.refundAmount AS double)) " +
+            "FROM SalesReturn s " +
+            "GROUP BY FUNCTION('DATE_FORMAT', s.returnDate, '%Y-%m')")
+    List<Object[]> findMonthlySaleReturns();
+
+    @Query("SELECT SUM(CAST(s.refundAmount AS double)) FROM SalesReturn s")
+    Double findTotalSalesReturns();
 }

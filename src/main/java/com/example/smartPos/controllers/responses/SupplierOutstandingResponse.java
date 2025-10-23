@@ -7,6 +7,8 @@ public class SupplierOutstandingResponse {
     private String purchaseDate;
     private double totalAmount;
     private double paidAmount;
+
+    private double refundAmount;
     private double outstanding;
 
     // Getters and Setters
@@ -48,5 +50,13 @@ public class SupplierOutstandingResponse {
 
     public void setOutstanding(double outstanding) {
         this.outstanding = outstanding;
+    }
+
+    public double getRefundAmount() {
+        return refundAmount;
+    }
+
+    public void setRefundAmount(double refundAmount) {
+        this.refundAmount = refundAmount;
     }
 }
