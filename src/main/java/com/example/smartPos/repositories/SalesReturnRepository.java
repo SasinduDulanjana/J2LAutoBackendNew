@@ -12,6 +12,8 @@ import java.util.List;
 public interface SalesReturnRepository extends JpaRepository<SalesReturn, Integer> {
     List<SalesReturn> findBySale_SaleId(Integer saleId);
 
+    List<SalesReturn> findBySale_SaleIdIn(List<Integer> saleIds);
+
     List<SalesReturn> findByCustomerId(Integer customerId);
 
     @Query("SELECT sr FROM SalesReturn sr")

@@ -102,6 +102,28 @@ public class PurchaseServiceImpl implements IPurchaseService {
     public List<PurchaseResponse> getAllPurchases() {
         List<Purchase> purchaseList = purchaseRepository.findAll();
 
+        // Fetch all purchase returns for the purchases
+        Map<Integer, Double> totalReturnedQtyByPurchaseId = purchaseReturnRepository.findByPurchaseIds(
+                        purchaseList.stream().map(Purchase::getPurchaseId).toList()
+                ).stream()
+                .collect(Collectors.groupingBy(
+                        pr -> pr.getPurchase().getPurchaseId(), // Use the purchaseId directly
+                        Collectors.summingDouble(PurchaseReturn::getQuantityReturned)
+                ));
+
+        // Filter out fully returned purchases
+        List<Purchase> filteredPurchases = purchaseList.stream()
+                .filter(purchase -> {
+                    double totalQty = purchase.getProducts().stream()
+                            .mapToDouble(product -> productBatchRepository
+                                    .findByPurchaseIdAndProduct_ProductId(purchase.getPurchaseId(), product.getProductId())
+                                    .getQty())
+                            .sum();
+                    double returnedQty = totalReturnedQtyByPurchaseId.getOrDefault(purchase.getPurchaseId(), 0.0);
+                    return returnedQty < totalQty; // Include if not fully returned
+                })
+                .toList();
+
         // Fetch all payment details for the purchases in a single query
         Map<Integer, Double> totalPaidAmountByPurchaseId = paymentDetailsRepository
                 .findByInvoiceNumbersAndPaymentPaymentTypeAndPurchasePaymentType(
@@ -114,14 +136,20 @@ public class PurchaseServiceImpl implements IPurchaseService {
                 ));
 
         // Map purchases to responses
-        return purchaseList.stream()
+        return filteredPurchases.stream()
                 .map(purchase -> mapToPurchaseResponse(purchase, totalPaidAmountByPurchaseId))
                 .toList();
     }
 
     private PurchaseResponse mapToPurchaseResponse(Purchase purchase, Map<Integer, Double> totalPaidAmountByPurchaseId) {
         double totalPaidAmount = totalPaidAmountByPurchaseId.getOrDefault(purchase.getPurchaseId(), 0.0);
-        double outstandingBalance = purchase.getTotalCost() - totalPaidAmount;
+        // Fetch the total refund amount for the purchase
+        double totalRefundAmount = purchaseReturnRepository.findByPurchase_PurchaseId(purchase.getPurchaseId())
+                .stream()
+                .mapToDouble(PurchaseReturn::getRefundAmount)
+                .sum();
+
+        double outstandingBalance = purchase.getTotalCost() - totalPaidAmount - totalRefundAmount;
 //        SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         PurchaseResponse response = new PurchaseResponse();
         response.setPurchaseId(purchase.getPurchaseId());
@@ -502,20 +530,19 @@ public class PurchaseServiceImpl implements IPurchaseService {
                 () -> new ResourceNotFoundException(ErrorCodes.BATCH_NOT_FOUND)
         );
 
-        //add return details
+        // Add return details filtered by product ID
         List<PurchaseReturn> purchaseReturns = purchaseReturnRepository.findByPurchase_PurchaseId(productBatch.getPurchaseId());
-
-        // Deduct returned amounts
         double totalReturnedAmount = purchaseReturns.stream()
+                .filter(returnItem -> returnItem.getProduct().getProductId().equals(productBatch.getProduct().getProductId()))
                 .mapToDouble(PurchaseReturn::getRefundAmount)
                 .sum();
 
-
-        // Adjust the quantity for each PurchaseProduct
         double quantityReturned = purchaseReturns.stream()
+                .filter(returnItem -> returnItem.getProduct().getProductId().equals(productBatch.getProduct().getProductId()))
                 .mapToDouble(PurchaseReturn::getQuantityReturned)
                 .sum();
 
+        // Map to ProductBatchResponse
         ProductBatchResponse response = new ProductBatchResponse();
         response.setPurchaseId(productBatch.getPurchaseId());
         response.setBatchNumber(batch.getBatchNumber());

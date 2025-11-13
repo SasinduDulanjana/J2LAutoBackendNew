@@ -4,6 +4,7 @@ import com.example.smartPos.repositories.model.PurchaseReturn;
 import com.example.smartPos.repositories.model.SalesReturn;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,6 +15,9 @@ public interface PurchaseReturnRepository extends JpaRepository<PurchaseReturn, 
 
     @Query("SELECT pr FROM PurchaseReturn pr JOIN Supplier s ON pr.supplierId = s.supId")
     List<PurchaseReturn> findAllWithSupplier();
+
+    @Query("SELECT pr FROM PurchaseReturn pr WHERE pr.purchase.purchaseId IN :purchaseIds")
+    List<PurchaseReturn> findByPurchaseIds(@Param("purchaseIds") List<Integer> purchaseIds);
 
     List<PurchaseReturn> findBySupplierId(Integer supplierId);
 

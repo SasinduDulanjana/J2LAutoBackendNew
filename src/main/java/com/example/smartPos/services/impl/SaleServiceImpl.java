@@ -16,10 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -74,23 +71,51 @@ public class SaleServiceImpl implements ISaleService {
         // Fetch all sales with status 1
         List<Sale> sales = saleRepository.findAllByStatus(1);
 
-        // Fetch all payment details for the sales in a single query
-        List<PaymentDetails> paymentDetailsList = paymentDetailsRepository.findByInvoiceNumbersAndReceiptPaymentTypeAndSalePaymentType(
-                sales.stream().map(Sale::getInvoiceNumber).toList()
+        // Fetch all sales returns for the sales
+        List<SalesReturn> salesReturns = salesReturnRepository.findBySale_SaleIdIn(
+                sales.stream().map(Sale::getSaleId).toList()
         );
 
-        // Group payment details by sale ID
-        Map<String, Double> totalPaidAmountByInvoiceNum = paymentDetailsList.stream()
-                .collect(Collectors.groupingBy(
-                        pd -> pd.getPayment().getReferenceId(),
-                        Collectors.summingDouble(PaymentDetails::getAmount)
-                ));
+        // Group returned products by sale ID
+        Map<Integer, List<SalesReturn>> returnsBySaleId = salesReturns.stream()
+                .collect(Collectors.groupingBy(salesReturn -> salesReturn.getSale().getSaleId()));
 
         // Map sales to SaleResponse
         return sales.stream().map(sale -> {
-            Double totalPaidAmount = totalPaidAmountByInvoiceNum.getOrDefault(sale.getInvoiceNumber(), 0.0);
-            Double outstandingBalance = sale.getTotalAmount() - totalPaidAmount;
+            // Filter out returned products for the current sale
+            List<SaleProduct> filteredProducts = sale.getSaleProducts().stream()
+                    .filter(saleProduct -> {
+                        List<SalesReturn> returnsForSale = returnsBySaleId.get(sale.getSaleId());
+                        if (returnsForSale == null) {
+                            return true; // No returns for this sale, include all products
+                        }
+                        return returnsForSale.stream()
+                                .noneMatch(salesReturn -> salesReturn.getProduct().getProductId()
+                                        .equals(saleProduct.getProduct().getProductId()));
+                    })
+                    .toList();
 
+            // Skip the sale if all products are returned
+            if (filteredProducts.isEmpty()) {
+                return null;
+            }
+
+            Double totalRefundedAmount = salesReturns.stream()
+                    .filter(salesReturn -> salesReturn.getSale().getSaleId().equals(sale.getSaleId()))
+                    .mapToDouble(SalesReturn::getRefundAmount)
+                    .sum();
+
+            // Calculate total paid amount and outstanding balance
+            Double totalPaidAmount = paymentDetailsRepository.findByInvoiceNumbersAndReceiptPaymentTypeAndSalePaymentType(
+                            List.of(sale.getInvoiceNumber())
+                    ).stream()
+                    .filter(pd -> pd.getPayment().getReferenceId().equals(sale.getInvoiceNumber()))
+                    .mapToDouble(PaymentDetails::getAmount)
+                    .sum();
+
+            Double outstandingBalance = sale.getTotalAmount() - totalPaidAmount - totalRefundedAmount;
+
+            // Map to SaleResponse
             SaleResponse saleResponse = new SaleResponse();
             saleResponse.setSaleId(sale.getSaleId());
             saleResponse.setCustomer(sale.getCustomer());
@@ -110,8 +135,9 @@ public class SaleServiceImpl implements ISaleService {
             saleResponse.setModifiedDate(sm.format(sale.getModifiedDate()));
             saleResponse.setVehicle(sale.getVehicle());
             saleResponse.setVehicleNumber(sale.getVehicleNumber());
+            saleResponse.setSoldProducts(filteredProducts.stream().map(this::mapToSoldProductResponse).toList());
             return saleResponse;
-        }).toList();
+        }).filter(Objects::nonNull).toList();
     }
 
     @Override
@@ -125,26 +151,25 @@ public class SaleServiceImpl implements ISaleService {
                 .distinct()
                 .toList();
 
-        // Fetch all batches in a single query and map batchNo to retailPrice
-//        Map<String, Double> batchRetailPrices = batchRepository.findByBatchNumbers(batchNumbers).stream()
-//                .collect(Collectors.toMap(Batch::getBatchNumber, Batch::getRetailPrice));
 
         //add return details
         List<SalesReturn> salesReturns = salesReturnRepository.findBySale_SaleId(sale.getSaleId());
 
-        // Deduct returned amounts
-        double totalReturnedAmount = salesReturns.stream()
-                .mapToDouble(SalesReturn::getRefundAmount)
-                .sum();
-
-
-        // Adjust the quantity for each SaleProduct
-        double quantityReturned = salesReturns.stream()
-                .mapToDouble(SalesReturn::getQuantityReturned)
-                .sum();
 
         // Map SaleProducts to SoldProductResponse
         return sale.getSaleProducts().stream().map(soldProduct -> {
+            // Calculate refunded quantity and amount for the current product
+            double productRefundedQty = salesReturns.stream()
+                    .filter(salesReturn -> salesReturn.getProduct().getProductId().equals(soldProduct.getProduct().getProductId()))
+                    .mapToDouble(SalesReturn::getQuantityReturned)
+                    .sum();
+
+            double productRefundedAmount = salesReturns.stream()
+                    .filter(salesReturn -> salesReturn.getProduct().getProductId().equals(soldProduct.getProduct().getProductId()))
+                    .mapToDouble(SalesReturn::getRefundAmount)
+                    .sum();
+
+            // Map to SoldProductResponse
             SoldProductResponse response = new SoldProductResponse();
             response.setSaleProductId(soldProduct.getSaleProductId());
             response.setProduct(soldProduct.getProduct());
@@ -155,8 +180,8 @@ public class SaleServiceImpl implements ISaleService {
             response.setDiscountPercentage(soldProduct.getDiscountPercentage());
             response.setDiscountAmount(soldProduct.getDiscountAmount());
             response.setDiscountedTotal(soldProduct.getDiscountedTotal());
-            response.setRefundedQty(quantityReturned);
-            response.setRefundedAmount(totalReturnedAmount);
+            response.setRefundedQty(productRefundedQty);
+            response.setRefundedAmount(productRefundedAmount);
             response.setProductDeliveryStatus(soldProduct.getStatus());
             return response;
         }).toList();
