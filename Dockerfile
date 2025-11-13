@@ -8,7 +8,7 @@ RUN mvn clean package -DskipTests
 
 # Stage 2: Run the app
 # Use an official OpenJDK runtime as a parent image
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-jammy
 
 # Set the working directory in the container
 WORKDIR /app
