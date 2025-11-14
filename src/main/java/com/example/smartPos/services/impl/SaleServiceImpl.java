@@ -701,4 +701,32 @@ public class SaleServiceImpl implements ISaleService {
         paymentResponse.setPaymentId(payment.getPaymentId());
         return paymentResponse;
     }
+
+    @Override
+    @Transactional
+    public void editDisocuntAmount(EditDiscountAmountRequest request) {
+        // Fetch the sale by ID
+        Sale sale = saleRepository.findSaleWithProductsById(request.getSaleId())
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.SALE_NOT_FOUND));
+
+        Double totalAmount = sale.getTotalAmount();
+        sale.setTotalAmount(totalAmount - request.getValue());
+
+        // Find the matching SaleProduct
+        SaleProduct saleProduct = sale.getSaleProducts().stream()
+                .filter(sp -> sp.getProduct().getProductId().equals(request.getProductId()) && sp.getBatchNo().equals(request.getBatchNumber()))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PRODUCT_NOT_FOUND));
+
+        // Update the retail price
+        Double existingAmount = saleProduct.getDiscountAmount();
+        saleProduct.setDiscountAmount(existingAmount + request.getValue());
+
+        // Recalculate the discounted total
+        double newDiscountedTotal = saleProduct.getDiscountedTotal() - request.getValue();
+        saleProduct.setDiscountedTotal(newDiscountedTotal);
+
+        // Save the updated SaleProduct
+        saleRepository.save(sale);
+    }
 }

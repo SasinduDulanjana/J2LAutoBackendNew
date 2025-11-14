@@ -4,7 +4,6 @@ import com.example.smartPos.controllers.requests.*;
 import com.example.smartPos.controllers.responses.*;
 import com.example.smartPos.repositories.model.PaymentDetails;
 import com.example.smartPos.services.ISaleService;
-import com.example.smartPos.util.ResponseCreator;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -145,5 +144,11 @@ public class SaleController {
     public ResponseEntity<PaymentResponse> fetchPaymentByInvoiceNumber(@PathVariable String invoiceNumber) {
         PaymentResponse response = saleService.getPaymentByInvoice(invoiceNumber);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/api/updateDiscount")
+    public ResponseEntity<String> updateDiscount(@RequestBody EditDiscountAmountRequest request) {
+        saleService.editDisocuntAmount(request);
+        return ResponseEntity.ok("Discount amount updated successfully.");
     }
 }

@@ -1,9 +1,6 @@
 package com.example.smartPos.services;
 
-import com.example.smartPos.controllers.requests.PaymentDetailsRequest;
-import com.example.smartPos.controllers.requests.ProductStatusUpdateRequest;
-import com.example.smartPos.controllers.requests.SaleRequest;
-import com.example.smartPos.controllers.requests.SalesReturnRequest;
+import com.example.smartPos.controllers.requests.*;
 import com.example.smartPos.controllers.responses.*;
 import com.example.smartPos.repositories.model.PaymentDetails;
 
@@ -50,4 +47,6 @@ public interface ISaleService {
     List<ProductStatusUpdateResponse> updateProductStatus(ProductStatusUpdateRequest request);
 
     PaymentResponse getPaymentByInvoice(String invoiceNumber);
+
+    void editDisocuntAmount(EditDiscountAmountRequest request);
 }
