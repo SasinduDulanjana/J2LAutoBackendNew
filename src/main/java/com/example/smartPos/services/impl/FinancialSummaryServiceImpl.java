@@ -45,20 +45,23 @@ public class FinancialSummaryServiceImpl implements IFinancialSummaryService {
         Double totalExpenses = Optional.ofNullable(expenseRepository.findTotalExpenses()).orElse(0.0);
         Double totalPurchases = Optional.ofNullable(purchaseRepository.findTotalTotalCostForActivePurchases()).orElse(0.0);
         Double totalDiscounts = Optional.ofNullable(saleRepository.findTotalDiscountsForActiveSales()).orElse(0.0);
-        Double totalPurchasePayments = paymentDetailsRepository.findTotalPurchasePayments();
-        Double dueAmountToPay = (totalPurchases) - (totalPurchasePayments != null ? totalPurchasePayments : 0);
-        Double totalSalePayments = paymentDetailsRepository.findTotalSalePayments();
-        Double dueAmountToReceive = (totalSales) - (totalSalePayments != null ? totalSalePayments : 0);
+        Double totalPurchasePayments = Optional.ofNullable(paymentDetailsRepository.findTotalPurchasePayments()).orElse(0.0);
+        Double totalSalePayments = Optional.ofNullable(paymentDetailsRepository.findTotalSalePayments()).orElse(0.0);
+
+        // Calculate due amounts
+        Double dueAmountToPay = totalPurchases - totalPurchasePayments;
+        Double dueAmountToReceive = totalSales - totalSalePayments;
 
         // Fetch sales and purchase returns
         Double totalPurchaseReturns = Optional.ofNullable(purchaseReturnRepository.findTotalPurchaseReturns()).orElse(0.0);
         Double totalSalesReturns = Optional.ofNullable(salesReturnRepository.findTotalSalesReturns()).orElse(0.0);
+        Double totalSalesReturnCogs = Optional.ofNullable(salesReturnRepository.findTotalSalesReturnCOGS()).orElse(0.0);
 
-        // Adjust total sales and COGS with returns
-        totalSales -= totalSalesReturns;
-        totalCogs -= totalPurchaseReturns;
+        // Adjust total sales and COGS with returns and discounts
+        totalSales = totalSales - totalSalesReturns - totalDiscounts;
+        totalCogs = totalCogs - totalPurchaseReturns - totalSalesReturnCogs;
 
-        // Calculate safely
+        // Calculate net profit
         double netProfit = totalSales - totalCogs - totalExpenses;
 
         // Build response
@@ -70,6 +73,7 @@ public class FinancialSummaryServiceImpl implements IFinancialSummaryService {
         response.setDueAmountToPay(dueAmountToPay);
         response.setDueAmountToReceive(dueAmountToReceive);
         response.setNetProfit(netProfit);
+
         return response;
     }
 

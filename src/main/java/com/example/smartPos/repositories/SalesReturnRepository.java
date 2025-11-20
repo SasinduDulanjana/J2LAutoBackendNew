@@ -26,4 +26,11 @@ public interface SalesReturnRepository extends JpaRepository<SalesReturn, Intege
 
     @Query("SELECT SUM(CAST(s.refundAmount AS double)) FROM SalesReturn s")
     Double findTotalSalesReturns();
+
+    @Query("SELECT COALESCE(SUM(sr.quantityReturned * b.unitCost), 0.0) " +
+            "FROM SalesReturn sr " +
+            "JOIN SaleProduct sp ON sr.sale.saleId = sp.sale.saleId " +
+            "JOIN Product p ON sr.product.productId = p.productId " +
+            "JOIN Batch b ON sp.batchNo = b.batchNumber AND p.sku = b.sku")
+    Double findTotalSalesReturnCOGS();
 }
