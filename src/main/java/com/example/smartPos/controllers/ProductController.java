@@ -1,0 +1,109 @@
+package com.example.smartPos.controllers;
+
+import com.example.smartPos.controllers.requests.ProductRequest;
+import com.example.smartPos.controllers.requests.SupplierRequest;
+import com.example.smartPos.controllers.requests.VehicleRequest;
+import com.example.smartPos.controllers.responses.BatchDetailsResponse;
+import com.example.smartPos.controllers.responses.CommonResponse;
+import com.example.smartPos.controllers.responses.ProductResponse;
+import com.example.smartPos.controllers.responses.VehicleResponse;
+import com.example.smartPos.services.IProductService;
+import com.example.smartPos.util.ResponseCreator;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@CrossOrigin
+@RequestMapping("/product")
+public class ProductController {
+
+    IProductService productService;
+
+    public ProductController(IProductService productService) {
+        this.productService = productService;
+    }
+
+    @GetMapping(path = "/api/getAllProducts")
+    public List<ProductResponse> getAllProducts() {
+        return productService.getAllProducts();
+    }
+
+    @GetMapping(path = "/api/getAllProductsByBatchWise")
+    public List<ProductResponse> getAllProductsByBatchWise() {
+        return productService.getAllProductsByBatchWise();
+    }
+
+    @GetMapping(path = "/api/getProductsByName/{name}")
+    public List<ProductResponse> getProductsByName(@PathVariable String name) {
+        return productService.getProductsByName(name);
+    }
+
+    @GetMapping(path = "/api/getProductById/{id}")
+    public ResponseEntity<CommonResponse> getProductsByBarcode(@PathVariable Integer id) {
+        ProductResponse productResponse = productService.getProductById(id);
+        return ResponseCreator.success(productResponse);
+    }
+
+    @GetMapping(path = "/api/getProductByBarcode/{barcode}")
+    public ResponseEntity<CommonResponse> getProductsByBarcode(@PathVariable String barcode) {
+        ProductResponse productResponse = productService.getProductByBarcode(barcode);
+        return ResponseCreator.success(productResponse);
+    }
+
+    @GetMapping(path = "/api/getProductBySku/{sku}")
+    public ResponseEntity<CommonResponse> getProductBySku(@PathVariable String sku) {
+        ProductResponse productResponse = productService.getProductBySku(sku);
+        return ResponseCreator.success(productResponse);
+    }
+
+    @GetMapping(path = "/api/getProductByBarcodeOrSku/{term}")
+    public ResponseEntity<CommonResponse> getProductByBarCodeOrSku(@PathVariable String term) {
+        ProductResponse productResponse = productService.getProductByBarcodeOrSku(term);
+        return ResponseCreator.success(productResponse);
+    }
+
+    @PostMapping(path = "/api/createProduct")
+    public ResponseEntity<ProductResponse> createProduct(@RequestBody ProductRequest productRequest) {
+        ProductResponse savedProduct = productService.createProduct(productRequest);
+        return ResponseCreator.success(savedProduct);
+    }
+
+    @PostMapping(path = "/api/updateProduct")
+    public ResponseEntity<ProductResponse> updateProduct(@RequestBody ProductRequest productRequest) {
+        ProductResponse updatedProduct = productService.updateProduct(productRequest);
+        return ResponseCreator.success(updatedProduct);
+    }
+
+    @GetMapping(path = "/api/batchNumbers/{productSku}")
+    public List<BatchDetailsResponse> getBatchDetailsByProductId(@PathVariable String productSku) {
+        return productService.getBatchDetailsByProductSku(productSku);
+    }
+
+    @GetMapping(path = "/api/getProductByCategory/{categoryId}")
+    public List<ProductResponse> getProductByCategory(@PathVariable String categoryId) {
+        return productService.getProductsByCategory(categoryId);
+    }
+
+    @GetMapping(path = "/api/inventory/availableQuantity/{skuId}/{batchNumber}")
+    public Double getAvailableQuantity(@PathVariable String skuId, @PathVariable String batchNumber) {
+        return productService.getAvailableQuantity(skuId, batchNumber);
+    }
+
+    @PostMapping(path = "/api/deleteProduct")
+    public void deleteProduct(@RequestBody ProductRequest request) {
+        productService.deleteProduct(request.getProductId());
+        System.out.println("OK");
+    }
+
+    @GetMapping(path = "/api/vehicles")
+    public List<VehicleResponse> getAvailableQuantity() {
+        return productService.availableVehicles();
+    }
+
+    @PostMapping(path = "/api/createVehicle")
+    public ResponseEntity<VehicleResponse> createVehicle(@RequestBody VehicleRequest request) {
+        return ResponseCreator.success(productService.createVehicle(request));
+    }
+}
