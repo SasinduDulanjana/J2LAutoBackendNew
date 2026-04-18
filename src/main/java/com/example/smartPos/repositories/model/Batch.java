@@ -14,6 +14,7 @@ public class Batch {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer batchId;
 
+
     private String sku;
 
     private String batchNumber;
